@@ -71,7 +71,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
+          # golangci-lint must be built with a Go at least as new as the one
+          # it type-checks; lint at the module's minimum Go version.
+          go-version-file: go.mod
       - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.5.0

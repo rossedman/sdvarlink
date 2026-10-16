@@ -146,6 +146,9 @@ data in front of it. So sdvarlink gives the descriptors to the **last message
 that begins within the read** that returned them, and they stay with the
 right reply even when several replies arrive in one read (as streams often
 do). `varlink.Unmarshal` then replaces each index with its `*os.File`.
+(On macOS and the BSDs, where you would only talk to a `varlinktest` fake,
+the kernel starts such a read at the descriptor-carrying message instead,
+and the transport uses that rule there.)
 
 !!! note "systemd v257 and v258"
 

@@ -27,14 +27,18 @@ const Supported = true
 // Which message do received descriptors belong to? Senders attach them to
 // a sendmsg that starts with the message referencing them: this package
 // sends one message per sendmsg, and systemd's sd-varlink holds back
-// further output until a message with descriptors is flushed. On the
-// receiving side the kernel ends a recvmsg right after the chunk that
-// carried descriptors, though it may prepend earlier, descriptor-less data.
-// So descriptors belong to the last message that begins within the read
-// that returned them.
+// further output until a message with descriptors is flushed. Kernels
+// differ in where a recvmsg that returns descriptors starts and stops:
+//
+//   - Linux ends the read right after the chunk that carried descriptors,
+//     though it may put earlier, descriptor-less data in front of it. The
+//     descriptors belong to the last message that begins in the read.
+//   - BSD and macOS start the read at the chunk that carried descriptors
+//     and may continue past it. The descriptors belong to the message at
+//     the start of the read.
 //
 // systemd v257 and v258 can also append a descriptor-carrying message to
-// unsent earlier replies in one sendmsg. The rule above still attributes
+// unsent earlier replies in one sendmsg. On Linux the rule above still attributes
 // those descriptors correctly unless the earlier data exceeds one kernel
 // socket buffer chunk (tens of KiB); newer systemd never does this. No
 // systemd method that returns descriptors streams replies, so in practice
@@ -123,7 +127,7 @@ func (t *Transport) ReadMessage() ([]byte, []*os.File, error) {
 					CloseFiles(files)
 					return nil, nil, net.ErrClosed
 				}
-				t.pending = append(t.pending, fdBatch{off: t.lastStart(t.rbuf[:n]), files: files})
+				t.pending = append(t.pending, fdBatch{off: t.attachOffset(t.rbuf[:n]), files: files})
 				t.mu.Unlock()
 			}
 		}
@@ -143,10 +147,17 @@ func (t *Transport) ReadMessage() ([]byte, []*os.File, error) {
 	}
 }
 
-// lastStart returns the stream offset of the last message that begins in
-// data, which was just read at offset t.readOff. If no message begins in it
-// (a non-conforming sender), it returns the offset of data itself.
-func (t *Transport) lastStart(data []byte) int64 {
+// attachOffset returns the stream offset of the message that owns
+// descriptors received with data, which was just read at offset t.readOff.
+// See the Transport comment for the rules.
+func (t *Transport) attachOffset(data []byte) int64 {
+	if !lastStartRule {
+		// BSD and macOS: a read that returns descriptors starts at the
+		// record that carried them, and may run on past it.
+		return t.readOff
+	}
+	// Linux: the read ends right after the chunk that carried descriptors,
+	// so they belong to the last message that begins in it.
 	if len(data) > 1 {
 		if i := bytes.LastIndexByte(data[:len(data)-1], 0); i >= 0 {
 			return t.readOff + int64(i) + 1

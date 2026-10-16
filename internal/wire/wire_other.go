@@ -31,3 +31,6 @@ func CloseFiles(files []*os.File) {
 
 // DupFile is unavailable on this platform.
 func DupFile(*os.File) (*os.File, error) { return nil, ErrUnsupported }
+
+// MaxFiles reports zero on this platform.
+func (*Transport) MaxFiles() int { return 0 }
