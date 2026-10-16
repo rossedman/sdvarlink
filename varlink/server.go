@@ -1,10 +1,12 @@
 package varlink
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"os"
@@ -223,6 +225,9 @@ func Handle[In, Out any](iface *Interface, name string, fn func(ctx context.Cont
 		if err != nil {
 			return err
 		}
+		if ctx.Err() != nil {
+			return ctx.Err() // abandoned: the connection closes without a reply
+		}
 		return w.final(out)
 	}, opts)
 }
@@ -245,6 +250,9 @@ func HandleStream[In, Out any](iface *Interface, name string, fn func(ctx contex
 		err := fn(ctx, call, in, func(out Out) error { return w.send(out) })
 		if err != nil {
 			return err
+		}
+		if ctx.Err() != nil {
+			return ctx.Err() // abandoned: the connection closes without a final reply
 		}
 		return w.finish()
 	}, opts)
@@ -346,12 +354,22 @@ func (s *Server) Serve(ctx context.Context, l net.Listener) error {
 	go func() {
 		defer close(acceptDone)
 		sem := make(chan struct{}, max(s.cfg.maxConns, 1))
+		var backoff time.Duration
 		for {
 			nc, err := l.Accept()
 			if err != nil {
+				if temporaryAcceptError(err) {
+					// Out of descriptors or memory, or an aborted
+					// connection: wait and retry, as net/http does.
+					backoff = min(max(2*backoff, 5*time.Millisecond), time.Second)
+					s.cfg.logger.Warn("varlink: accept failed, retrying", "err", err, "delay", backoff)
+					time.Sleep(backoff)
+					continue
+				}
 				acceptErr <- err
 				return
 			}
+			backoff = 0
 			uc, ok := nc.(*net.UnixConn)
 			if !ok {
 				nc.Close()
@@ -416,6 +434,19 @@ func (s *Server) Serve(ctx context.Context, l net.Listener) error {
 	return nil
 }
 
+func temporaryAcceptError(err error) bool {
+	if errors.Is(err, net.ErrClosed) {
+		return false
+	}
+	for _, e := range []syscall.Errno{syscall.EMFILE, syscall.ENFILE, syscall.ENOBUFS, syscall.ENOMEM, syscall.ECONNABORTED, syscall.EINTR} {
+		if errors.Is(err, e) {
+			return true
+		}
+	}
+	var ne net.Error
+	return errors.As(err, &ne) && ne.Timeout()
+}
+
 type incoming struct {
 	data  []byte
 	files []*os.File
@@ -464,6 +495,12 @@ func (sc *serverConn) serve() {
 		for {
 			data, files, err := sc.t.ReadMessage()
 			if err != nil {
+				if errors.Is(err, io.EOF) && !hungUp(sc.nc) {
+					// Half-close: the client sent its last call and still
+					// reads. Serve what is queued, then close, as sd-varlink
+					// does.
+					return
+				}
 				if errors.Is(err, ErrFrameTooLarge) {
 					msgs <- incoming{err: err}
 				}
@@ -538,31 +575,47 @@ type callMsg struct {
 // dispatch runs one call. It returns false when the connection must close.
 func (sc *serverConn) dispatch(connCtx context.Context, m incoming) bool {
 	var cm callMsg
-	if err := json.Unmarshal(m.data, &cm); err != nil || cm.Method == "" {
+	if err := json.Unmarshal(m.data, &cm); err != nil || cm.Method == "" || !isObjectOrNull(cm.Parameters) {
+		// sd-varlink treats these as protocol errors and disconnects.
 		wire.CloseFiles(m.files)
 		sc.s.cfg.logger.Warn("varlink: malformed call, closing connection")
 		return false
 	}
 	call := &Call{method: cm.Method, more: cm.More, oneway: cm.Oneway, conn: sc}
-	w := &replyWriter{sc: sc, call: call}
+	w := &replyWriter{sc: sc, call: call, maxFiles: sc.s.cfg.maxFiles}
 
 	files := m.files
 	err := sc.route(connCtx, call, cm, &files, w)
 	wire.CloseFiles(files) // whatever the handler did not take
-	if err != nil {
-		if w.broken || errors.Is(err, errStreamClosed) {
-			return false
-		}
-		w.drop()
-		if call.oneway || w.finished {
-			// No reply can carry it: oneway calls get none, and this
-			// call already had its final reply.
-			sc.logHandlerError(call, err)
-			return !w.broken
-		}
-		sc.writeError(call.method, sc.errorFor(call, err))
+
+	// From here on the handler can no longer write: a send from a goroutine
+	// it left behind must not land in another call's replies.
+	finished, broken, abandoned := w.close()
+	switch {
+	case broken || errors.Is(err, errStreamClosed):
+		return false
+	case abandoned:
+		// The handler's context ended (client gone, or shutdown): close the
+		// connection rather than invent a final reply, as sd-varlink does.
+		return false
+	case err == nil:
+		return true
 	}
-	return !w.broken
+	if call.oneway || finished {
+		// No reply can carry it: oneway calls get none, and this call
+		// already had its final reply.
+		if !errors.Is(err, errSingleReply) {
+			sc.logHandlerError(call, err)
+		}
+		return true
+	}
+	w.drop()
+	return sc.writeError(call.method, sc.errorFor(call, err))
+}
+
+func isObjectOrNull(raw json.RawMessage) bool {
+	t := bytes.TrimSpace(raw)
+	return len(t) == 0 || bytes.Equal(t, []byte("null")) || t[0] == '{'
 }
 
 // route finds and runs the handler. Files it hands to the handler are
@@ -618,7 +671,11 @@ func (sc *serverConn) route(connCtx context.Context, call *Call, cm callMsg, fil
 	}
 	handed := *files
 	*files = nil
-	return sc.runHandler(ctx, call, m, cm.Parameters, handed, w)
+	herr := sc.runHandler(ctx, call, m, cm.Parameters, handed, w)
+	if ctx.Err() != nil {
+		w.abandon()
+	}
+	return herr
 }
 
 func (sc *serverConn) runHandler(ctx context.Context, call *Call, m *method, params []byte, files []*os.File, w *replyWriter) (err error) {
@@ -683,7 +740,7 @@ func orEmpty(b []byte) []byte {
 func (sc *serverConn) errorFor(call *Call, err error) *Error {
 	var ve *Error
 	if errors.As(err, &ve) {
-		return ve
+		return sc.sanitize(call, ve)
 	}
 	var named NamedError
 	if errors.As(err, &named) {
@@ -691,7 +748,7 @@ func (sc *serverConn) errorFor(call *Call, err error) *Error {
 		if merr != nil || string(params) == "null" {
 			params = nil
 		}
-		return &Error{Name: named.VarlinkError(), Parameters: params}
+		return sc.sanitize(call, &Error{Name: named.VarlinkError(), Parameters: params})
 	}
 	var errno syscall.Errno
 	if errors.As(err, &errno) {
@@ -701,6 +758,21 @@ func (sc *serverConn) errorFor(call *Call, err error) *Error {
 		sc.logHandlerError(call, err)
 	}
 	return errnoError(syscall.EIO)
+}
+
+// sanitize makes sure an error reply is well formed: a name, and
+// parameters that are a JSON object. A broken one would be sent as a
+// success, or not at all.
+func (sc *serverConn) sanitize(call *Call, e *Error) *Error {
+	if e.Name == "" {
+		sc.s.cfg.logger.Error("varlink: handler returned an error without a name", "method", call.method)
+		return errnoError(syscall.EIO)
+	}
+	if len(e.Parameters) > 0 && (!json.Valid(e.Parameters) || bytes.TrimSpace(e.Parameters)[0] != '{') {
+		sc.s.cfg.logger.Error("varlink: error parameters are not a JSON object; sending none", "method", call.method, "error", e.Name)
+		return &Error{Name: e.Name}
+	}
+	return e
 }
 
 func (sc *serverConn) logHandlerError(call *Call, err error) {
@@ -755,36 +827,55 @@ func (sc *serverConn) write(r serverReply, files []*os.File) error {
 	return sc.t.WriteMessage(msg, files)
 }
 
-func (sc *serverConn) writeError(method string, e *Error) {
+// writeError sends an error reply. It returns false if the connection
+// can no longer be used.
+func (sc *serverConn) writeError(method string, e *Error) bool {
 	params := e.Parameters
 	if len(params) == 0 {
 		params = json.RawMessage("{}")
 	}
 	if err := sc.write(serverReply{Error: e.Name, Parameters: params}, nil); err != nil {
 		sc.s.cfg.logger.Debug("varlink: could not send error reply", "method", method, "err", err)
+		return false
 	}
+	return true
 }
 
 // replyWriter sends a call's replies and enforces that a call gets
-// exactly one final reply (none for oneway calls).
+// exactly one final reply (none for oneway calls), and nothing after
+// dispatch has moved on. Its methods may be called from any goroutine.
 type replyWriter struct {
 	sc       *serverConn
 	call     *Call
+	maxFiles int
 	more     bool // streaming to a client that asked for "more"
 	holdLast bool // LastIsFinal: hold each reply until the next shows it continues
-	pending  *serverReply
-	pfiles   []*os.File
-	sent     int
-	finished bool // the final reply went out
-	broken   bool // a write failed: the connection is unusable
+
+	mu        sync.Mutex
+	pending   *serverReply
+	pfiles    []*os.File
+	sent      int
+	finished  bool // the final reply went out
+	broken    bool // a write failed: the connection is unusable
+	closed    bool // dispatch is done with this call
+	abandoned bool // the handler's context ended before it returned
 }
 
-var errStreamClosed = errors.New("varlink: client is gone")
+var (
+	errStreamClosed = errors.New("varlink: client is gone")
+	errSingleReply  = errors.New("varlink: only one reply allowed without 'more'")
+	errCallOver     = errors.New("varlink: send after the handler returned")
+)
 
 func (w *replyWriter) encode(v any) (*serverReply, []*os.File, error) {
 	params, files, err := Marshal(v)
 	if err != nil {
 		return nil, nil, fmt.Errorf("varlink: encode %s reply: %w", w.call.method, err)
+	}
+	if len(files) > w.maxFiles {
+		// Refuse before writing, so the call gets an error reply instead
+		// of a dropped connection.
+		return nil, nil, fmt.Errorf("varlink: %s reply carries %d files, limit is %d: %w", w.call.method, len(files), w.maxFiles, ErrTooManyFiles)
 	}
 	if len(params) == 0 || string(params) == "null" {
 		params = json.RawMessage("{}")
@@ -792,8 +883,8 @@ func (w *replyWriter) encode(v any) (*serverReply, []*os.File, error) {
 	return &serverReply{Parameters: params}, files, nil
 }
 
-// emit writes one reply and gives up the server's copies of its files.
-func (w *replyWriter) emit(r *serverReply, files []*os.File, continues bool) error {
+// emitLocked writes one reply and gives up the server's copies of its files.
+func (w *replyWriter) emitLocked(r *serverReply, files []*os.File, continues bool) error {
 	defer wire.CloseFiles(files)
 	if !continues {
 		w.finished = true
@@ -809,13 +900,23 @@ func (w *replyWriter) emit(r *serverReply, files []*os.File, continues bool) err
 	return nil
 }
 
-func (w *replyWriter) flushPending(continues bool) error {
+func (w *replyWriter) flushPendingLocked(continues bool) error {
 	if w.pending == nil {
 		return nil
 	}
 	r, files := w.pending, w.pfiles
 	w.pending, w.pfiles = nil, nil
-	return w.emit(r, files, continues)
+	return w.emitLocked(r, files, continues)
+}
+
+func (w *replyWriter) usableLocked() error {
+	switch {
+	case w.closed:
+		return errCallOver
+	case w.broken:
+		return errStreamClosed
+	}
+	return nil
 }
 
 // final sends a single reply.
@@ -824,55 +925,91 @@ func (w *replyWriter) final(v any) error {
 	if err != nil {
 		return err
 	}
-	return w.emit(r, files, false)
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if err := w.usableLocked(); err != nil {
+		wire.CloseFiles(files)
+		return err
+	}
+	return w.emitLocked(r, files, false)
 }
 
 // send sends one streamed value.
 func (w *replyWriter) send(v any) error {
-	switch {
-	case w.broken:
-		return errStreamClosed
-	case w.finished:
-		return fmt.Errorf("varlink: %s: only one reply allowed without 'more'", w.call.method)
-	}
 	r, files, err := w.encode(v)
 	if err != nil {
 		return err
+	}
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if err := w.usableLocked(); err != nil {
+		wire.CloseFiles(files)
+		return err
+	}
+	if w.finished {
+		wire.CloseFiles(files)
+		return errSingleReply
 	}
 	w.sent++
 	switch {
 	case !w.more:
 		// AllowSingle (or oneway): the first value is the only reply.
-		return w.emit(r, files, false)
+		return w.emitLocked(r, files, false)
 	case w.holdLast:
-		if err := w.flushPending(true); err != nil {
+		if err := w.flushPendingLocked(true); err != nil {
 			wire.CloseFiles(files)
 			return err
 		}
 		w.pending, w.pfiles = r, files
 		return nil
 	default:
-		return w.emit(r, files, true)
+		return w.emitLocked(r, files, true)
 	}
 }
 
 // finish ends a stream with its final reply: the held-back value under
 // LastIsFinal, else an empty reply.
 func (w *replyWriter) finish() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if err := w.usableLocked(); err != nil {
+		return err
+	}
 	if w.finished {
 		return nil
 	}
 	if w.pending != nil {
-		return w.flushPending(false)
+		return w.flushPendingLocked(false)
 	}
-	return w.emit(&serverReply{Parameters: json.RawMessage("{}")}, nil, false)
+	return w.emitLocked(&serverReply{Parameters: json.RawMessage("{}")}, nil, false)
 }
 
-// drop runs before an error reply: under LastIsFinal a held-back value
-// still reaches a "more" client, as a continued reply.
+func (w *replyWriter) abandon() {
+	w.mu.Lock()
+	w.abandoned = true
+	w.mu.Unlock()
+}
+
+// close ends the call for the handler: later sends fail. A value still
+// held back by an abandoned call is discarded.
+func (w *replyWriter) close() (finished, broken, abandoned bool) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.closed = true
+	if w.abandoned {
+		wire.CloseFiles(w.pfiles)
+		w.pending, w.pfiles = nil, nil
+	}
+	return w.finished, w.broken, w.abandoned
+}
+
+// drop runs before an error reply, after close: under LastIsFinal a held
+// value still reaches a "more" client, as a continued reply.
 func (w *replyWriter) drop() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	if w.pending != nil && w.more && !w.broken {
-		_ = w.flushPending(true)
+		_ = w.flushPendingLocked(true)
 		return
 	}
 	wire.CloseFiles(w.pfiles)

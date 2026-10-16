@@ -546,8 +546,10 @@ func TestServerShutdownEndsStreams(t *testing.T) {
 	ts.cancel()
 	select {
 	case err := <-got:
-		if err != nil {
-			t.Fatalf("stream ended with %v, want a clean final reply", err)
+		// The handler returned because shutdown cancelled it, so the server
+		// closes the connection instead of inventing a final reply.
+		if err == nil {
+			t.Fatal("stream ended with a reply, want the connection closed")
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("stream did not end at shutdown")

@@ -51,7 +51,9 @@ Each connection has a reader goroutine and a dispatcher. Calls on one
 connection run one at a time, in order, so a client may pipeline calls and get
 replies back in the same order. Different connections run concurrently. The
 reader keeps reading while a handler runs, so a client that disconnects
-cancels its handler's `ctx` right away.
+cancels its handler's `ctx` right away. A client that only closes its write
+side after sending its calls (as `socat` or a shell pipe does) is still
+answered; the connection closes once its queued calls are done.
 
 ## Registering interfaces and handlers
 
@@ -148,6 +150,17 @@ whether the stream is a finite list or an open-ended feed:
     }, varlink.LastIsFinal())
     ```
 
+!!! warning "Only send while the handler runs"
+
+    `send` fails once the handler has returned, so a goroutine the handler
+    started cannot write into a later call's replies. Wait for such
+    goroutines before returning.
+
+If the handler's `ctx` ends (the client disconnected or the server is
+shutting down) and it returns, the server closes the connection without a
+final reply, as sd-varlink does, rather than end the stream with a reply
+the client did not expect.
+
 A call to a streaming method without the `more` flag gets
 `org.varlink.service.ExpectedMore`. Add `varlink.AllowSingle()` to answer such
 calls with the first value sent instead. Methods the IDL marks
@@ -215,7 +228,9 @@ tagged `varlink:"name,fd"` in `In` and `Out`.
 
 - Files a handler receives are its to close.
 - Files in a reply are closed by the server once they are sent, including when
-  the client has gone away.
+  the client has gone away. A reply with more files than
+  `WithServerMaxFiles` allows is refused before anything is written: the call
+  gets `io.systemd.System` `EIO` and the connection stays up.
 - Descriptors no field claims are closed; the per-message limit is
   `varlink.WithServerMaxFiles` (default 16).
 
@@ -234,7 +249,10 @@ if errors.Is(err, varlink.ErrNotActivated) {
 - **`varlink.Listen(path, opts...)`** creates missing parent directories
   (`0755`), replaces a stale socket file left by a crashed run, refuses a path
   where another server is listening, and sets the socket mode (default `0660`)
-  and optional owner. The file is removed when the server stops.
+  and optional owner. The socket is created with its final permissions in a
+  private directory and renamed into place, and a `.<name>.lock` file next to
+  it serializes concurrent starts. The socket file is removed when the server
+  stops.
 - **`varlink.ListenActivated(name)`** adopts a socket from `$LISTEN_FDS`. With
   several sockets, `name` picks one by its `FileDescriptorName=`, so one daemon
   can serve, say, an API socket and a `/run/systemd/report/` metrics socket.
@@ -258,7 +276,7 @@ ExecStart=/usr/bin/queued
 ```mermaid
 flowchart LR
     A["ctx passed to Serve ends"] --> B["listener closes:<br/>no new connections"]
-    B --> C["streaming handlers'<br/>ctx is cancelled"]
+    B --> C["streaming handlers'<br/>ctx is cancelled;<br/>their connections close"]
     B --> D["in-flight calls finish<br/>(grace period, default 5 s)"]
     D --> E["remaining connections<br/>closed"]
     C --> E
@@ -276,7 +294,7 @@ cannot be stopped; `Serve` logs a warning and returns without them.
 | --- | --- | --- |
 | `WithServerMaxFrameSize(n)` | 16 MiB | Larger calls get `io.systemd.System` `ENOBUFS` and the connection closes |
 | `WithServerMaxFiles(n)` | 16 | Descriptors accepted with one read, and sent with one reply |
-| `WithMaxConnections(n)` | 256 | Connections beyond this are closed on accept |
+| `WithMaxConnections(n)` | 256 | Connections beyond this are closed on accept. Temporary accept failures (such as running out of descriptors) are retried with backoff |
 | `WithIdleTimeout(d)` | off | Close connections with no call in flight for `d` |
 | `WithShutdownGrace(d)` | 5 s | How long in-flight calls may run after shutdown begins |
 | `WithLogger(l)` | `slog.Default()` | Where handler errors, panics and protocol problems go. Parameters are never logged |

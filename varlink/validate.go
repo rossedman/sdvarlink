@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/rossedman/sdvarlink/idl"
@@ -92,10 +93,11 @@ func (vc validator) value(t *idl.Type, v any) error {
 			return fmt.Errorf("expected int")
 		}
 		if _, err := n.Int64(); err != nil {
-			if strings.ContainsAny(n.String(), ".eE-") {
+			// Unsigned values up to 2^64-1 are allowed, as in sd-varlink;
+			// fractions, exponents and anything larger are not ints.
+			if _, uerr := strconv.ParseUint(n.String(), 10, 64); uerr != nil {
 				return fmt.Errorf("expected int, got %s", n)
 			}
-			// Large unsigned values are allowed, as in sd-varlink.
 		}
 	case idl.Float:
 		if _, ok := v.(json.Number); !ok {
@@ -172,6 +174,7 @@ func (vc validator) value(t *idl.Type, v any) error {
 // method's IDL, so mismatches fail at startup instead of reaching clients.
 
 var (
+	jsonNumberType  = reflect.TypeOf(json.Number(""))
 	rawMessageType  = reflect.TypeOf(json.RawMessage(nil))
 	marshalerType   = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
 	unmarshalerType = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
@@ -221,8 +224,12 @@ func (tc typeChecker) check(g reflect.Type, t *idl.Type, path string) error {
 	if g == rawMessageType || g.Kind() == reflect.Interface {
 		return nil // raw JSON accepts anything
 	}
-	// Custom (un)marshalers other than structs are trusted.
-	if g.Kind() != reflect.Struct && (g.Implements(marshalerType) || reflect.PointerTo(g).Implements(unmarshalerType)) {
+	if g == jsonNumberType && (t.Kind == idl.Int || t.Kind == idl.Float) {
+		return nil
+	}
+	// A type with its own JSON encoding (time.Time, *big.Int, …) is trusted
+	// for anything but an IDL struct, whose fields are checked below.
+	if t.Kind != idl.Struct && (g.Implements(marshalerType) || reflect.PointerTo(g).Implements(unmarshalerType)) {
 		return nil
 	}
 	switch t.Kind {
@@ -262,12 +269,16 @@ func (tc typeChecker) check(g reflect.Type, t *idl.Type, path string) error {
 		}
 		return tc.check(g.Elem(), t.Elem, path+"[string]")
 	case idl.Struct:
+		if g.Kind() == reflect.Map && g.Key().Kind() == reflect.String {
+			return nil // a map can hold any fields; nothing to check
+		}
 		if g.Kind() != reflect.Struct {
 			return where("IDL struct, Go %s", g)
 		}
-		goFields := map[string]reflect.Type{}
+		goFields := map[string]fieldMeta{}
 		collectFields(g, goFields)
-		for name, ft := range goFields {
+		for name, meta := range goFields {
+			ft := meta.typ
 			var def *idl.Field
 			for _, f := range t.Fields {
 				if f.Name == name {
@@ -282,6 +293,11 @@ func (tc typeChecker) check(g reflect.Type, t *idl.Type, path string) error {
 					return where("fd field %q must be an int in the IDL", name)
 				}
 				continue
+			}
+			if tc.output && def.Type.Kind != idl.Nullable && (meta.omitempty || (ft.Kind() == reflect.Pointer && !customJSON(ft))) {
+				// A zero value would be omitted, or a nil pointer sent as
+				// null, and clients reject a required field that is missing.
+				return where("required IDL field %q must not be a pointer or omitempty in a reply type", name)
 			}
 			if err := tc.check(ft, def.Type, join(path, name)); err != nil {
 				return err
@@ -298,6 +314,12 @@ func (tc typeChecker) check(g reflect.Type, t *idl.Type, path string) error {
 	return nil
 }
 
+// customJSON reports whether t encodes itself (time.Time, *big.Int, …);
+// such pointers are the type's natural form, so they are trusted.
+func customJSON(t reflect.Type) bool {
+	return t.Implements(marshalerType) || reflect.PointerTo(t).Implements(unmarshalerType)
+}
+
 func nonNull(t *idl.Type) *idl.Type {
 	if t.Kind == idl.Nullable {
 		return t.Elem
@@ -312,19 +334,24 @@ func join(path, name string) string {
 	return path + "." + name
 }
 
+type fieldMeta struct {
+	typ       reflect.Type
+	omitempty bool
+}
+
 // collectFields maps JSON field names to Go types, flattening embedded
 // structs. fd fields map to *os.File.
-func collectFields(g reflect.Type, out map[string]reflect.Type) {
+func collectFields(g reflect.Type, out map[string]fieldMeta) {
 	for i := 0; i < g.NumField(); i++ {
 		sf := g.Field(i)
 		if tag, ok := sf.Tag.Lookup("varlink"); ok {
 			if name, opts, _ := strings.Cut(tag, ","); opts == "fd" && sf.Type == fileType {
-				out[name] = fileType
+				out[name] = fieldMeta{typ: fileType}
 				continue
 			}
 		}
 		jt := sf.Tag.Get("json")
-		name, _, _ := strings.Cut(jt, ",")
+		name, opts, _ := strings.Cut(jt, ",")
 		if name == "-" {
 			continue
 		}
@@ -344,6 +371,6 @@ func collectFields(g reflect.Type, out map[string]reflect.Type) {
 		if name == "" {
 			name = sf.Name
 		}
-		out[name] = sf.Type
+		out[name] = fieldMeta{typ: sf.Type, omitempty: strings.Contains(","+opts+",", ",omitempty,")}
 	}
 }
