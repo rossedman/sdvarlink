@@ -31,7 +31,7 @@ jobs:
             image: fedora:rawhide
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - name: Build static test binary

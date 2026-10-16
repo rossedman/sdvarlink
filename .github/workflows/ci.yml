@@ -23,7 +23,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
       - name: Unit tests (race)
@@ -43,7 +43,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       # Dial to systemd returns ErrUnsupported off Linux; the core and the
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - run: |
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           # golangci-lint must be built with a Go at least as new as the one
           # it type-checks; lint at the module's minimum Go version.
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - run: make check-generated
