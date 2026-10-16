@@ -36,7 +36,7 @@ jobs:
           go build ./... && go test ./...
           prev=$(ls -d idl/v* | sed 's#idl/v##' | sort -n | tail -2 | head -1)
           go run ./cmd/sdvarlink-gen diff "$prev" ${{ steps.latest.outputs.version }} > /tmp/api-diff.md
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         if: steps.latest.outputs.new == 'true'
         with:
           branch: idl/systemd-v${{ steps.latest.outputs.version }}
