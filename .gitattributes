@@ -1,0 +1,7 @@
+# Generated code: collapsed in diffs, excluded from language stats.
+systemd/v*/** linguist-generated=true
+systemd/latest/** linguist-generated=true
+docs/reference/interfaces/** linguist-generated=true
+docs/reference/interfaces.md linguist-generated=true
+docs/reference/api-changes.md linguist-generated=true
+idl/v*/*.varlink linguist-generated=true

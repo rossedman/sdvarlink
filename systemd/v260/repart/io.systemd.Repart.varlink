@@ -1,0 +1,109 @@
+# API for declaratively re-partitioning disks using systemd-repart.
+interface io.systemd.Repart
+
+# Behaviors for disks that are completely empty (i.e. don't have a partition table yet)
+type EmptyMode(
+	# Refuse to operate on disks without an existing partition table
+	refuse,
+	# Create a new partition table if one doesn't already exist on disk
+	allow,
+	# Refuse to operate on disks with an existing partition table, and create a new table if none exists
+	require,
+	# Always create a new partition table, potentially overwriting an existing table
+	force
+)
+
+# Progress phase identifiers. Note that we might add more phases here, and thus identifiers. Frontends can choose to display the phase to the user in some human readable form, or not do that, but if they do it and they receive a notification for a so far unknown phase, they should just ignore it.
+type ProgressPhase(
+	loading_definitions,
+	loading_table,
+	opening_copy_block_sources,
+	acquiring_partition_labels,
+	minimizing,
+	placing,
+	wiping_disk,
+	wiping_partition,
+	copying_partition,
+	formatting_partition,
+	adjusting_partition,
+	writing_table,
+	rereading_table
+)
+
+# Invoke the actual repartitioning operation, either in dry-run mode or for real. If invoked with 'more' enabled will report progress, otherwise will just report completion.
+# [Supports 'more' flag]
+method Run(
+	# Full path to the block device node to operate on. If omitted, dryRun must be true, in which case the minimal disk size is determined.
+	node: ?string,
+	# Decides whether to install the OS in addition to what is already on it, or if it shall be erased.
+	empty: EmptyMode,
+	# If true this will ponder if the installation would fit, but does not actually write anything to disk. Must be set to false to actually make changes.
+	dryRun: bool,
+	# The seed value to derive partition and file system UUIDs from
+	seed: ?string,
+	# Path to directory containing definition files.
+	definitions: []string,
+	# If true, automatically defer creation of all partitions whose label is "empty".
+	deferPartitionsEmpty: ?bool,
+	# If true, automatically defer creation of all partitions which are marked for factory reset.
+	deferPartitionsFactoryReset: ?bool
+) -> (
+	# In dry-run mode returns the minimal disk size required.
+	minimalSizeBytes: ?int,
+	# In dry-run mode returns the size of the selected block device.
+	currentSizeBytes: ?int,
+	# If used with the 'more' flag, a phase identifier is sent in progress updates.
+	phase: ?ProgressPhase,
+	# If used with the 'more' flag, an object identifier string is sent in progress updates.
+	object: ?string,
+	# If used with the 'more' flag, a progress percentrage (specific to the work done for the specified phase+object is sent in progress updates.
+	progress: ?int
+)
+
+# Return a list of candidate block devices, i.e. that support partition scanning and other requirements for successful operation.
+# [Requires 'more' flag]
+method ListCandidateDevices(
+	# Control whether to include the root disk of the currently booted OS in the list. Defaults to false, i.e. the root disk is included.
+	ignoreRoot: ?bool,
+	# Control whether to include block devices with zero size in the list, i.e. typically block devices without any inserted medium. Defaults to false, i.e. empty block devices are included.
+	ignoreEmpty: ?bool
+) -> (
+	# The device node path of the block device.
+	node: string,
+	# List of symlinks pointing to the device node, if any.
+	symlinks: ?[]string,
+	# The Linux kernel disk sequence number identifying the medium.
+	diskseq: ?int,
+	# The size of the block device in bytes.
+	sizeBytes: ?int,
+	# The device vendor string if known
+	vendor: ?string,
+	# The device model string if known
+	model: ?string,
+	# The subsystem the block device belongs to if known
+	subsystem: ?string
+)
+
+# An incompatible disk label present, and not told to erase it.
+error ConflictingDiskLabelPresent()
+
+# The target disk has insufficient free space to fit all requested partitions. (But the disk would fit, if emptied.)
+error InsufficientFreeSpace(
+	# Minimal size of the disk required for the installation.
+	minimalSizeBytes: ?int,
+	# Additional free space needed on the selected disk.
+	needFreeBytes: ?int,
+	# Size of the selected block device.
+	currentSizeBytes: ?int
+)
+
+# The target disk is too small to fit the installation. (Regardless if emptied or not.)
+error DiskTooSmall(
+	# Minimal size of the disk required for the installation.
+	minimalSizeBytes: ?int,
+	# Actual size of the selected block device.
+	currentSizeBytes: ?int
+)
+
+# Not a single candidate block device could be found.
+error NoCandidateDevices()

@@ -1,0 +1,156 @@
+# Boot Loader control APIs
+interface io.systemd.BootControl
+
+# The type of a boot entry
+type BootEntryType(
+	# Boot Loader Specification Type #1 entries (.conf files)
+	type1,
+	# Boot Loader Specification Type #2 entries (UKIs)
+	type2,
+	# Additional entries reported by boot loader
+	loader,
+	# Automatically generated entries
+	auto
+)
+
+# The source of a boot entry
+type BootEntrySource(
+	# Boot entry found in EFI system partition (ESP)
+	esp,
+	# Boot entry found in XBOOTLDR partition
+	xbootldr
+)
+
+# The operation to execute
+type Operation(
+	# Install the boot loader afresh, creating everything it needs
+	new,
+	# Just update existing boot loader binaries
+	update
+)
+
+# The boot entry token type to use.
+type BootEntryTokenType(
+	# Pick identifiers for type #1 boot entries based on /etc/machine-id
+	machine_id,
+	# Pick identifiers for type #1 boot entries based on the IMAGE_ID= field from /etc/os-release
+	os_image_id,
+	# Pick identifiers for type #1 boot entries based on the ID= field from /etc/os-release
+	os_id,
+	# Pick identifiers for type #1 boot entries based on a manually chosen string
+	literal,
+	# Choose automatically how to pick identifiers for type #1 boot entries
+	auto
+)
+
+# A structure encapsulating an addon of a boot entry
+type BootEntryAddon(
+	# The location of the global addon.
+	globalAddon: ?string,
+	# The location of the local addon.
+	localAddon: ?string,
+	# The command line options by the addon.
+	options: string
+)
+
+# A structure encapsulating a boot entry
+type BootEntry(
+	type: BootEntryType,
+	# The source of the entry
+	source: BootEntrySource,
+	# The string identifier of the entry
+	id: ?string,
+	# Path to the primary definition file for the entry
+	path: ?string,
+	# Directory path of the file system root the entry was found on
+	root: ?string,
+	# The entry's title string
+	title: ?string,
+	# The possibly mangled/augmented title to show for the entry
+	showTitle: ?string,
+	# An explicitly configured sorting key for the enry
+	sortKey: ?string,
+	# The version of the entry
+	version: ?string,
+	# Machine ID of the OS installation belonging to the entry, if known
+	machineId: ?string,
+	# EFI architecture name for this entry
+	architecture: ?string,
+	# Command line options to pass to the invoked kernel or EFI binary
+	options: ?string,
+	# Path to the Linux kernel to invoke, relative to the root directory of the file system containing the entry file
+	linux: ?string,
+	# Path to the EFI binary to invoke, relative to the root directory of the file system containing the entry file
+	efi: ?string,
+	# Path to an UKI EFI binary to invoke, relative to the root directory of the file system containing the entry file
+	uki: ?string,
+	# An UKI profile index to invoke. If not specified defaults to the first profile.
+	profile: ?int,
+	# Path to the initrd image to pass to the invoked kernel, relative to the root directory of the file system containing the entry file
+	initrd: ?[]string,
+	# Devicetree file to pass to the invoked kernel, relative to the root directory of the file system containing the entry file
+	devicetree: ?string,
+	# Devicetree overlay file to pass to the invoked kernel, relative to the root directory of the file system containing the entry file
+	devicetreeOverlay: ?[]string,
+	# Indicates whether the boot loader reported this entry on the current boot
+	isReported: bool,
+	# Indicates the number of tries left for this boot entry before it is assumed to be not working.
+	triesLeft: ?int,
+	# Indicates the number of unsuccessful tries already made for this boot entry.
+	triesDone: ?int,
+	# Indicates whether this entry is the default entry.
+	isDefault: ?bool,
+	# Indicates whether this entry has been booted.
+	isSelected: ?bool,
+	# Addon images of the entry.
+	addons: ?[]BootEntryAddon,
+	# Command line options of the entry.
+	cmdline: ?string
+)
+
+# Enumerates boot entries. Method call must be called with 'more' flag set. Each response returns one entry. If no entries are defined returns the NoSuchBootEntry error.
+# [Requires 'more' flag]
+method ListBootEntries() -> (
+	# A boot menu entry structure
+	entry: BootEntry
+)
+
+# Sets the reboot-to-firmware-UI flag of the firmware, if this concept exists. Returns the RebootToFirmwareNotSupported error if not.
+method SetRebootToFirmware(
+	# The new value of the reboot-to-firmware-UI flag
+	state: bool
+) -> ()
+
+# Gets the current state of the reboot-to-firmware-UI flag of the firmware, if this concept exists. Returns the RebootToFirmwareNotSupported error if not.
+method GetRebootToFirmware() -> (
+	# The current state of the reboot-to-firmware-UI flag
+	state: bool
+)
+
+# Install the boot loader on the ESP.
+method Install(
+	# Operation, either 'new' or 'update'
+	operation: Operation,
+	# If true, continue on various failures
+	graceful: ?bool,
+	# Index into array of file descriptors passed along with this message, pointing to file descriptor to root file system to operate on
+	rootFileDescriptor: ?int,
+	# Root directory to operate relative to. If both this and rootFileDescriptor is specified, this is purely informational. If only this is specified, it is what will be used.
+	rootDirectory: ?string,
+	# Selects how to identify boot entries
+	bootEntryTokenType: ?BootEntryTokenType,
+	# If true the boot loader will be registered in an EFI boot entry via EFI variables, otherwise this is omitted
+	touchVariables: ?bool
+) -> ()
+
+# SetRebootToFirmware() and GetRebootToFirmware() return this if the firmware does not actually support the reboot-to-firmware-UI concept.
+error RebootToFirmwareNotSupported()
+
+# No boot entry defined.
+error NoSuchBootEntry()
+
+# No EFI System Partition (ESP) found.
+error NoESPFound()
+
+# The select boot entry token could not be determined.
+error BootEntryTokenUnavailable()

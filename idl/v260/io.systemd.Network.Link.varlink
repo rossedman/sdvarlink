@@ -1,0 +1,21 @@
+interface io.systemd.Network.Link
+
+# Bring the specified link up.
+method Up(
+	# Index of the interface. If specified together with InterfaceName, both must reference the same link.
+	InterfaceIndex: ?int,
+	# Name of the interface. If specified together with InterfaceIndex, both must reference the same link.
+	InterfaceName: ?string,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> ()
+
+# Bring the specified link down.
+method Down(
+	# Index of the interface. If specified together with InterfaceName, both must reference the same link.
+	InterfaceIndex: ?int,
+	# Name of the interface. If specified together with InterfaceIndex, both must reference the same link.
+	InterfaceName: ?string,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> ()

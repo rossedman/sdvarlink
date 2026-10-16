@@ -1,0 +1,208 @@
+interface io.systemd.Manager
+
+type ManagerContext(
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#LogColor=
+	ShowStatus: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#LogColor=
+	LogLevel: LogLevelStruct,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#LogColor=
+	LogTarget: string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#ManagerEnvironment=
+	Environment: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultStandardOutput=
+	DefaultStandardOutput: string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultStandardError=
+	DefaultStandardError: string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#ServiceWatchdogs=
+	ServiceWatchdogs: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTimerAccuracySec=
+	DefaultTimerAccuracyUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTimeoutStartSec=
+	DefaultTimeoutStartUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTimeoutStopSec=
+	DefaultTimeoutStopUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTimeoutAbortSec=
+	DefaultTimeoutAbortUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultDeviceTimeoutSec=
+	DefaultDeviceTimeoutUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultRestartSec=
+	DefaultRestartUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultStartLimit=
+	DefaultStartLimit: ?RateLimit,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultIOAccounting=
+	DefaultIOAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultIPAccounting=
+	DefaultIPAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultMemoryAccounting=
+	DefaultMemoryAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTasksAccounting=
+	DefaultTasksAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultLimitCPU=
+	DefaultLimits: ResourceLimitTable,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultTasksMax=
+	DefaultTasksMax: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultMemoryPressureThresholdUSec=
+	DefaultMemoryPressureThresholdUSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultMemoryPressureWatch=
+	DefaultMemoryPressureWatch: string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#RuntimeWatchdogSec=
+	RuntimeWatchdogUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#RebootWatchdogSec=
+	RebootWatchdogUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#KExecWatchdogSec=
+	KExecWatchdogUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#RuntimeWatchdogPreSec=
+	RuntimeWatchdogPreUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#RuntimeWatchdogPreGovernor=
+	RuntimeWatchdogPreGovernor: ?string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#WatchdogDevice=
+	WatchdogDevice: ?string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#TimerSlackNSec=
+	TimerSlackNSec: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultOOMPolicy=
+	DefaultOOMPolicy: string,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultOOMScoreAdjust=
+	DefaultOOMScoreAdjust: int,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#DefaultRestrictSUIDSGID=
+	DefaultRestrictSUIDSGID: bool,
+	# https://www.freedesktop.org/software/systemd/man/258/systemd-system.conf.html#CtrlAltDelBurstAction=
+	CtrlAltDelBurstAction: string,
+	# The console on which systemd asks for confirmation when spawning processes
+	ConfirmSpawn: ?string,
+	# Root of the control group hierarchy that the manager is running in
+	ControlGroup: ?string
+)
+
+type ManagerRuntime(
+	# The version string of the running systemd instance
+	Version: string,
+	# A short ID string describing the architecture the systemd instance is running on
+	Architecture: string,
+	# The features that have been enabled and disabled for this build
+	Features: string,
+	# An array of strings describing the taints applied to the running system
+	Taints: ?[]string,
+	# The unit search path
+	UnitPath: []string,
+	# A short ID string describing the virtualization technology the system runs in
+	Virtualization: string,
+	# A short ID string describing the confidential virtualization technology the system runs in
+	ConfidentialVirtualization: string,
+	# Timestamp when the firmware first began execution
+	FirmwareTimestamp: ?Timestamp,
+	# Timestamp when the boot loader first began execution
+	LoaderTimestamp: ?Timestamp,
+	# Timestamp when the kernel first began execution
+	KernelTimestamp: ?Timestamp,
+	# Timestamp when the initrd first began execution
+	InitRDTimestamp: ?Timestamp,
+	# Timestamp when the initrd first began execution
+	UserspaceTimestamp: ?Timestamp,
+	# Timestamp when the system finished booting up
+	FinishTimestamp: ?Timestamp,
+	# Timestamp when the manager started uploading security policies to the kernel
+	SecurityStartTimestamp: ?Timestamp,
+	# Timestamp when the manager finished uploading security policies to the kernel
+	SecurityFinishTimestamp: ?Timestamp,
+	# Timestamp when the manager started executing generators
+	GeneratorsStartTimestamp: ?Timestamp,
+	# Timestamp when the manager finished executing generators
+	GeneratorsFinishTimestamp: ?Timestamp,
+	# Timestamp when the manager first started loading units
+	UnitsLoadStartTimestamp: ?Timestamp,
+	# Timestamp when the manager first finished loading units
+	UnitsLoadFinishTimestamp: ?Timestamp,
+	# Timestamp when the manager last started loading units
+	UnitsLoadTimestamp: ?Timestamp,
+	# Timestamp when the manager started uploading security policies to the kernel in the initrd
+	InitRDSecurityStartTimestamp: ?Timestamp,
+	# Timestamp when the manager finished uploading security policies to the kernel in the initrd
+	InitRDSecurityFinishTimestamp: ?Timestamp,
+	# Timestamp when the manager started executing generators in the initrd
+	InitRDGeneratorsStartTimestamp: ?Timestamp,
+	# Timestamp when the manager finished executing generators in the initrd
+	InitRDGeneratorsFinishTimestamp: ?Timestamp,
+	# Timestamp when the manager first started loading units in the initrd
+	InitRDUnitsLoadStartTimestamp: ?Timestamp,
+	# Timestamp when the manager first finished loading units in the initrd
+	InitRDUnitsLoadFinishTimestamp: ?Timestamp,
+	# The amount of unique unit names currently loaded
+	NNames: int,
+	# The amount of failed units
+	NFailedUnits: int,
+	# The amount of currently queued jobs
+	NJobs: int,
+	# The total amount of queued jobs
+	NInstalledJobs: int,
+	# The total amount of failed jobs
+	NFailedJobs: int,
+	# Boot progress as a floating point value between 0.0 and 1.0
+	Progress: float,
+	# Timestamp when the hardware watchdog was last pinged
+	WatchdogLastPingTimestamp: ?Timestamp,
+	# Current state of the system
+	SystemState: string,
+	# Exit code of the manager
+	ExitCode: int,
+	# Encodes how many soft-reboots were successfully completed
+	SoftRebootsCount: int
+)
+
+type Timestamp(
+	# Timestamp in µs in the CLOCK_REALTIME clock (wallclock)
+	realtime: ?int,
+	# Timestamp in µs in the CLOCK_MONOTONIC clock
+	monotonic: ?int
+)
+
+type ResourceLimit(
+	# The soft resource limit. RLIM_INFINITY is mapped to unset value
+	soft: ?int,
+	# The hard resource limit. RLIM_INFINITY is mapped to unset value
+	hard: ?int
+)
+
+type ResourceLimitTable(
+	# See setrlimit(2) for details
+	CPU: ?ResourceLimit,
+	FSIZE: ?ResourceLimit,
+	DATA: ?ResourceLimit,
+	STACK: ?ResourceLimit,
+	CORE: ?ResourceLimit,
+	RSS: ?ResourceLimit,
+	NOFILE: ?ResourceLimit,
+	AS: ?ResourceLimit,
+	NPROC: ?ResourceLimit,
+	MEMLOCK: ?ResourceLimit,
+	LOCKS: ?ResourceLimit,
+	SIGPENDING: ?ResourceLimit,
+	MSGQUEUE: ?ResourceLimit,
+	NICE: ?ResourceLimit,
+	RTPRIO: ?ResourceLimit,
+	RTTIME: ?ResourceLimit
+)
+
+type RateLimit(
+	# The ratelimit interval
+	intervalUSec: ?int,
+	# The ratelimit burst
+	burst: ?int
+)
+
+type LogLevelStruct(
+	# 'console' target log level
+	console: string,
+	# 'kmsg' target log level
+	kmsg: string,
+	# 'syslog' target log level
+	syslog: string,
+	# 'journal' target log level
+	journal: string
+)
+
+method Describe() -> (
+	# Configuration of the manager
+	context: ManagerContext,
+	# Runtime information of the manager
+	runtime: ManagerRuntime
+)

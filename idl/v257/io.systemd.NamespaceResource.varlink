@@ -1,0 +1,51 @@
+interface io.systemd.NamespaceResource
+
+method AllocateUserRange(
+	name: string,
+	size: int,
+	target: ?int,
+	userNamespaceFileDescriptor: int
+) -> ()
+
+method RegisterUserNamespace(
+	name: string,
+	userNamespaceFileDescriptor: int
+) -> ()
+
+method AddMountToUserNamespace(
+	userNamespaceFileDescriptor: int,
+	mountFileDescriptor: int
+) -> ()
+
+method AddControlGroupToUserNamespace(
+	userNamespaceFileDescriptor: int,
+	controlGroupFileDescriptor: int
+) -> ()
+
+method AddNetworkToUserNamespace(
+	userNamespaceFileDescriptor: int,
+	networkNamespaceFileDescriptor: int,
+	namespaceInterfaceName: ?string,
+	mode: string
+) -> (
+	hostInterfaceName: string,
+	namespaceInterfaceName: string
+)
+
+error UserNamespaceInterfaceNotSupported()
+
+error NameExists()
+
+error UserNamespaceExists()
+
+error DynamicRangeUnavailable()
+
+error NoDynamicRange()
+
+error UserNamespaceNotRegistered()
+
+error UserNamespaceWithoutUserRange()
+
+error TooManyControlGroups()
+
+error ControlGroupAlreadyAdded()

@@ -1,0 +1,13 @@
+interface io.systemd.oom
+
+type ControlGroup(
+	mode: string,
+	path: string,
+	property: string,
+	limit: ?int,
+	duration: ?int
+)
+
+method ReportManagedOOMCGroups(
+	cgroups: []ControlGroup
+) -> ()

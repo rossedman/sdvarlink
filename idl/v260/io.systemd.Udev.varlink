@@ -1,0 +1,32 @@
+# An interface for controlling systemd-udevd.
+interface io.systemd.Udev
+
+# Enable/disable trace logging.
+method SetTrace(
+	# Enable/disable.
+	enable: bool
+) -> ()
+
+# Sets the maximum number of child processes.
+method SetChildrenMax(
+	# The maximum number of child processes. When 0 is specified, the maximum is determined based on the system resources.
+	number: int
+) -> ()
+
+# Sets the global udev properties.
+method SetEnvironment(
+	# An array of global udev property assignments. Each string must be in KEY=VALUE style.
+	assignments: []string
+) -> ()
+
+# Revert previously set configurations.
+method Revert() -> ()
+
+# Starts processing of queued events.
+method StartExecQueue() -> ()
+
+# Stops processing of queued events.
+method StopExecQueue() -> ()
+
+# Terminates systemd-udevd. This exists for backward compatibility. Please consider to use 'systemctl stop systemd-udevd.service'.
+method Exit() -> ()

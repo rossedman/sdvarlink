@@ -1,0 +1,44 @@
+interface io.systemd.Hostname
+
+method Describe(
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> (
+	Hostname: string,
+	StaticHostname: ?string,
+	PrettyHostname: ?string,
+	DefaultHostname: ?string,
+	HostnameSource: string,
+	IconName: ?string,
+	Chassis: ?string,
+	# An unique identifier of the system chassis.
+	ChassisAssetTag: ?string,
+	Deployment: ?string,
+	Location: ?string,
+	KernelName: string,
+	KernelRelease: string,
+	KernelVersion: string,
+	# 'Pretty' name of the OS. This is the primary OS identifier that is suitable for presentation to the user. Typically includes a version too, but doesn't have to.
+	OperatingSystemPrettyName: ?string,
+	# 'Fancy' name of the OS; may contain non-ASCII Unicode chars, as well as basic ANSI sequences. This is similar to 'OperatingSystemPrettyName', but is preferably used on terminals that support ANSI sequences and full Unicode.
+	OperatingSystemFancyName: ?string,
+	OperatingSystemCPEName: ?string,
+	OperatingSystemHomeURL: ?string,
+	OperatingSystemSupportEnd: ?int,
+	OperatingSystemReleaseData: ?[]string,
+	OperatingSystemImageID: ?string,
+	OperatingSystemImageVersion: ?string,
+	MachineInformationData: ?[]string,
+	HardwareVendor: ?string,
+	HardwareModel: ?string,
+	HardwareSerial: ?string,
+	HardwareSKU: ?string,
+	HardwareVersion: ?string,
+	FirmwareVersion: ?string,
+	FirmwareVendor: ?string,
+	FirmwareDate: ?int,
+	MachineID: string,
+	BootID: string,
+	ProductUUID: ?string,
+	VSockCID: ?int
+)

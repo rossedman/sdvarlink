@@ -1,0 +1,49 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - errorlint
+    - misspell
+    - unconvert
+    - nolintlint
+    - copyloopvar
+    - gocritic
+  settings:
+    errcheck:
+      exclude-functions:
+        # Closing sockets and files we are done with; errors carry no signal.
+        - (*os.File).Close
+        - (*net.UnixConn).Close
+        - (*net.UnixListener).Close
+        - (net.Conn).SetDeadline
+        - (*net.UnixConn).SetDeadline
+        - (*github.com/rossedman/sdvarlink/varlink.Conn).Close
+        - (*github.com/rossedman/sdvarlink/varlink.Pool).Close
+        - (*github.com/rossedman/sdvarlink/internal/wire.Transport).Close
+    misspell:
+      ignore-rules:
+        - importd # the io.systemd.Import package, named after systemd-importd
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+        - singleCaseSwitch
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters: [errcheck, gocritic]
+      - path: examples/
+        linters: [errcheck, gocritic]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/rossedman/sdvarlink

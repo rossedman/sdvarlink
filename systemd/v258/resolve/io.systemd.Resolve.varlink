@@ -1,0 +1,259 @@
+interface io.systemd.Resolve
+
+# Describes the update flag for browsing services, indicating whether a service was added or removed during browsing.
+type BrowseServiceUpdateFlag(
+	# Indicates that the service was added.
+	added,
+	# Indicates that the service was removed.
+	removed
+)
+
+# Encapsulates a resolved address.
+type ResolvedAddress(
+	ifindex: ?int,
+	family: int,
+	address: []int
+)
+
+# Encapsulates a resolved host name.
+type ResolvedName(
+	ifindex: ?int,
+	name: string
+)
+
+# Encapsulates resolved service information.
+type ResolvedService(
+	priority: int,
+	weight: int,
+	port: int,
+	hostname: string,
+	canonicalName: ?string,
+	addresses: ?[]ResolvedAddress
+)
+
+# Encapsulates the canonical name, type and domain of a DNS-SD or simple SRV service. Note that due to CNAME redirections and similar, a named DNS-SD service might resolve to a canonical service that is an unnamed simple SRV service. Or in other words: resolving a named service might return an unnamed canonical service.
+type ResolvedCanonical(
+	# The DNS-SD name of the service. For simple SRV services this field is absent or null.
+	name: ?string,
+	type: string,
+	domain: string
+)
+
+# The 'key' part of a DNS resource record.
+type ResourceKey(
+	# The RR class, almost always IN, i.e 0x01.
+	class: int,
+	# The RR types, one of A, AAAA, PTR, …
+	type: int,
+	# The domain name.
+	name: string
+)
+
+# A full DNS resource record..
+type ResourceRecord(
+	key: ResourceKey,
+	priority: ?int,
+	weight: ?int,
+	port: ?int,
+	name: ?string,
+	cpu: ?string,
+	os: ?string,
+	items: ?[]string,
+	address: ?[]int,
+	mname: ?string,
+	rname: ?string,
+	serial: ?int,
+	refresh: ?int,
+	expire: ?int,
+	minimum: ?int,
+	exchange: ?string,
+	version: ?int,
+	size: ?int,
+	horiz_pre: ?int,
+	vert_pre: ?int,
+	latitude: ?int,
+	longitude: ?int,
+	altitude: ?int,
+	keyTag: ?int,
+	algorithm: ?int,
+	digestType: ?int,
+	digest: ?string,
+	fptype: ?int,
+	fingerprint: ?string,
+	flags: ?int,
+	protocol: ?int,
+	dnskey: ?string,
+	signer: ?string,
+	typeCovered: ?int,
+	labels: ?int,
+	originalTtl: ?int,
+	expiration: ?int,
+	inception: ?int,
+	signature: ?string,
+	nextDomain: ?string,
+	types: ?[]int,
+	iterations: ?int,
+	salt: ?string,
+	hash: ?string,
+	certUsage: ?int,
+	selector: ?int,
+	matchingType: ?int,
+	data: ?string,
+	tag: ?string,
+	value: ?string,
+	target: ?string,
+	svcparams: ?object,
+	order: ?int,
+	preference: ?int,
+	naptrFlags: ?string,
+	services: ?string,
+	regexp: ?string,
+	replacement: ?string
+)
+
+# Encapsulates information about a resolved DNS resource record
+type ResolvedRecord(
+	ifindex: ?int,
+	rr: ?ResourceRecord,
+	raw: string
+)
+
+# Encapsulates the service data obtained from browsing.
+type ServiceData(
+	updateFlag: BrowseServiceUpdateFlag,
+	# The address family of the service, one of AF_INET or AF_INET6.
+	family: int,
+	# The name of the service, e.g., 'My Service'. May be null if not specified.
+	name: ?string,
+	# The type of service, e.g., '_http._tcp'.
+	type: string,
+	# The domain in which the service resides, e.g., 'local'.
+	domain: string,
+	# The Linux interface index for the network interface associated with this service.
+	ifindex: int
+)
+
+# Resolves a hostname to one or more IP addresses.
+method ResolveHostname(
+	# The Linux interface index for the network interface to search on. Typically left unspecified, in order to search on all interfaces.
+	ifindex: ?int,
+	# The host name to resolve.
+	name: string,
+	# The address family to search for, one of AF_INET or AF_INET6.
+	family: ?int,
+	# Various search flags.
+	flags: ?int
+) -> (
+	# Array of resolved IP addresses
+	addresses: []ResolvedAddress,
+	# Canonical name of the host.
+	name: string,
+	# Various flags indicating details on discovered data.
+	flags: int
+)
+
+# Resolves an IP address to a hostname.
+method ResolveAddress(
+	# The Linux interface index for the network interface to search on. Typically left unspecified, in order to search on all interfaces.
+	ifindex: ?int,
+	# The address family of the specified address, one of AF_INET or AF_INET6.
+	family: int,
+	# The IP address to look up, either 4 or 16 integers (depending if an AF_INET or AF_INET6 address shall be resolved).
+	address: []int,
+	flags: ?int
+) -> (
+	names: []ResolvedName,
+	flags: int
+)
+
+# Resolves a named DNS-SD or unnamed simple SRV service.
+method ResolveService(
+	name: ?string,
+	type: ?string,
+	domain: string,
+	ifindex: ?int,
+	family: ?int,
+	flags: ?int
+) -> (
+	services: []ResolvedService,
+	txt: ?[]string,
+	canonical: ResolvedCanonical,
+	flags: int
+)
+
+# Resolves a domain name to one or more DNS resource records.
+method ResolveRecord(
+	ifindex: ?int,
+	name: string,
+	class: ?int,
+	type: int,
+	flags: ?int
+) -> (
+	rrs: []ResolvedRecord,
+	flags: int
+)
+
+# Starts browsing for DNS-SD services of specified type.
+# [Supports 'more' flag]
+method BrowseServices(
+	# The domain to browse for services. If null, the default browsing domain local is used.
+	domain: ?string,
+	# The service type to browse for (e.g., '_http._tcp').
+	type: ?string,
+	# The Linux interface index for the network interface to search on.
+	ifindex: ?int,
+	# Various browsing flags to modify the operation.
+	flags: ?int
+) -> (
+	# An array of service data containing information about discovered services.
+	browserServiceData: []ServiceData
+)
+
+error NoNameServers()
+
+error NoSuchResourceRecord()
+
+error QueryTimedOut()
+
+error MaxAttemptsReached()
+
+error InvalidReply()
+
+error QueryAborted()
+
+error QueryRefused()
+
+error DNSSECValidationFailed(
+	result: string,
+	extendedDNSErrorCode: ?int,
+	extendedDNSErrorMessage: ?string
+)
+
+error NoTrustAnchor()
+
+error ResourceRecordTypeUnsupported()
+
+error NetworkDown()
+
+error NoSource()
+
+error StubLoop()
+
+error DNSError(
+	rcode: int,
+	extendedDNSErrorCode: ?int,
+	extendedDNSErrorMessage: ?string
+)
+
+error CNAMELoop()
+
+error BadAddressSize()
+
+error ResourceRecordTypeInvalidForQuery()
+
+error ZoneTransfersNotPermitted()
+
+error ResourceRecordTypeObsolete()
+
+# The DNS resource records of the specified service are not consistent (e.g. lacks a DNS-SD service type when resolved).
+error InconsistentServiceRecords()

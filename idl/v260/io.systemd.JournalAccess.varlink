@@ -1,0 +1,28 @@
+# Journal log read APIs
+interface io.systemd.JournalAccess
+
+# Retrieve journal log entries, optionally filtered by unit, priority, etc.
+# [Requires 'more' flag]
+method GetEntries(
+	# Show messages for the specified systemd units (e.g. ['foo.service']).
+	units: ?[]string,
+	# UID to match user units for
+	uid: ?int,
+	# Show messages for the specified user units (e.g. ['foo.service']).
+	userUnits: ?[]string,
+	# If specified, shows the log data of the specified namespace, otherwise the default namespace.
+	namespace: ?string,
+	# Filter output by message priorities or priority ranges (i.e. between 0/'emerg' and 7/'debug')
+	priority: ?int,
+	# Maximum number of entries to return. Defaults to 100, capped at 10000.
+	limit: ?int
+) -> (
+	# The journal entry in flat JSON format, matching journalctl --output=json.
+	entry: object
+)
+
+# No matches found for specified unit patterns
+error NoMatches()
+
+# No journal entries matched the specified filters.
+error NoEntries()

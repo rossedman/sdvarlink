@@ -1,0 +1,70 @@
+# Boot Loader control APIs
+interface io.systemd.BootControl
+
+# The type of a boot entry
+type BootEntryType(
+	# Boot Loader Specification Type #1 entries (.conf files)
+	type1,
+	# Boot Loader Specification Type #2 entries (UKIs)
+	type2,
+	# Additional entries reported by boot loader
+	loader,
+	# Automatically generated entries
+	auto
+)
+
+# A structure encapsulating a boot entry
+type BootEntry(
+	type: BootEntryType,
+	# The string identifier of the entry
+	id: ?string,
+	path: ?string,
+	root: ?string,
+	title: ?string,
+	showTitle: ?string,
+	sortKey: ?string,
+	version: ?string,
+	machineId: ?string,
+	architecture: ?string,
+	options: ?string,
+	linux: ?string,
+	efi: ?string,
+	initrd: ?[]string,
+	devicetree: ?string,
+	devicetreeOverlay: ?[]string,
+	# Indicates whether the boot loader reported this entry on the current boot
+	isReported: bool,
+	# Indicates the number of tries left for this boot entry before it is assumed to be not working.
+	triesLeft: ?int,
+	# Indicates the number of unsuccessful tries already made for this boot entry.
+	triesDone: ?int,
+	# Indicates whether this entry is the default entry.
+	isDefault: ?bool,
+	# Indicates whether this entry has been booted.
+	isSelected: ?bool
+)
+
+# Enumerates boot entries. Method call must be called with 'more' flag set. Each response returns one entry. If no entries are defined returns the NoSuchBootEntry error.
+# [Requires 'more' flag]
+method ListBootEntries() -> (
+	# A boot menu entry structure
+	entry: ?BootEntry
+)
+
+# Sets the reboot-to-firmware-UI flag of the firmware, if this concept exists. Returns the RebootToFirmwareNotSupported error if not.
+method SetRebootToFirmware(
+	# The new value of the reboot-to-firmware-UI flag
+	state: bool
+) -> ()
+
+# Gets the current state of the reboot-to-firmware-UI flag of the firmware, if this concept exists. Returns the RebootToFirmwareNotSupported error if not.
+method GetRebootToFirmware() -> (
+	# The current state of the reboot-to-firmware-UI flag
+	state: bool
+)
+
+# SetRebootToFirmware() and GetRebootToFirmware() return this if the firmware does not actually support the reboot-to-firmware-UI concept.
+error RebootToFirmwareNotSupported()
+
+# No boot entry defined.
+error NoSuchBootEntry()

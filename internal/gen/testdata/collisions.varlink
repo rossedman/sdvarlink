@@ -1,0 +1,14 @@
+interface com.example.Coll
+
+type T(UnmarshalJSON: int, Extra: int, extra: string)
+
+# [Supports 'more' flag]
+method Foo() -> (t: T)
+
+method FooMore() -> ()
+
+method Close() -> ()
+
+method CloseMethod() -> ()
+
+error Is(Error: string, Is: int)

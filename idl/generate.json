@@ -1,0 +1,42 @@
+{
+  "module": "github.com/rossedman/sdvarlink",
+  "fdFieldSuffix": "FileDescriptor",
+  "unstable": [],
+  "sockets": {
+    "io.systemd.AskPassword": "/run/systemd/io.systemd.AskPassword",
+    "io.systemd.BootControl": "/run/systemd/io.systemd.BootControl",
+    "io.systemd.Credentials": "/run/systemd/io.systemd.Credentials",
+    "io.systemd.FactoryReset": "/run/systemd/io.systemd.FactoryReset",
+    "io.systemd.Hostname": "/run/systemd/io.systemd.Hostname",
+    "io.systemd.Import": "/run/systemd/io.systemd.Import",
+    "io.systemd.Journal": "/run/systemd/journal/io.systemd.journal",
+    "io.systemd.JournalAccess": "/run/systemd/io.systemd.JournalAccess",
+    "io.systemd.Login": "/run/systemd/io.systemd.Login",
+    "io.systemd.Machine": "/run/systemd/machine/io.systemd.Machine",
+    "io.systemd.MachineImage": "/run/systemd/machine/io.systemd.MachineImage",
+    "io.systemd.ManagedOOM": "/run/systemd/io.systemd.ManagedOOM",
+    "io.systemd.Manager": "/run/systemd/io.systemd.Manager",
+    "io.systemd.MountFileSystem": "/run/systemd/io.systemd.MountFileSystem",
+    "io.systemd.MuteConsole": "/run/systemd/io.systemd.MuteConsole",
+    "io.systemd.NamespaceResource": "/run/systemd/io.systemd.NamespaceResource",
+    "io.systemd.Network": "/run/systemd/netif/io.systemd.Network",
+    "io.systemd.Network.Link": "/run/systemd/netif/io.systemd.Network",
+    "io.systemd.PCRExtend": "/run/systemd/io.systemd.PCRExtend",
+    "io.systemd.PCRLock": "/run/systemd/io.systemd.PCRLock",
+    "io.systemd.Repart": "/run/systemd/io.systemd.Repart",
+    "io.systemd.Resolve": "/run/systemd/resolve/io.systemd.Resolve",
+    "io.systemd.Resolve.Monitor": "/run/systemd/resolve/io.systemd.Resolve.Monitor",
+    "io.systemd.Udev": "/run/udev/io.systemd.Udev",
+    "io.systemd.Unit": "/run/systemd/io.systemd.Manager",
+    "io.systemd.UserDatabase": "/run/systemd/userdb/io.systemd.Multiplexer",
+    "io.systemd.oom": "/run/systemd/oom/io.systemd.ManagedOOM",
+    "io.systemd.sysext": "/run/systemd/io.systemd.sysext"
+  },
+  "fieldTypes": {
+    "258": {
+      "io.systemd.Hostname.Describe.OperatingSystemImageID": "?string",
+      "io.systemd.Hostname.Describe.OperatingSystemImageVersion": "?string"
+    }
+  },
+  "_fieldTypes": "Corrections to upstream IDL mistakes, per systemd version. v258 declared the hostname image fields as ?int; hostnamed sends strings, and v260 fixed the IDL."
+}

@@ -1,0 +1,41 @@
+interface io.systemd.Hostname
+
+method Describe(
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> (
+	Hostname: string,
+	StaticHostname: ?string,
+	PrettyHostname: ?string,
+	DefaultHostname: ?string,
+	HostnameSource: string,
+	IconName: ?string,
+	Chassis: ?string,
+	# An unique identifier of the system chassis.
+	ChassisAssetTag: ?string,
+	Deployment: ?string,
+	Location: ?string,
+	KernelName: string,
+	KernelRelease: string,
+	KernelVersion: string,
+	OperatingSystemPrettyName: ?string,
+	OperatingSystemCPEName: ?string,
+	OperatingSystemHomeURL: ?string,
+	OperatingSystemSupportEnd: ?int,
+	OperatingSystemReleaseData: ?[]string,
+	OperatingSystemImageID: ?int,
+	OperatingSystemImageVersion: ?int,
+	MachineInformationData: ?[]string,
+	HardwareVendor: ?string,
+	HardwareModel: ?string,
+	HardwareSerial: ?string,
+	HardwareSKU: ?string,
+	HardwareVersion: ?string,
+	FirmwareVersion: ?string,
+	FirmwareVendor: ?string,
+	FirmwareDate: ?int,
+	MachineID: string,
+	BootID: string,
+	ProductUUID: ?string,
+	VSockCID: ?int
+)

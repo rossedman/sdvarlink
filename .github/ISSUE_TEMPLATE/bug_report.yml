@@ -1,0 +1,36 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproducer
+      description: A minimal program or test. A varlinktest-based test is ideal.
+      render: go
+  - type: input
+    id: systemd
+    attributes:
+      label: systemd version
+      description: Output of `systemctl --version | head -1`
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: sdvarlink version and import path
+      placeholder: v0.4.0, github.com/rossedman/sdvarlink/systemd/v257/resolve
+    validations:
+      required: true
+  - type: input
+    id: go
+    attributes:
+      label: Go version and platform
+      placeholder: go1.24.7 linux/amd64

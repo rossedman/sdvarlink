@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" role="img" aria-label="sdvarlink: Typed Go bindings for systemd's Varlink APIs">
+  <title>sdvarlink: Typed Go bindings for systemd's Varlink APIs</title>
+  <defs>
+    <radialGradient id="glowG" cx="0.12" cy="0.1" r="0.6">
+      <stop offset="0" stop-color="#30D475" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#30D475" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowC" cx="0.9" cy="0.95" r="0.55">
+      <stop offset="0" stop-color="#00ADD8" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#00ADD8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="1.2" fill="#FFFFFF" fill-opacity=".07"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" x2="1">
+      <stop offset="0.35" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.75" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="gridMask"><rect width="1280" height="400" fill="url(#fade)"/></mask>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2233"/>
+      <stop offset="1" stop-color="#1A1520"/>
+    </linearGradient>
+    <linearGradient id="wire" gradientUnits="userSpaceOnUse" x1="828" y1="0" x2="1030" y2="0">
+      <stop offset="0" stop-color="#30D475"/>
+      <stop offset="1" stop-color="#00ADD8"/>
+    </linearGradient>
+    <symbol id="mark" viewBox="0 0 128 128">
+      <rect width="128" height="128" rx="28" fill="url(#tile)"/>
+      <rect x="1" y="1" width="126" height="126" rx="27" fill="none" stroke="#FFFFFF" stroke-opacity=".1" stroke-width="2"/>
+      <g fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="#30D475" d="M47 32h-5q-8 0-8 8v14q0 10-10 10h-6m6 0q10 0 10 10v14q0 8 8 8h5"/>
+        <path stroke="#00ADD8" d="M81 32h5q8 0 8 8v14q0 10 10 10h6m-6 0q-10 0-10 10v14q0 8-8 8h-5"/>
+      </g>
+      <rect x="54" y="54" width="20" height="20" rx="5" fill="#F4F1F7"/>
+    </symbol>
+    <symbol id="nul" viewBox="0 0 20 20">
+      <rect width="20" height="20" rx="5" fill="#F4F1F7"/>
+      <text x="10" y="14" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace" font-size="10" font-weight="700" fill="#201A26">\0</text>
+    </symbol>
+  </defs>
+
+  <rect width="1280" height="400" fill="#0F1117"/>
+  <rect width="1280" height="400" fill="url(#glowG)"/>
+  <rect width="1280" height="400" fill="url(#glowC)"/>
+  <rect width="1280" height="400" fill="url(#dots)" mask="url(#gridMask)"/>
+
+  <!-- identity -->
+  <use href="#mark" x="80" y="92" width="104" height="104"/>
+  <text x="212" y="168" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace" font-size="70" font-weight="700" letter-spacing="-1" fill="#F4F1F7"><tspan fill="#30D475">sd</tspan>varlink</text>
+  <text x="82" y="250" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="25" fill="#B9B4C4">Typed Go bindings for systemd’s Varlink APIs</text>
+
+  <g font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace" font-size="14" fill="#D9D5E0">
+    <rect x="80" y="282" width="148" height="32" rx="16" fill="#FFFFFF" fill-opacity=".04" stroke="#FFFFFF" stroke-opacity=".12"/>
+    <circle cx="98" cy="298" r="4" fill="#30D475"/>
+    <text x="110" y="303">typed clients</text>
+    <rect x="240" y="282" width="190" height="32" rx="16" fill="#FFFFFF" fill-opacity=".04" stroke="#FFFFFF" stroke-opacity=".12"/>
+    <circle cx="258" cy="298" r="4" fill="#3FC4A6"/>
+    <text x="270" y="303">streaming replies</text>
+    <rect x="442" y="282" width="134" height="32" rx="16" fill="#FFFFFF" fill-opacity=".04" stroke="#FFFFFF" stroke-opacity=".12"/>
+    <circle cx="460" cy="298" r="4" fill="#00ADD8"/>
+    <text x="472" y="303">fd passing</text>
+  </g>
+
+  <!-- wire diagram -->
+  <g font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace">
+    <!-- request frame -->
+    <g transform="translate(704 92)">
+      <rect width="486" height="40" rx="10" fill="#30D475" fill-opacity=".08" stroke="#30D475" stroke-opacity=".45"/>
+      <text x="16" y="25" font-size="14" fill="#C9F5DA">{"method":"io.systemd.Resolve.ResolveHostname"}</text>
+      <use href="#nul" x="452" y="10" width="20" height="20"/>
+    </g>
+    <!-- reply frame -->
+    <g transform="translate(704 268)">
+      <rect width="486" height="40" rx="10" fill="#00ADD8" fill-opacity=".08" stroke="#00ADD8" stroke-opacity=".45"/>
+      <text x="16" y="25" font-size="14" fill="#C4ECF6">{"parameters":{"addresses":[…]},"continues":true}</text>
+      <use href="#nul" x="452" y="10" width="20" height="20"/>
+    </g>
+
+    <!-- nodes -->
+    <rect x="704" y="172" width="124" height="56" rx="12" fill="#161A23" stroke="#30D475" stroke-opacity=".7"/>
+    <text x="766" y="196" text-anchor="middle" font-size="15" font-weight="700" fill="#F4F1F7">Go app</text>
+    <text x="766" y="216" text-anchor="middle" font-size="12" fill="#8E889B">sdvarlink</text>
+
+    <rect x="1030" y="172" width="160" height="56" rx="12" fill="#161A23" stroke="#00ADD8" stroke-opacity=".7"/>
+    <text x="1110" y="196" text-anchor="middle" font-size="15" font-weight="700" fill="#F4F1F7">systemd</text>
+    <text x="1110" y="216" text-anchor="middle" font-size="12" fill="#8E889B">io.systemd.*</text>
+
+    <!-- wire + socket -->
+    <path d="M828 200H1030" stroke="url(#wire)" stroke-width="2.5"/>
+    <circle cx="929" cy="200" r="15" fill="#0F1117" stroke="#F4F1F7" stroke-opacity=".85" stroke-width="2"/>
+    <circle cx="929" cy="200" r="5" fill="#F4F1F7"/>
+    <text x="929" y="242" text-anchor="middle" font-size="11" fill="#8E889B">AF_UNIX</text>
+
+    <!-- flow arrows -->
+    <path d="M766 132v40" stroke="#30D475" stroke-opacity=".6" stroke-width="2" stroke-dasharray="3 4"/>
+    <path d="M1110 132v34m-5-6l5 6l5-6" fill="none" stroke="#30D475" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".8"/>
+    <path d="M1110 228v40" stroke="#00ADD8" stroke-opacity=".6" stroke-width="2" stroke-dasharray="3 4"/>
+    <path d="M766 268v-34m-5 6l5-6l5 6" fill="none" stroke="#00ADD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".8"/>
+  </g>
+</svg>
