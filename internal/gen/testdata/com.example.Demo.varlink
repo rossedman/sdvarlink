@@ -1,0 +1,57 @@
+# A demo interface exercising every generator feature.
+interface com.example.Demo
+
+# How loud.
+type Volume(
+	# Barely audible.
+	quiet,
+	loud
+)
+
+type Item(
+	name: string,
+	tags: ?[]string,
+	attrs: ?[string]string,
+	blob: ?object,
+	size: ?int,
+	ratio: float,
+	nested: (inner: ?bool, mode: (on, off)),
+	volume: ?Volume
+)
+
+# Gets one item.
+method Get(
+	# Which item.
+	name: string,
+	uid: ?int
+) -> (
+	item: Item
+)
+
+# [Requires 'more' flag]
+method Watch() -> (
+	item: ?Item
+)
+
+# [Supports 'more' flag]
+method List(filter: ?string) -> (
+	items: []Item
+)
+
+method Open(
+	pathFileDescriptor: int,
+	readOnly: ?bool
+) -> (
+	fileDescriptor: int
+)
+
+method Ping() -> ()
+
+method Close() -> ()
+
+# Not found.
+error NoSuchItem(
+	name: string
+)
+
+error Busy()

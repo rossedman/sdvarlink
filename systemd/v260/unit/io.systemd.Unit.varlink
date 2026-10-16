@@ -1,0 +1,1020 @@
+interface io.systemd.Unit
+
+type RateLimit(
+	# The ratelimit interval
+	intervalUSec: ?int,
+	# The ratelimit burst
+	burst: ?int
+)
+
+# An object to represent a unit's conditions
+type Condition(
+	# The condition type
+	type: string,
+	# Whether the condition is a triggering condition
+	trigger: bool,
+	# Whether the result of the condition is negated
+	negate: bool,
+	# The parameter passed to the condition
+	parameter: ?string
+)
+
+# An object to represent a unit's context
+type UnitContext(
+	# The unit type
+	Type: string,
+	# The unit ID
+	ID: string,
+	# The aliases of this unit
+	Names: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Description=
+	Description: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Documentation=
+	Documentation: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Wants=
+	Wants: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy=
+	WantedBy: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requires=
+	Requires: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy=
+	RequiredBy: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requisite=
+	Requisite: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requisite=
+	RequisiteOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#BindsTo=
+	BindsTo: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#BindsTo=
+	BoundBy: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PartOf=
+	PartOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PartOf=
+	ConsistsOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Upholds=
+	Upholds: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy=
+	UpheldBy: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Conflicts=
+	Conflicts: ?[]string,
+	# The ConflictedBy= dependencies of this unit
+	ConflictedBy: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Before=
+	Before: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Before=
+	After: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnFailure=
+	OnFailure: ?[]string,
+	# The OnFailureOf= dependencies of this unit
+	OnFailureOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccess=
+	OnSuccess: ?[]string,
+	# The OnSuccessOf= dependencies of this unit
+	OnSuccessOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesReloadTo=
+	PropagatesReloadTo: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesReloadTo=
+	ReloadPropagatedFrom: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesStopTo=
+	PropagatesStopTo: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesStopTo=
+	StopPropagatedFrom: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JoinsNamespaceOf=
+	JoinsNamespaceOf: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RequiresMountsFor=
+	RequiresMountsFor: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantsMountsFor=
+	WantsMountsFor: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccessJobMode=
+	OnSuccessJobMode: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccessJobMode=
+	OnFailureJobMode: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#IgnoreOnIsolate=
+	IgnoreOnIsolate: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StopWhenUnneeded=
+	StopWhenUnneeded: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RefuseManualStart=
+	RefuseManualStart: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RefuseManualStart=
+	RefuseManualStop: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#AllowIsolate=
+	AllowIsolate: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#DefaultDependencies=
+	DefaultDependencies: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#SurviveFinalKillSignal=
+	SurviveFinalKillSignal: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#CollectMode=
+	CollectMode: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureAction=
+	FailureAction: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureAction=
+	SuccessAction: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureActionExitStatus=
+	FailureActionExitStatus: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureActionExitStatus=
+	SuccessActionExitStatus: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutSec=
+	JobTimeoutUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutSec=
+	JobRunningTimeoutUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutAction=
+	JobTimeoutAction: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutAction=
+	JobTimeoutRebootArgument: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StartLimitIntervalSec=interval
+	StartLimit: ?RateLimit,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StartLimitIntervalSec=interval
+	StartLimitAction: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RebootArgument=
+	RebootArgument: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#SourcePath=
+	SourcePath: ?string,
+	# The conditions of this unit
+	Conditions: ?[]Condition,
+	# The asserts of this unit
+	Asserts: ?[]Condition,
+	# The Triggers= dependencies of this unit
+	Triggers: ?[]string,
+	# The TriggeredBy= dependencies of this unit
+	TriggeredBy: ?[]string,
+	# The SELinux context that is used to control access to the unit
+	AccessSELinuxContext: ?string,
+	# The unit file path this unit was read from
+	FragmentPath: ?string,
+	# The paths from which drop-in files were read for this unit
+	DropInPaths: ?[]string,
+	# The unit file preset for this unit
+	UnitFilePreset: ?string,
+	# Whether this unit is transient
+	Transient: bool,
+	# Whether this unit is perpetual
+	Perpetual: bool,
+	# When true, logs about this unit will be at debug level regardless of other log level settings
+	DebugInvocation: bool,
+	# The cgroup context of the unit
+	CGroup: ?CGroupContext,
+	# The exec context of the unit
+	Exec: ?ExecContext
+)
+
+# An object to represent a unit's runtime information
+type UnitRuntime(
+	# If not empty, the field contains the name of another unit that this unit follows in state
+	Following: ?string,
+	# Reflects whether the configuration file of this unit has been loaded
+	LoadState: ?string,
+	# Reflects whether the unit is currently active or not
+	ActiveState: ?string,
+	# Reflects whether the unit is currently frozen or not
+	FreezerState: ?string,
+	# Reflect more fine-grained state that is unit-type-specific
+	SubState: ?string,
+	# Reflects the install state of the unit file
+	UnitFileState: ?string,
+	# Timestamp when the firmware first began execution
+	StateChangeTimestamp: ?Timestamp,
+	# Timestamp when the unit entered active state
+	ActiveEnterTimestamp: ?Timestamp,
+	# Timestamp when the unit exited active state
+	ActiveExitTimestamp: ?Timestamp,
+	# Timestamp when the unit entered inactive state
+	InactiveEnterTimestamp: ?Timestamp,
+	# Timestamp when the unit exited inactive state
+	InactiveExitTimestamp: ?Timestamp,
+	# Reflects whether the unit can be started or not
+	CanStart: ?bool,
+	# Reflects whether the unit can be stopped or not
+	CanStop: ?bool,
+	# Reflects whether the unit can be reloaded or not
+	CanReload: ?bool,
+	# Reflects whether the unit may be started in isolation mode
+	CanIsolate: ?bool,
+	# Returns which unit resources can be cleaned up
+	CanClean: ?[]string,
+	# Whether the unit supports the freeze operation
+	CanFreeze: ?bool,
+	# Whether the unit supports live mounting
+	CanLiveMount: ?bool,
+	# The job ID of the job currently scheduled or being executed for this unit, if there is any.
+	JobId: ?int,
+	# Whether the configuration file this unit is loaded from (i.e. FragmentPath or SourcePath) has changed since the configuration was read and hence whether a configuration reload is recommended
+	NeedDaemonReload: ?bool,
+	# Condition result of the last time the configured conditions of this unit were checked
+	ConditionResult: ?bool,
+	# Assert result of the last time the configured asserts of this unit were checked
+	AssertResult: ?bool,
+	# The last time the configured conditions of the unit have been checked
+	ConditionTimestamp: ?Timestamp,
+	# The last time the configured asserts of the unit have been checked
+	AssertTimestamp: ?Timestamp,
+	# Current invocation ID
+	InvocationID: ?string,
+	# Reflects whether the unit has been marked for reload, restart, etc.
+	Markers: ?[]string,
+	# Provides details about why a unit was activated
+	ActivationDetails: ?[]ActivationDetails,
+	# The cgroup runtime of the unit
+	CGroup: ?CGroupRuntime
+)
+
+# A timestamp object consisting of both CLOCK_REALTIME and CLOCK_MONOTONIC timestamps
+type Timestamp(
+	# Timestamp in µs in the CLOCK_REALTIME clock (wallclock)
+	realtime: ?int,
+	# Timestamp in µs in the CLOCK_MONOTONIC clock
+	monotonic: ?int
+)
+
+# An object to represent a unit's activation details
+type ActivationDetails(
+	# Trigger unit type
+	type: string,
+	# Trigger unit name
+	name: string
+)
+
+# An object for referencing UNIX processes
+type ProcessId(
+	# Numeric UNIX PID value
+	pid: int,
+	# 64bit inode number of pidfd if known
+	pidfdId: ?int,
+	# Boot ID of the system the inode number belongs to
+	bootId: ?string
+)
+
+type CGroupTasksMax(
+	# The maximum amount of tasks
+	value: int,
+	# The scaling factor
+	scale: int
+)
+
+type CGroupIODeviceWeight(
+	# The device path
+	path: string,
+	# The device IO weight
+	weight: int
+)
+
+type CGroupIODeviceLimit(
+	# The device path
+	path: string,
+	# The device IO limit
+	limit: int
+)
+
+type CGroupIODeviceLatency(
+	# The device path
+	path: string,
+	# The device target latency
+	targetUSec: ?int
+)
+
+type CGroupAddressPrefix(
+	# The address family
+	family: int,
+	# The address
+	address: []int,
+	# The address prefix length
+	prefixLength: int
+)
+
+type CGroupSocketBind(
+	# The address family
+	family: int,
+	# The address protocol
+	protocol: string,
+	# The number of ports
+	numberOfPorts: int,
+	# The minimum port
+	minimumPort: int
+)
+
+type CGroupRestrictNetworkInterfaces(
+	# Whether this is an allow list
+	isAllowList: bool,
+	# The list of interfaces
+	interfaces: []string
+)
+
+type CGroupNFTSet(
+	# The source of this NFT set
+	source: string,
+	# The NFT protocol for this NFT set
+	protocol: string,
+	# The NFT table associated with this NFT set
+	table: string,
+	# The name of the NFT set
+	set: string
+)
+
+type CGroupBPFProgram(
+	# The BPF program attach type
+	attachType: string,
+	# The path to the BPF program
+	path: string
+)
+
+type CGroupDeviceAllow(
+	# The device path
+	path: string,
+	# The device permissions
+	permissions: string
+)
+
+# CGroup context of a unit
+type CGroupContext(
+	# Slice of the CGroup
+	Slice: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUWeight=weight
+	CPUWeight: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUWeight=weight
+	StartupCPUWeight: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUQuota=
+	CPUQuotaPerSecUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUQuotaPeriodSec=
+	CPUQuotaPeriodUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedCPUs=
+	AllowedCPUs: ?[]int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedCPUs=
+	StartupAllowedCPUs: ?[]int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryAccounting=
+	MemoryAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes
+	MemoryMin: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes
+	MemoryLow: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes
+	StartupMemoryLow: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryHigh=bytes
+	MemoryHigh: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryHigh=bytes
+	StartupMemoryHigh: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMax=bytes
+	MemoryMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMax=bytes
+	StartupMemoryMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemorySwapMax=bytes
+	MemorySwapMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemorySwapMax=bytes
+	StartupMemorySwapMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapMax=bytes
+	MemoryZSwapMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapMax=bytes
+	StartupMemoryZSwapMax: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapWriteback=
+	MemoryZSwapWriteback: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedMemoryNodes=
+	AllowedMemoryNodes: ?[]int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedMemoryNodes=
+	StartupAllowedMemoryNodes: ?[]int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#TasksAccounting=
+	TasksAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#TasksMax=N
+	TasksMax: ?CGroupTasksMax,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOAccounting=
+	IOAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOWeight=weight
+	IOWeight: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOWeight=weight
+	StartupIOWeight: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IODeviceWeight=device%20weight
+	IODeviceWeight: ?[]CGroupIODeviceWeight,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes
+	IOReadBandwidthMax: ?[]CGroupIODeviceLimit,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes
+	IOWriteBandwidthMax: ?[]CGroupIODeviceLimit,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS
+	IOReadIOPSMax: ?[]CGroupIODeviceLimit,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS
+	IOWriteIOPSMax: ?[]CGroupIODeviceLimit,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IODeviceLatencyTargetSec=device%20target
+	IODeviceLatencyTargetUSec: ?[]CGroupIODeviceLatency,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAccounting=
+	IPAccounting: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6
+	IPAddressAllow: ?[]CGroupAddressPrefix,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6
+	IPAddressDeny: ?[]CGroupAddressPrefix,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#SocketBindAllow=bind-rule
+	SocketBindAllow: ?[]CGroupSocketBind,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#SocketBindAllow=bind-rule
+	SocketBindDeny: ?[]CGroupSocketBind,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#RestrictNetworkInterfaces=
+	RestrictNetworkInterfaces: ?CGroupRestrictNetworkInterfaces,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#BindNetworkInterface=
+	BindNetworkInterface: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#NFTSet=family:table:set
+	NFTSet: ?[]CGroupNFTSet,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH
+	IPIngressFilterPath: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH
+	IPEgressFilterPath: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#BPFProgram=type:program-path
+	BPFProgram: ?[]CGroupBPFProgram,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DeviceAllow=
+	DeviceAllow: ?[]CGroupDeviceAllow,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DevicePolicy=auto%7Cclosed%7Cstrict
+	DevicePolicy: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#Delegate=
+	Delegate: bool,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DelegateSubgroup=
+	DelegateSubgroup: ?string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DisableControllers=
+	DelegateControllers: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DisableControllers=
+	DisableControllers: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill
+	ManagedOOMSwap: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill
+	ManagedOOMMemoryPressure: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMMemoryPressureLimit=
+	ManagedOOMMemoryPressureLimit: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMMemoryPressureDurationSec=
+	ManagedOOMMemoryPressureDurationUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMPreference=none%7Cavoid%7Comit
+	ManagedOOMPreference: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryPressureWatch=
+	MemoryPressureWatch: string,
+	# https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryPressureThresholdSec=
+	MemoryPressureThresholdUSec: ?int,
+	# Reflects whether to forward coredumps for processes that crash within this cgroup
+	CoredumpReceive: bool
+)
+
+# CGroup runtime of a unit
+type CGroupRuntime(
+	# ID of the CGroup
+	ID: ?int,
+	# Path of the CGroup
+	Path: ?string,
+	# The current amount of memory used by the cgroup, in bytes
+	MemoryCurrent: ?int,
+	# The peak amount of memory used by the cgroup since its creation, in bytes
+	MemoryPeak: ?int,
+	# The current amount of swap space used by the cgroup, in bytes
+	MemorySwapCurrent: ?int,
+	# The peak amount of swap space used by the cgroup since its creation, in bytes
+	MemorySwapPeak: ?int,
+	# The current amount of zswap space used by the cgroup, in bytes
+	MemoryZSwapCurrent: ?int,
+	# The available memory for the cgroup, in bytes.
+	MemoryAvailable: ?int,
+	# The effective maximum amount of memory allowed for the cgroup, in bytes
+	EffectiveMemoryMax: ?int,
+	# The effective high watermark for memory usage by the cgroup, in bytes
+	EffectiveMemoryHigh: ?int,
+	# Memory NUMA nodes that the cgroup is allowed to use
+	EffectiveMemoryNodes: ?[]int,
+	# The total CPU usage time in nanoseconds (ns) for the cgroup
+	CPUUsageNSec: ?int,
+	# NUMA nodes that the cgroup is allowed to use
+	EffectiveCPUs: ?[]int,
+	# The current number of tasks (i.e., processes or threads) running within the cgroup
+	TasksCurrent: ?int,
+	# The maximum number of tasks that the cgroup is allowed to run concurrently
+	EffectiveTasksMax: ?int,
+	# The total number of bytes received by the cgroup's IP stack
+	IPIngressBytes: ?int,
+	# The total number of incoming packets received by the cgroup's IP stack
+	IPIngressPackets: ?int,
+	# iThe total number of bytes sent by the cgroup's IP stack
+	IPEgressBytes: ?int,
+	# The total number of outgoing packets sent by the cgroup's IP stack
+	IPEgressPackets: ?int,
+	# The total number of bytes read from block devices by the cgroup
+	IOReadBytes: ?int,
+	# The total number of read operations performed on block devices by the cgroup
+	IOReadOperations: ?int,
+	# The total number of bytes written to block devices by the cgroup
+	IOWriteBytes: ?int,
+	# The total number of write operations performed on block devices by the cgroup
+	IOWriteOperations: ?int,
+	# The number of processes of this unit killed by the kernel OOM killer
+	OOMKills: ?int,
+	# The number of processes of this unit killed by systemd-oomd
+	ManagedOOMKills: ?int
+)
+
+type WorkingDirectory(
+	# The path to the working directory
+	path: string,
+	# Whether the path to the working directory is allowed to not exist
+	missingOK: bool
+)
+
+type PartitionMountOptions(
+	# The partition designator to which the options apply
+	partitionDesignator: string,
+	# The mount options for this partition
+	options: string
+)
+
+type BindPath(
+	# The mount source path
+	source: string,
+	# The mount destination path
+	destination: string,
+	# Whether a missing source path should be ignored
+	ignoreEnoent: bool,
+	# Mount options
+	options: []string
+)
+
+type MountImage(
+	# The path to the image to mount
+	source: string,
+	# The destination path where to mount the image
+	destination: string,
+	# Whether failure to find the image is considered fatal
+	ignoreEnoent: bool,
+	# The mount options to use for the partitions of the image
+	mountOptions: ?[]PartitionMountOptions
+)
+
+type ExtensionImage(
+	# The path to the extension image
+	source: string,
+	# Whether failure to find the extension image is considered fatal
+	ignoreEnoent: bool,
+	# The mount options to use for the partitions of the extension image
+	mountOptions: ?[]PartitionMountOptions
+)
+
+type SELinuxContext(
+	# Whether failure to set the SELinux context is ignored
+	ignore: bool,
+	# The SELinux context
+	context: string
+)
+
+type AppArmorProfile(
+	# Whether failure to configure the apparmor profile will be ignored
+	ignore: bool,
+	# The AppArmor profile
+	profile: string
+)
+
+type SmackProcessLabel(
+	# Whether failure to configure the smack process label will be ignored
+	ignore: bool,
+	# The smack process label
+	label: string
+)
+
+type ResourceLimit(
+	# The soft resource limit. RLIM_INFINITY is mapped to unset value
+	soft: ?int,
+	# The hard resource limit. RLIM_INFINITY is mapped to unset value
+	hard: ?int
+)
+
+type ResourceLimitTable(
+	# See setrlimit(2) for details
+	CPU: ?ResourceLimit,
+	FSIZE: ?ResourceLimit,
+	DATA: ?ResourceLimit,
+	STACK: ?ResourceLimit,
+	CORE: ?ResourceLimit,
+	RSS: ?ResourceLimit,
+	NOFILE: ?ResourceLimit,
+	AS: ?ResourceLimit,
+	NPROC: ?ResourceLimit,
+	MEMLOCK: ?ResourceLimit,
+	LOCKS: ?ResourceLimit,
+	SIGPENDING: ?ResourceLimit,
+	MSGQUEUE: ?ResourceLimit,
+	NICE: ?ResourceLimit,
+	RTPRIO: ?ResourceLimit,
+	RTTIME: ?ResourceLimit
+)
+
+type CPUAffinity(
+	# CPU affinity of the executed processes
+	affinity: []int,
+	# CPU affinity from NUMA
+	fromNUMA: bool
+)
+
+type ExecDirectoryQuota(
+	# Whether the quota is accounted
+	accounting: bool,
+	# Whether the quota is enforced
+	enforce: bool,
+	# The absolute quota in bytes
+	quotaAbsolute: int,
+	# The scaling factor for the quota
+	quotaScale: int
+)
+
+type ExecDirectoryPath(
+	# The path to the directory
+	path: string,
+	# A list of symlinks pointing to the directory
+	symlinks: ?[]string
+)
+
+type ExecDirectory(
+	# Exec directory paths
+	paths: []ExecDirectoryPath,
+	# The access mode of the directory
+	mode: int,
+	# The quota for the directory
+	quota: ExecDirectoryQuota
+)
+
+type TemporaryFilesystem(
+	# The destination path where the temporary filesystem should be mounted
+	path: string,
+	# The mount options for the temporary filesystem
+	options: ?string
+)
+
+type AddressFamilyList(
+	# Whether the list of address families is an allow list
+	isAllowList: bool,
+	# The list of address families
+	addressFamilies: []string
+)
+
+type FilesystemList(
+	# Whether the list of filesystems is an allow list
+	isAllowList: bool,
+	# The list of filesystems
+	filesystems: []string
+)
+
+type SystemCallList(
+	# Whether the list of system calls is an allow list
+	isAllowList: bool,
+	# The list of system calls
+	systemCalls: []string
+)
+
+type EnvironmentFile(
+	# The path to the environment file
+	path: string,
+	# Whether failure to read the environment file is fatal or not
+	graceful: bool
+)
+
+type LogFilterPattern(
+	# Whether this pattern is an allow pattern
+	isAllowList: bool,
+	# The filtering pattern
+	pattern: string
+)
+
+type LoadCredential(
+	# The credential ID
+	id: string,
+	# The credential path
+	path: string
+)
+
+type ImportCredential(
+	# The glob pattern to find credentials
+	glob: string,
+	# The rename pattern to which matching credentials should be renamed
+	rename: ?string
+)
+
+type SetCredential(
+	# The credential ID
+	id: string,
+	# The credential value encoded in base64
+	value: string
+)
+
+# Exec context of a unit
+type ExecContext(
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExecSearchPath=
+	ExecSearchPath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#WorkingDirectory=
+	WorkingDirectory: ?WorkingDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootDirectory=
+	RootDirectory: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImage=
+	RootImage: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootMStack=
+	RootMStack: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImageOptions=
+	RootImageOptions: ?[]PartitionMountOptions,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootEphemeral=
+	RootEphemeral: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHash=
+	RootHash: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHash=
+	RootHashPath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHashSignature=
+	RootHashSignature: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHashSignature=
+	RootHashSignaturePath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootVerity=
+	RootVerity: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy=
+	RootImagePolicy: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy=
+	MountImagePolicy: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy=
+	ExtensionImagePolicy: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountAPIVFS=
+	MountAPIVFS: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindLogSockets=
+	BindLogSockets: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectProc=
+	ProtectProc: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProcSubset=
+	ProcSubset: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindPaths=
+	BindPaths: ?[]BindPath,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindPaths=
+	BindReadOnlyPaths: ?[]BindPath,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountImages=
+	MountImages: ?[]MountImage,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExtensionImages=
+	ExtensionImages: ?[]ExtensionImage,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExtensionDirectories=
+	ExtensionDirectories: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#User=
+	User: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#User=
+	Group: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#DynamicUser=
+	DynamicUser: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SupplementaryGroups=
+	SupplementaryGroups: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetLoginEnvironment=
+	SetLoginEnvironment: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PAMName=
+	PAMName: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CapabilityBoundingSet=
+	CapabilityBoundingSet: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#AmbientCapabilities=
+	AmbientCapabilities: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NoNewPrivileges=
+	NoNewPrivileges: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SecureBits=
+	SecureBits: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SELinuxContext=
+	SELinuxContext: ?SELinuxContext,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#AppArmorProfile=
+	AppArmorProfile: ?AppArmorProfile,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SmackProcessLabel=
+	SmackProcessLabel: ?SmackProcessLabel,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LimitCPU=
+	Limits: ResourceLimitTable,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UMask=
+	UMask: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CoredumpFilter=
+	CoredumpFilter: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#KeyringMode=
+	KeyringMode: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#OOMScoreAdjust=
+	OOMScoreAdjust: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TimerSlackNSec=
+	TimerSlackNSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Personality=
+	Personality: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IgnoreSIGPIPE=
+	IgnoreSIGPIPE: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Nice=
+	Nice: int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingPolicy=
+	CPUSchedulingPolicy: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingPriority=
+	CPUSchedulingPriority: int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingResetOnFork=
+	CPUSchedulingResetOnFork: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUAffinity=
+	CPUAffinity: ?CPUAffinity,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NUMAPolicy=
+	NUMAPolicy: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NUMAMask=
+	NUMAMask: ?[]int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IOSchedulingClass=
+	IOSchedulingClass: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IOSchedulingPriority=
+	IOSchedulingPriority: int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryKSM=
+	MemoryKSM: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryTHP=
+	MemoryTHP: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectSystem=
+	ProtectSystem: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectHome=
+	ProtectHome: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory=
+	RuntimeDirectory: ?ExecDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory=
+	StateDirectory: ?ExecDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory=
+	CacheDirectory: ?ExecDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory=
+	LogsDirectory: ?ExecDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory=
+	ConfigurationDirectory: ?ExecDirectory,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectoryPreserve=
+	RuntimeDirectoryPreserve: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TimeoutCleanSec=
+	TimeoutCleanUSec: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths=
+	ReadWritePaths: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths=
+	ReadOnlyPaths: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths=
+	InaccessiblePaths: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths=
+	ExecPaths: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths=
+	NoExecPaths: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TemporaryFileSystem=
+	TemporaryFileSystem: ?[]TemporaryFilesystem,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateTmp=
+	PrivateTmp: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateDevices=
+	PrivateDevices: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateNetwork=
+	PrivateNetwork: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NetworkNamespacePath=
+	NetworkNamespacePath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateIPC=
+	PrivateIPC: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IPCNamespacePath=
+	IPCNamespacePath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivatePIDs=
+	PrivatePIDs: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateUsers=
+	PrivateUsers: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UserNamespacePath=
+	UserNamespacePath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectHostname=
+	ProtectHostname: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectClock=
+	ProtectClock: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelTunables=
+	ProtectKernelTunables: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelModules=
+	ProtectKernelModules: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelLogs=
+	ProtectKernelLogs: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectControlGroups=
+	ProtectControlGroups: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictAddressFamilies=
+	RestrictAddressFamilies: ?AddressFamilyList,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictFileSystems=
+	RestrictFilesystems: ?FilesystemList,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictNamespaces=
+	RestrictNamespaces: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#DelegateNamespaces=
+	DelegateNamespaces: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivatePBF=
+	PrivatePBF: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateCommands=
+	BPFDelegateCommands: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateMaps=
+	BPFDelegateMaps: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegatePrograms=
+	BPFDelegatePrograms: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateAttachments=
+	BPFDelegateAttachments: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LockPersonality=
+	LockPersonality: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryDenyWriteExecute=
+	MemoryDenyWriteExecute: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictRealtime=
+	RestrictRealtime: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictSUIDSGID=
+	RestrictSUIDSGID: bool,
+	# Whether to remove all System V and POSIX IPC objects owned by the user and group this unit runs under
+	RemoveIPC: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateMounts=
+	PrivateMounts: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountFlags=
+	MountFlags: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallFilter=
+	SystemCallFilter: ?SystemCallList,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallErrorNumber=
+	SystemCallErrorNumber: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallArchitectures=
+	SystemCallArchitectures: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallLog=
+	SystemCallLog: ?SystemCallList,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Environment=
+	Environment: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#EnvironmentFile=
+	EnvironmentFiles: ?[]EnvironmentFile,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PassEnvironment=
+	PassEnvironment: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UnsetEnvironment=
+	UnsetEnvironment: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardInput=
+	StandardInput: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardOutput=
+	StandardOutput: string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardError=
+	StandardError: string,
+	# The file descriptor name to connect standard input to
+	StandardInputFileDescriptorName: ?string,
+	# The file descriptor name to connect standard output to
+	StandardOutputFileDescriptorName: ?string,
+	# The file descriptor name to connect standard error to
+	StandardErrorFileDescriptorName: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardInputText=
+	StandardInputData: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogLevelMax=
+	LogLevelMax: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogExtraFields=
+	LogExtraFields: ?[]string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogRateLimitIntervalSec=
+	LogRateLimit: ?RateLimit,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogFilterPatterns=
+	LogFilterPatterns: ?[]LogFilterPattern,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogNamespace=
+	LogNamespace: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogIdentifier=
+	SyslogIdentifier: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogFacility=
+	SyslogFacility: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogLevel=
+	SyslogLevel: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogLevelPrefix=
+	SyslogLevelPrefix: bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYPath=
+	TTYPath: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYReset=
+	TTYReset: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYVHangup=
+	TTYVHangup: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYRows=
+	TTYRows: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYRows=
+	TTYColumns: ?int,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYVTDisallocate=
+	TTYVTDisallocate: ?bool,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LoadCredential=ID:PATH
+	LoadCredential: ?[]LoadCredential,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LoadCredential=ID:PATH
+	LoadCredentialEncrypted: ?[]LoadCredential,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ImportCredential=GLOB
+	ImportCredential: ?[]ImportCredential,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetCredential=ID:VALUE
+	SetCredential: ?[]SetCredential,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetCredential=ID:VALUE
+	SetCredentialEncrypted: ?[]SetCredential,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UtmpIdentifier=
+	UtmpIdentifier: ?string,
+	# https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UtmpMode=
+	UtmpMode: string
+)
+
+# List units
+# [Supports 'more' flag]
+method List(
+	# If non-null the name of a unit.
+	name: ?string,
+	# If non-null the PID of a unit. Special value 0 means to take pid of the caller.
+	pid: ?ProcessId,
+	# If non-null the cgroup of a unit
+	cgroup: ?string,
+	# If non-null the invocation ID of a unit
+	invocationID: ?string
+) -> (
+	# Configuration of the unit
+	context: UnitContext,
+	# Runtime information of the unit
+	runtime: UnitRuntime
+)
+
+# Set unit properties
+method SetProperties(
+	# The name of the unit to operate on.
+	name: string,
+	# Whether to apply the change ephemerally or persistently.
+	runtime: bool,
+	# The runtime properties to set.
+	properties: UnitRuntime
+) -> ()
+
+# No matching unit found
+error NoSuchUnit(
+	parameter: ?string
+)
+
+# The unit is masked
+error UnitMasked()
+
+# Unit is in a fatal error state
+error UnitError()
+
+# Changing this property via SetProperties() is not supported
+error PropertyNotSupported(
+	property: ?string
+)
+
+# Job for the unit may only be enqueued by dependencies
+error OnlyByDependency()
+
+# A unit that requires D-Bus cannot be started as D-Bus is shutting down
+error DBusShuttingDown()

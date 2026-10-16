@@ -1,0 +1,46 @@
+interface io.systemd.Network
+
+type LLDPNeighbor(
+	ChassisID: ?string,
+	RawChassisID: []int,
+	PortID: ?string,
+	RawPortID: []int,
+	PortDescription: ?string,
+	SystemName: ?string,
+	SystemDescription: ?string,
+	EnabledCapabilities: ?int
+)
+
+type LLDPNeighborsByInterface(
+	InterfaceIndex: int,
+	InterfaceName: string,
+	InterfaceAlternativeNames: ?[]string,
+	Neighbors: []LLDPNeighbor
+)
+
+method GetStates() -> (
+	AddressState: string,
+	IPv4AddressState: string,
+	IPv6AddressState: string,
+	CarrierState: string,
+	OnlineState: ?string,
+	OperationalState: string
+)
+
+method GetNamespaceId() -> (
+	NamespaceId: int,
+	NamespaceNSID: ?int
+)
+
+method GetLLDPNeighbors(
+	InterfaceIndex: ?int,
+	InterfaceName: ?string
+) -> (
+	Neighbors: []LLDPNeighborsByInterface
+)
+
+method SetPersistentStorage(
+	Ready: bool
+) -> ()
+
+error StorageReadOnly()

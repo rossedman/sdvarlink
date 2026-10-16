@@ -1,0 +1,61 @@
+interface io.systemd.MountFileSystem
+
+type PartitionDesignator(
+	root,
+	usr,
+	home,
+	srv,
+	esp,
+	xbootldr,
+	swap,
+	root_verity,
+	usr_verity,
+	root_verity_sig,
+	usr_verity_sig,
+	tmp,
+	var
+)
+
+type PartitionInfo(
+	designator: string,
+	writable: bool,
+	growFileSystem: bool,
+	partitionNumber: ?int,
+	architecture: ?string,
+	partitionUuid: ?string,
+	fileSystemType: string,
+	partitionLabel: ?string,
+	size: int,
+	offset: int,
+	mountFileDescriptor: int
+)
+
+method MountImage(
+	imageFileDescriptor: int,
+	userNamespaceFileDescriptor: ?int,
+	readOnly: ?bool,
+	growFileSystems: ?bool,
+	password: ?string,
+	imagePolicy: ?string,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> (
+	partitions: []PartitionInfo,
+	imagePolicy: string,
+	imageSize: int,
+	sectorSize: int,
+	imageName: ?string,
+	imageUuid: ?string
+)
+
+error IncompatibleImage()
+
+error MultipleRootPartitionsFound()
+
+error RootPartitionNotFound()
+
+error DeniedByImagePolicy()
+
+error KeyNotFound()
+
+error VerityFailure()

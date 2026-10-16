@@ -1,0 +1,8 @@
+# Prekill notifications from oomd
+interface io.systemd.oom.Prekill
+
+# Notify about an imminent OOM kill
+method Notify(
+	# The cgroup which is going to be killed
+	cgroup: string
+) -> ()

@@ -1,0 +1,41 @@
+interface io.systemd.UserDatabase
+
+# [Supports 'more' flag]
+method GetUserRecord(
+	uid: ?int,
+	userName: ?string,
+	service: string
+) -> (
+	record: object,
+	incomplete: ?bool
+)
+
+# [Supports 'more' flag]
+method GetGroupRecord(
+	gid: ?int,
+	groupName: ?string,
+	service: string
+) -> (
+	record: object,
+	incomplete: ?bool
+)
+
+# [Supports 'more' flag]
+method GetMemberships(
+	userName: ?string,
+	groupName: ?string,
+	service: string
+) -> (
+	userName: string,
+	groupName: string
+)
+
+error NoRecordFound()
+
+error BadService()
+
+error ServiceNotAvailable()
+
+error ConflictingRecordNotFound()
+
+error EnumerationNotSupported()

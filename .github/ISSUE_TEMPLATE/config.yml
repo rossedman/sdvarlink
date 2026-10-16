@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/rossedman/sdvarlink/discussions
+    about: Ask questions and share ideas in Discussions.
+  - name: Security vulnerability
+    url: https://github.com/rossedman/sdvarlink/security/advisories/new
+    about: Report vulnerabilities privately.

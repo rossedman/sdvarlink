@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="sdvarlink">
+  <title>sdvarlink</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2233"/>
+      <stop offset="1" stop-color="#1A1520"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#tile)"/>
+  <rect x="1" y="1" width="126" height="126" rx="27" fill="none" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="2"/>
+  <g fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="#30D475" d="M47 32h-5q-8 0-8 8v14q0 10-10 10h-6m6 0q10 0 10 10v14q0 8 8 8h5"/>
+    <path stroke="#00ADD8" d="M81 32h5q8 0 8 8v14q0 10 10 10h6m-6 0q-10 0-10 10v14q0 8-8 8h-5"/>
+  </g>
+  <rect x="54" y="54" width="20" height="20" rx="5" fill="#F4F1F7"/>
+</svg>

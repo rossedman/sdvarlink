@@ -1,0 +1,308 @@
+interface io.systemd.Machine
+
+# A enum field allowing to gracefully get metadata
+type AcquireMetadata(
+	# Do not include metadata in the output
+	no,
+	# Include metadata in the output
+	yes,
+	# Include metadata in the output, but gracefully eat up errors
+	graceful
+)
+
+# A enum field which defines way to open TTY for a machine
+type MachineOpenMode(
+	# This mode allocates a pseudo TTY in the container and returns a file descriptor and its path. This is equivalent to transitioning into the container and invoking posix_openpt(3).
+	tty,
+	# This mode allocates a pseudo TTY in the container and ensures that a getty login prompt of the container is running on the other end. It returns the file descriptor of the PTY and the PTY path. This is useful for acquiring a pty with a login prompt from the container.
+	login,
+	# This mode allocates a pseudo TTY in the container, as the specified user, and invokes the executable at the specified path with a list of arguments (starting from argv[0]) and an environment block. It then returns the file descriptor of the PTY and the PTY path.
+	shell
+)
+
+# An object for referencing UNIX processes
+type ProcessId(
+	# Numeric UNIX PID value
+	pid: int,
+	# 64bit inode number of pidfd if known
+	pidfdId: ?int,
+	# Boot ID of the system the inode number belongs to
+	bootId: ?string
+)
+
+# A timestamp object consisting of both CLOCK_REALTIME and CLOCK_MONOTONIC timestamps
+type Timestamp(
+	# Timestamp in µs in the CLOCK_REALTIME clock (wallclock)
+	realtime: ?int,
+	# Timestamp in µs in the CLOCK_MONOTONIC clock
+	monotonic: ?int
+)
+
+# An address object
+type Address(
+	ifindex: ?int,
+	family: int,
+	address: []int
+)
+
+method Register(
+	name: string,
+	id: ?string,
+	service: ?string,
+	class: string,
+	# The leader PID as simple positive integer.
+	leader: ?int,
+	# The leader PID as ProcessId structure. If both the leader and leaderProcessId parameters are specified they must reference the same process. Typically one would only specify one or the other however. It's generally recommended to specify leaderProcessId as it references a process in a robust way without risk of identifier recycling.
+	leaderProcessId: ?ProcessId,
+	# The supervisor PID as simple positive integer.
+	supervisor: ?int,
+	# The supervisor PID as ProcessId structure. If both the supervisor and supervisorProcessId parameters are specified they must reference the same process. Typically only one or the other would be specified. It's generally recommended to specify supervisorProcessId as it references a process in a robust way without risk of identifier recycling.
+	supervisorProcessId: ?ProcessId,
+	rootDirectory: ?string,
+	ifIndices: ?[]int,
+	vSockCid: ?int,
+	sshAddress: ?string,
+	sshPrivateKeyPath: ?string,
+	# Controls whether to allocate a scope unit for the machine to register. If false, the client already took care of that and registered a service/scope specific to the machine.
+	allocateUnit: ?bool,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> ()
+
+method Unregister(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> ()
+
+# Terminate machine, killing its processes
+method Terminate(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> ()
+
+# Send a UNIX signal to the machine's processes
+method Kill(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# Identifier that specifies what precisely to send the signal to (either 'leader', 'supervisor', or 'all').
+	whom: ?string,
+	# Numeric UNIX signal integer.
+	signal: int
+) -> ()
+
+# List running machines
+# [Supports 'more' flag]
+method List(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# If 'yes' the output will include machine metadata fields such as 'Addresses', 'OSRelease', and 'UIDShift'. If 'graceful' it's equal to true but gracefully eats up errors
+	acquireMetadata: ?AcquireMetadata
+) -> (
+	# Name of the machine
+	name: string,
+	# 128bit ID identifying this machine, formatted in hexadecimal
+	id: ?string,
+	# Name of the software that registered this machine
+	service: ?string,
+	# The class of this machine
+	class: string,
+	# Leader process PID of this machine
+	leader: ?ProcessId,
+	# Supervisor process PID of this machine
+	supervisor: ?ProcessId,
+	# Root directory of this machine, if known, relative to host file system
+	rootDirectory: ?string,
+	# The service manager unit this machine resides in
+	unit: ?string,
+	# Timestamp when the machine was activated
+	timestamp: ?Timestamp,
+	# AF_VSOCK CID of the machine if known and applicable
+	vSockCid: ?int,
+	# SSH address to connect to
+	sshAddress: ?string,
+	# Path to private SSH key
+	sshPrivateKeyPath: ?string,
+	# List of addresses of the machine
+	addresses: ?[]Address,
+	# OS release information of the machine. It contains an array of key value pairs read from the os-release(5) file in the image.
+	OSRelease: ?[]string,
+	# Return the base UID/GID of the machine
+	UIDShift: ?int,
+	# Subcgroup path of the machine, relative to the unit's cgroup path
+	Subgroup: ?string,
+	# Numeric UNIX UID of the user who registered the machine
+	UID: ?int
+)
+
+# Allocates a pseudo TTY in the container in various modes
+method Open(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# There are three possible values: 'tty', 'login', and 'shell'. Please see description for each of the modes.
+	mode: MachineOpenMode,
+	# See description of mode='shell'. Valid only when mode='shell'
+	user: ?string,
+	# See description of mode='shell'. Valid only when mode='shell'
+	path: ?string,
+	# See description of mode='shell'. Valid only when mode='shell'
+	args: ?[]string,
+	# See description of mode='shell'. Valid only when mode='shell'
+	environment: ?[]string
+) -> (
+	# File descriptor of the allocated pseudo TTY
+	ptyFileDescriptor: int,
+	# Path to the allocated pseudo TTY
+	ptyPath: string
+)
+
+# Maps given machine's UID/GID to host's UID/GID
+method MapFrom(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# UID in the machine to map to host UID
+	uid: ?int,
+	# GID in the machine to map to host GID
+	gid: ?int
+) -> (
+	# Mapped UID
+	uid: ?int,
+	# Mapped GID
+	gid: ?int
+)
+
+# Maps given host's UID/GID to a machine and corresponding UID/GID
+method MapTo(
+	# Host UID to map to machine UID
+	uid: ?int,
+	# Host GID to map to machine GID
+	gid: ?int
+) -> (
+	# Mapped UID
+	uid: ?int,
+	# Mapped GID
+	gid: ?int,
+	# Machine's name which owns mapped UID/GID
+	machineName: ?string
+)
+
+# Bind mounts a file or directory from the host into the container
+method BindMount(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# The source directory/file on the host. The path must be absolute.
+	source: string,
+	# The destination directory/file in the container. The path must be absolute. If null, it's equal to 'source'
+	destination: ?string,
+	# If true, the bind mount shall be read-only
+	readOnly: ?bool,
+	# The destination mount point shall be created first, if it is missing
+	mkdir: ?bool
+) -> ()
+
+# Copy files or directories from a container into the host
+method CopyFrom(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# The absolute path to source directory/file in the container
+	source: string,
+	# The absolute path to destination directory/file on the host. If null, it's equal to 'source'.
+	destination: ?string,
+	# If true the destination will be replaced
+	replace: ?bool
+) -> ()
+
+# Copy files or directories from the host into a container
+method CopyTo(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool,
+	# The absolute path to source directory/file on the host
+	source: string,
+	# The absolute path to destination directory/file in the container. If null, it's equal to 'source'
+	destination: ?string,
+	# If true the destination will be replaced
+	replace: ?bool
+) -> ()
+
+# Opens machine's root directory
+method OpenRootDirectory(
+	# If non-null the name of a machine.
+	name: ?string,
+	# If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of.
+	pid: ?ProcessId,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> (
+	# File descriptor of opened root directory
+	fileDescriptor: int
+)
+
+# No matching machine currently running
+error NoSuchMachine()
+
+error MachineExists()
+
+# Machine does not use private networking
+error NoPrivateNetworking()
+
+# Machine does not contain OS release information
+error NoOSReleaseInformation()
+
+# Machine uses a complex UID/GID mapping, cannot determine shift
+error NoUIDShift()
+
+# Requested information is not available
+error NotAvailable()
+
+# Requested operation is not supported
+error NotSupported()
+
+# There is no IPC service (such as system bus or varlink) in the container
+error NoIPC()
+
+# No such user
+error NoSuchUser()
+
+# No such group
+error NoSuchGroup()
+
+# User belongs to host UID range
+error UserInHostRange()
+
+# Group belongs to host GID range
+error GroupInHostRange()

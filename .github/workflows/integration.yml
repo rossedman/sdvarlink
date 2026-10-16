@@ -1,0 +1,62 @@
+name: Integration
+
+# Runs the integration tests against real systemd, one container per
+# supported release, booted with systemd as PID 1. Only read-only methods
+# are called (see integration/integration_test.go).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  systemd:
+    name: systemd ${{ matrix.systemd }} (${{ matrix.image }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - systemd: v257
+            image: fedora:42
+          - systemd: v258
+            image: fedora:43
+          - systemd: newest
+            image: fedora:rawhide
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Build static test binary
+        run: CGO_ENABLED=0 go test -c -tags integration -o integration.test ./integration/
+      - name: Boot systemd container
+        run: |
+          docker build --build-arg IMAGE=${{ matrix.image }} -t sdv-systemd integration/images
+          docker run -d --name sd --privileged --cgroupns=host \
+            -v /sys/fs/cgroup:/sys/fs/cgroup:rw -v "$PWD:/src:ro" sdv-systemd
+          for i in $(seq 1 60); do
+            state=$(docker exec sd systemctl is-system-running 2>/dev/null || true)
+            case "$state" in running|degraded) break;; esac
+            sleep 1
+          done
+          docker exec sd systemctl --version
+          docker exec sd systemctl start systemd-resolved systemd-hostnamed systemd-userdbd.socket || true
+      - name: Run integration tests
+        run: docker exec -w /src sd ./integration.test -test.v -test.count=1
+      - name: Capture IDL from the running systemd
+        if: always()
+        run: |
+          docker exec sd sh -c 'mkdir -p /tmp/idl && cd /src && cp hack/capture-idl.sh /tmp/ && bash /tmp/capture-idl.sh /tmp/idl' || true
+          docker cp sd:/tmp/idl ./captured-idl || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captured-idl-${{ matrix.systemd }}
+          path: captured-idl

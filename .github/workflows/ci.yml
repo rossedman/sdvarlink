@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (Go ${{ matrix.go }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [stable, oldstable]
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Unit tests (race)
+        run: go test -race -count=1 -coverprofile=coverage.out ./...
+      - name: Fuzz seeds
+        run: go test -run 'Fuzz' ./internal/wire/ ./varlink/ ./idl/
+      - name: Benchmarks (smoke)
+        run: go test -run '^$' -bench . -benchtime 200x ./varlink/
+      - uses: actions/upload-artifact@v4
+        if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
+        with:
+          name: coverage
+          path: coverage.out
+
+  macos:
+    name: Test (macOS, fake only)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      # Dial to systemd returns ErrUnsupported off Linux; the core and the
+      # fake still work over Unix sockets.
+      - run: go test -count=1 ./idl/... ./varlink/... ./varlinktest/... ./internal/... ./systemd/...
+
+  cross:
+    name: Cross-compile
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: |
+          for target in linux/amd64 linux/arm64 linux/riscv64 linux/s390x darwin/arm64 freebsd/amd64 windows/amd64; do
+            echo "== $target"
+            GOOS=${target%/*} GOARCH=${target#*/} CGO_ENABLED=0 go build ./...
+          done
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          # golangci-lint must be built with a Go at least as new as the one
+          # it type-checks; lint at the module's minimum Go version.
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.5.0
+
+  generated:
+    name: Generated code is fresh
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: make check-generated
+      - name: IDL snapshots match systemd sources
+        run: |
+          for dir in idl/v*/; do
+            v=$(basename "$dir"); v=${v#v}
+            hack/extract-idl.sh "$v"
+          done
+          git diff --exit-code -- idl/

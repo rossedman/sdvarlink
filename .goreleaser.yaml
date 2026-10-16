@@ -1,0 +1,104 @@
+# GoReleaser configuration. The Go packages are consumed with `go get`;
+# releases ship the sdvarlink-gen code generator as prebuilt binaries.
+#
+#   goreleaser check                          # validate this file
+#   goreleaser release --snapshot --clean     # local snapshot build into dist/
+#
+# CI builds a snapshot on every branch push and publishes a GitHub release
+# for every v* tag (.github/workflows/release.yml).
+version: 2
+
+project_name: sdvarlink
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./internal/gen/ ./idl/
+
+builds:
+  - id: sdvarlink-gen
+    main: ./cmd/sdvarlink-gen
+    binary: sdvarlink-gen
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .ShortCommit }}
+      - -X main.date={{ .CommitDate }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos: [linux, darwin, freebsd]
+    goarch: [amd64, arm64]
+
+archives:
+  - id: sdvarlink-gen
+    ids: [sdvarlink-gen]
+    formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}-gen_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    # The IDL snapshots and generator config make the binary usable on its
+    # own: sdvarlink-gen generate -idl idl -config idl/generate.json
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+      - idl/generate.json
+      - idl/v*/*.varlink
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  # e.g. 0.1.1-snapshot.claude-sdvarlink-v0.a1b2c3d
+  version_template: >-
+    {{ incpatch .Version }}-snapshot.{{ replace (replace .Branch "/" "-") "_" "-" }}.{{ .ShortCommit }}
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - "^WIP"
+      - "Merge pull request"
+      - "Merge branch"
+  groups:
+    - title: New systemd releases
+      regexp: '^.*?idl(\(.+\))??!?:.+$'
+      order: 0
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 1
+    - title: Bug fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 2
+    - title: Other changes
+      order: 999
+
+release:
+  github:
+    owner: rossedman
+    name: sdvarlink
+  prerelease: auto
+  mode: replace
+  header: |
+    ## sdvarlink {{ .Tag }}
+
+    Use the library with:
+
+    ```sh
+    go get github.com/rossedman/sdvarlink@{{ .Tag }}
+    ```
+
+    The archives below contain `sdvarlink-gen`, the generator that turns
+    Varlink IDL into typed Go packages, plus the IDL snapshots it was
+    released with. See the [API changes](https://rossedman.github.io/sdvarlink/reference/api-changes/)
+    for what changed in systemd itself.
+  footer: |
+    **Full changelog**: https://github.com/rossedman/sdvarlink/compare/{{ .PreviousTag }}...{{ .Tag }}

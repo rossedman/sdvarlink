@@ -1,0 +1,223 @@
+site_name: sdvarlink
+site_description: >-
+  Typed, generated Go clients for systemd's io.systemd.* Varlink APIs:
+  streaming replies as iterators, file-descriptor passing, typed errors and a
+  fake server for tests. Pure Go, no cgo.
+site_author: Ross Edman
+site_url: https://rossedman.github.io/sdvarlink/
+repo_url: https://github.com/rossedman/sdvarlink
+repo_name: rossedman/sdvarlink
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Ross Edman &middot; MIT License
+
+theme:
+  name: material
+  language: en
+  logo: assets/logo-mono.svg
+  favicon: assets/favicon.svg
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+    admonition:
+      note: octicons/note-16
+      tip: octicons/light-bulb-16
+      warning: octicons/alert-16
+      danger: octicons/zap-16
+      example: octicons/beaker-16
+      info: octicons/info-16
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.footer
+    - navigation.indexes
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rossedman/sdvarlink
+      name: sdvarlink on GitHub
+    - icon: fontawesome/brands/golang
+      link: https://pkg.go.dev/github.com/rossedman/sdvarlink
+      name: API reference on pkg.go.dev
+    - icon: material/rss
+      link: https://github.com/rossedman/sdvarlink/releases.atom
+      name: Release feed
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link to this section
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path: [".", "docs"]
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Core concepts: getting-started/concepts.md
+  - Guides:
+      - guides/index.md
+      - Typed clients: guides/typed-clients.md
+      - Streaming with iterators: guides/streaming.md
+      - File descriptors: guides/file-descriptors.md
+      - Errors: guides/errors.md
+      - Versioning & feature detection: guides/versioning.md
+      - Concurrency & pools: guides/concurrency.md
+      - Raw calls & the core package: guides/raw-calls.md
+      - Testing with varlinktest: guides/testing.md
+      - Migrating from go-systemd D-Bus: guides/migrating-from-dbus.md
+      - Security model: guides/security.md
+  - Examples:
+      - examples/index.md
+      - Queries:
+          - Resolve a hostname: examples/resolve-hostname.md
+          - Describe the host: examples/hostname.md
+          - Concurrent lookups: examples/concurrent-lookups.md
+          - Journal control: examples/journal-control.md
+      - Streaming:
+          - List users: examples/list-users.md
+          - List units: examples/list-units.md
+          - List machines: examples/machines.md
+          - Monitor DNS: examples/dns-monitor.md
+          - Read metrics: examples/metrics.md
+      - File descriptors:
+          - Mount a disk image: examples/mount-image.md
+      - Core & introspection:
+          - Introspect a service: examples/introspect.md
+          - Raw calls: examples/raw-call.md
+          - Feature detection: examples/feature-detect.md
+      - Testing:
+          - Testing with a fake: examples/testing-with-fake.md
+          - Record & replay: examples/record-replay.md
+  - Reference:
+      - reference/index.md
+      - Interfaces:
+          - reference/interfaces.md
+          # BEGIN generated interface nav
+          - io.systemd: reference/interfaces/systemd.md
+          - io.systemd.AskPassword: reference/interfaces/askpassword.md
+          - io.systemd.BootControl: reference/interfaces/bootcontrol.md
+          - io.systemd.Credentials: reference/interfaces/credentials.md
+          - io.systemd.FactoryReset: reference/interfaces/factoryreset.md
+          - io.systemd.Hostname: reference/interfaces/hostname.md
+          - io.systemd.Import: reference/interfaces/importd.md
+          - io.systemd.Journal: reference/interfaces/journal.md
+          - io.systemd.JournalAccess: reference/interfaces/journalaccess.md
+          - io.systemd.Login: reference/interfaces/login.md
+          - io.systemd.Machine: reference/interfaces/machine.md
+          - io.systemd.MachineImage: reference/interfaces/machineimage.md
+          - io.systemd.ManagedOOM: reference/interfaces/managedoom.md
+          - io.systemd.Manager: reference/interfaces/manager.md
+          - io.systemd.Metrics: reference/interfaces/metrics.md
+          - io.systemd.MountFileSystem: reference/interfaces/mountfilesystem.md
+          - io.systemd.MuteConsole: reference/interfaces/muteconsole.md
+          - io.systemd.NamespaceResource: reference/interfaces/namespaceresource.md
+          - io.systemd.Network: reference/interfaces/network.md
+          - io.systemd.Network.Link: reference/interfaces/networklink.md
+          - io.systemd.PCRExtend: reference/interfaces/pcrextend.md
+          - io.systemd.PCRLock: reference/interfaces/pcrlock.md
+          - io.systemd.Repart: reference/interfaces/repart.md
+          - io.systemd.Resolve: reference/interfaces/resolve.md
+          - io.systemd.Resolve.Hook: reference/interfaces/resolvehook.md
+          - io.systemd.Resolve.Monitor: reference/interfaces/resolvemonitor.md
+          - io.systemd.Udev: reference/interfaces/udev.md
+          - io.systemd.Unit: reference/interfaces/unit.md
+          - io.systemd.UserDatabase: reference/interfaces/userdatabase.md
+          - io.systemd.oom: reference/interfaces/oom.md
+          - io.systemd.oom.Prekill: reference/interfaces/oomprekill.md
+          - io.systemd.service: reference/interfaces/service.md
+          - io.systemd.sysext: reference/interfaces/sysext.md
+          # END generated interface nav
+      - API changes: reference/api-changes.md
+      - Type mapping & naming: reference/type-mapping.md
+      - Default sockets: reference/sockets.md
+      - sdvarlink-gen CLI: reference/cli.md
+  - Project:
+      - Architecture: project/architecture.md
+      - Design: project/design.md
+      - Roadmap: project/roadmap.md
+      - FAQ: project/faq.md
+      - Contributing: project/contributing.md
+      - Releases: project/releases.md
+      - Changelog: project/changelog.md

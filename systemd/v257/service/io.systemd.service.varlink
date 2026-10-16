@@ -1,0 +1,9 @@
+interface io.systemd.service
+
+method Ping() -> ()
+
+method Reload() -> ()
+
+method SetLogLevel(
+	level: int
+) -> ()

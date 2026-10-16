@@ -1,0 +1,14 @@
+interface io.systemd.PCRLock
+
+# [Requires 'more' flag]
+method ReadEventLog() -> (
+	record: object
+)
+
+method MakePolicy(
+	force: ?bool
+) -> ()
+
+method RemovePolicy() -> ()
+
+error NoChange()

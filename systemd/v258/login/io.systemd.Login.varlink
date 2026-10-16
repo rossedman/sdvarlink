@@ -1,0 +1,117 @@
+# APIs for managing login sessions.
+interface io.systemd.Login
+
+# Various types of sessions
+type SessionType(
+	unspecified,
+	tty,
+	x11,
+	wayland,
+	mir,
+	web
+)
+
+# Various classes of sessions
+type SessionClass(
+	# Regular user sessions
+	user,
+	# Session of the root user that shall be open for login from earliest moment on, and not be delayed for /run/nologin
+	user_early,
+	# Regular user session whose home directory is not available right now, but will be later, at which point the session class can be upgraded to 'user'
+	user_incomplete,
+	# A user session that doesn't pull in the per-user service manager
+	user_light,
+	# The combination of user_early and user_light
+	user_early_light,
+	# Display manager greeter screen used for login
+	greeter,
+	# Similar, but a a lock screen
+	lock_screen,
+	# Background session (that has no TTY, VT, Seat)
+	background,
+	# Similar, but for which no service manager is invoked
+	background_light,
+	# The special session of the service manager
+	manager,
+	# The special session of the service manager for the root user
+	manager_early
+)
+
+# Process identifier
+type ProcessId(
+	# Numeric UNIX PID value
+	pid: int,
+	# 64bit inode number of pidfd if known
+	pidfdId: ?int,
+	# Boot ID of the system the inode number belongs to
+	bootId: ?string
+)
+
+# Allocates a new session.
+method CreateSession(
+	# Numeric UNIX UID of the user this session shall be owned by
+	UID: int,
+	# Process that shall become the leader of the session. If null defaults to the IPC client.
+	PID: ?ProcessId,
+	# PAM service name of the program requesting the session
+	Service: ?string,
+	# The type of the session
+	Type: SessionType,
+	# The class of the session
+	Class: SessionClass,
+	# An identifier for the chosen desktop
+	Desktop: ?string,
+	# The name of the seat to assign this session to
+	Seat: ?string,
+	# The virtual terminal number to assign this session to
+	VTNr: ?int,
+	# The TTY device to assign this session to, if applicable
+	TTY: ?string,
+	# The X11 display for this session
+	Display: ?string,
+	# If true this is a remote session
+	Remote: ?bool,
+	# User name on the remote site, if known
+	RemoteUser: ?string,
+	# Host name of the remote host
+	RemoteHost: ?string
+) -> (
+	# The identifier string of the session of the user.
+	Id: string,
+	# The runtime path ($XDG_RUNTIME_DIR) of the user.
+	RuntimePath: string,
+	# The original UID of this session.
+	UID: int,
+	# The seat this session has been assigned to
+	Seat: ?string,
+	# The virtual terminal number the session has been assigned to
+	VTNr: ?int,
+	# The assigned session type
+	Type: SessionType,
+	# The assigned session class
+	Class: SessionClass
+)
+
+# Releases an existing session. Currently, will be refuses unless originating from the session to release itself.
+method ReleaseSession(
+	# The identifier string of the session to release. If unspecified or 'self', will return the callers session.
+	Id: ?string
+) -> ()
+
+# No session by this name found
+error NoSuchSession()
+
+# No seat by this name found
+error NoSuchSeat()
+
+# Process already member of a session
+error AlreadySessionMember()
+
+# The specified virtual terminal (VT) is already taken by another session
+error VirtualTerminalAlreadyTaken()
+
+# Maximum number of sessions reached
+error TooManySessions()
+
+# Failed to allocate a unit for the session
+error UnitAllocationFailed()

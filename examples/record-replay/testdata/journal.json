@@ -1,0 +1,30 @@
+[
+  {
+    "call": {
+      "method": "org.varlink.service.GetInfo",
+      "parameters": {}
+    },
+    "replies": [
+      {
+        "vendor": "The systemd Project",
+        "product": "systemd (systemd-journald)",
+        "version": "255 (255.4-1ubuntu8.17)",
+        "url": "https://systemd.io/",
+        "interfaces": [
+          "io.systemd",
+          "io.systemd.Journal",
+          "org.varlink.service"
+        ]
+      }
+    ]
+  },
+  {
+    "call": {
+      "method": "io.systemd.Journal.Synchronize",
+      "parameters": {}
+    },
+    "replies": [
+      {}
+    ]
+  }
+]
