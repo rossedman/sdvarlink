@@ -23,5 +23,3 @@ func peerCredentials(c *net.UnixConn) (Peer, error) {
 	}
 	return Peer{UID: cred.Uid, GID: cred.Gid, PID: cred.Pid}, nil
 }
-
-func errnoName(e unix.Errno) string { return unix.ErrnoName(e) }

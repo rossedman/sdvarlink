@@ -2,11 +2,6 @@
 
 package varlink
 
-import (
-	"net"
-	"syscall"
-)
+import "net"
 
 func peerCredentials(*net.UnixConn) (Peer, error) { return Peer{}, ErrUnsupported }
-
-func errnoName(syscall.Errno) string { return "" }

@@ -250,8 +250,9 @@ if errors.Is(err, varlink.ErrNotActivated) {
   (`0755`), replaces a stale socket file left by a crashed run, refuses a path
   where another server is listening, and sets the socket mode (default `0660`)
   and optional owner. The socket is created with its final permissions in a
-  private directory and renamed into place, and a `.<name>.lock` file next to
-  it serializes concurrent starts. The socket file is removed when the server
+  private directory and renamed into place (except for a path within about 15
+  bytes of the socket path limit, which is bound in place), and a
+  `.<name>.lock` file next to it serializes concurrent starts. The socket file is removed when the server
   stops.
 - **`varlink.ListenActivated(name)`** adopts a socket from `$LISTEN_FDS`. With
   several sockets, `name` picks one by its `FileDescriptorName=`, so one daemon

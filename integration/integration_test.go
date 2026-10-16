@@ -228,7 +228,9 @@ func TestVarlinkctlAgainstServer(t *testing.T) {
 		t.Fatalf("introspect:\n%s", out)
 	}
 	out, err := exec.Command(bin, "call", path, "io.example.Count.Add", `{"a":"x","b":1}`).CombinedOutput()
-	if err == nil || !strings.Contains(string(out), "InvalidParameter") {
+	// varlinkctl v255 prints the error name; v258 and later print it as
+	// "Invalid argument". Both print the parameters.
+	if err == nil || !strings.Contains(string(out), `"parameter"`) || !strings.Contains(string(out), `"a"`) {
 		t.Fatalf("bad parameter accepted:\n%s", out)
 	}
 }
