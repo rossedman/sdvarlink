@@ -16,7 +16,8 @@
 **sdvarlink** gives Go programs typed, generated, tested clients for systemd's
 `io.systemd.*` [Varlink](https://varlink.org/) interfaces. It does for
 Varlink what [coreos/go-systemd](https://github.com/coreos/go-systemd) does
-for D-Bus.
+for D-Bus, and it can serve Varlink too, so your Go daemons can publish
+interfaces that systemd's tooling calls like any other.
 
 ```go
 c, err := resolve.Dial(ctx) // /run/systemd/resolve/io.systemd.Resolve
@@ -50,6 +51,7 @@ Until now, Go programs had to hand-roll JSON over sockets or shell out to
 | **File-descriptor passing** | `*os.File` fields travel as `SCM_RIGHTS` in both directions, attached to the right message, with leak-proof ownership rules. |
 | **Typed errors** | `errors.As(err, &resolve.NoNameServersError{})`, `errors.Is(err, resolve.ErrNoNameServers)`, and `io.systemd.System` errors that unwrap to `syscall.Errno`. |
 | **Versioned per systemd release** | Import `systemd/v257/...` to support the oldest systemd you need, or `systemd/latest/...`; feature-detect newer methods with `Supports`. |
+| **Serve interfaces too** | `varlink.Server` serves your own interfaces, or systemd's such as `io.systemd.Metrics`, with typed handlers, streams, peer credentials and socket activation. `varlinkctl` can't tell it from a C service. |
 | **A fake for your tests** | `varlinktest` serves canned, scripted, streaming or recorded replies over a real socket — no systemd needed in CI. |
 | **Small and pure Go** | No cgo; the runtime depends only on the standard library and `golang.org/x/sys`. |
 
@@ -120,6 +122,23 @@ func TestLookup(t *testing.T) {
 }
 ```
 
+### Serve your own interface
+
+```go
+srv := varlink.NewServer(varlink.ServerInfo{Vendor: "Example", Product: "queued", Version: "1.0"})
+iface := srv.Interface("io.example.Queue", queueIDL) // the IDL clients will introspect
+
+varlink.Handle(iface, "Depth", func(ctx context.Context, call *varlink.Call, _ struct{}) (DepthOut, error) {
+    return DepthOut{Jobs: q.Len()}, nil
+})
+
+l, err := varlink.ListenActivated("") // a systemd .socket unit, or…
+if errors.Is(err, varlink.ErrNotActivated) {
+    l, err = varlink.Listen("/run/queued/io.example.Queue")
+}
+return srv.Serve(ctx, l) // drains in-flight calls when ctx ends
+```
+
 ### Call anything, raw
 
 ```go
@@ -130,8 +149,8 @@ err := conn.Call(ctx, "io.systemd.Manager.Describe", nil, &out)
 
 More in [`examples/`](examples/): resolving names, listing users, units and
 machines, a DNS query monitor, mounting images by fd, metrics, a mini
-`varlinkctl`, feature detection, and testing with fakes and recorded golden
-files.
+`varlinkctl`, feature detection, testing with fakes and recorded golden
+files, and two servers: a job queue and an `io.systemd.Metrics` provider.
 
 ## How it fits together
 

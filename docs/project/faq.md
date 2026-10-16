@@ -73,10 +73,11 @@ description: Frequently asked questions about sdvarlink.
 
 ??? question "Can I use sdvarlink for my own Varlink services?"
 
-    As a **client**, yes: the `varlink` core calls any Varlink service, and
-    `sdvarlink-gen` can generate bindings from your own IDL with a custom
-    `generate.json`. A server framework is a non-goal; the only planned server
-    piece is a minimal `io.systemd.Metrics` provider (see [Roadmap](roadmap.md)).
+    Yes, on both sides. The `varlink` core **calls** any Varlink service, and
+    `varlink.Server` **serves** your own interfaces (or systemd's, such as
+    `io.systemd.Metrics`) with typed handlers; see
+    [Serving Varlink](../guides/server.md). `sdvarlink-gen` can generate
+    client bindings from your own IDL with a custom `generate.json`, and
     `varlinktest` can *fake* any interface in tests.
 
 ??? question "Does it support TCP or remote hosts?"

@@ -46,4 +46,4 @@ io.systemd.Manager.unitActiveState{ssh.service} "active"
 ## See also
 
 - [Streaming](../guides/streaming.md)
-- [Roadmap: metrics server package](../project/roadmap.md)
+- [Publish metrics](metrics-provider.md): the server side

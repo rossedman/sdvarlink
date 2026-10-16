@@ -4,9 +4,10 @@ description: sdvarlink's security model — authorization stays with systemd, re
 
 # Security model
 
-sdvarlink is a client library. It adds **no privilege** and makes **no
-authorization decisions**: it connects to sockets systemd created, sends what
-you ask, and decodes what comes back, defensively.
+As a client, sdvarlink adds **no privilege** and makes **no authorization
+decisions**: it connects to sockets systemd created, sends what you ask, and
+decodes what comes back, defensively. When you *serve* with `varlink.Server`,
+authorization is yours: see [Serving a service](#serving-a-service) below.
 
 ## Authorization stays with systemd
 
@@ -117,3 +118,27 @@ and CI fails if it drifts from what the generator produces
 Please report security issues privately through
 [GitHub security advisories](https://github.com/rossedman/sdvarlink/security/advisories/new)
 rather than in a public issue.
+
+## Serving a service
+
+When your program serves Varlink with `varlink.Server`, the roles flip:
+clients are untrusted input and your handlers decide who may do what.
+
+- **Authorize in the handler.** `call.Peer()` gives the caller's UID, GID and
+  PID from `SO_PEERCRED`. Decide on UID and GID; PIDs are reused. Return
+  `varlink.ErrPermissionDenied` to refuse.
+- **Restrict the socket.** Set `SocketMode=` and `SocketGroup=` in the
+  `.socket` unit, or `varlink.WithSocketMode` / `varlink.WithSocketOwner`
+  with `varlink.Listen` (default mode `0660`), so only the right users can
+  connect at all.
+- **Parameters are validated before handlers run**, against the IDL: missing,
+  mistyped and unknown fields are refused with `InvalidParameter`.
+- **Internal errors don't leak.** A handler error that is not a Varlink error
+  reaches the client as `io.systemd.System` `EIO`; the detail goes to the log.
+  Panics are recovered the same way.
+- **Resource limits.** Calls over 16 MiB close the connection, at most 16
+  descriptors are accepted per read, and at most 256 connections are served
+  at once (`WithServerMaxFrameSize`, `WithServerMaxFiles`,
+  `WithMaxConnections`). `WithIdleTimeout` closes idle connections.
+- **No parameter logging.** The server logs method names and errors, never
+  call parameters.

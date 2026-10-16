@@ -46,12 +46,15 @@ timeline
 
 <div class="grid cards" markdown>
 
--   :material-chart-box-outline:{ .lg .middle } **Minimal metrics server**
+-   :material-check-circle-outline:{ .lg .middle } **Varlink server** (done)
 
     ---
 
-    A small server package so Go daemons can **publish** `io.systemd.Metrics`
-    under `/run/systemd/report/`, the base for report2otel.
+    `varlink.Server` serves interfaces from Go: typed handlers, live and list
+    streams, peer credentials, socket activation and graceful shutdown. Go
+    daemons can now **publish** `io.systemd.Metrics` under
+    `/run/systemd/report/`, the base for report2otel. See
+    [Serving Varlink](../guides/server.md).
 
 -   :material-swap-horizontal-bold:{ .lg .middle } **tether backend**
 
@@ -66,7 +69,7 @@ timeline
 
 These are deliberate [non-goals](design.md#goals-and-non-goals): replacing
 go-systemd's D-Bus packages, wrapping `systemctl` semantics,
-`org.varlink.resolver`, TCP/TLS or remote transports, and a general-purpose
-Varlink server framework.
+`org.varlink.resolver`, and TCP/TLS or remote transports. The server serves
+Unix sockets only, and has no `upgrade` support yet.
 
 Have a use case that doesn't fit? [Open an issue](https://github.com/rossedman/sdvarlink/issues/new/choose).

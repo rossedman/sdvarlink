@@ -163,3 +163,72 @@ func TestVarlinkctlAgainstFake(t *testing.T) {
 		t.Fatalf("introspect:\n%s", out)
 	}
 }
+
+// TestVarlinkctlAgainstServer is the server's acceptance test: systemd's
+// own client calls, streams from and introspects a Go service.
+func TestVarlinkctlAgainstServer(t *testing.T) {
+	bin, err := exec.LookPath("varlinkctl")
+	if err != nil {
+		t.Skip("varlinkctl not installed")
+	}
+	const idlText = "interface io.example.Count\n\nmethod Add(a: int, b: int) -> (sum: int)\n\n# [Requires 'more' flag]\nmethod Count(to: int) -> (n: int)\n"
+	type addIn struct {
+		A int64 `json:"a"`
+		B int64 `json:"b"`
+	}
+	type addOut struct {
+		Sum int64 `json:"sum"`
+	}
+	type countIn struct {
+		To int64 `json:"to"`
+	}
+	type countOut struct {
+		N int64 `json:"n"`
+	}
+	srv := varlink.NewServer(varlink.ServerInfo{Vendor: "sdvarlink", Product: "countd", Version: "1"})
+	iface := srv.Interface("io.example.Count", idlText)
+	varlink.Handle(iface, "Add", func(ctx context.Context, call *varlink.Call, in addIn) (addOut, error) {
+		return addOut{Sum: in.A + in.B}, nil
+	})
+	varlink.HandleStream(iface, "Count", func(ctx context.Context, call *varlink.Call, in countIn, send func(countOut) error) error {
+		for i := int64(1); i <= in.To; i++ {
+			if err := send(countOut{N: i}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}, varlink.LastIsFinal())
+	path := t.TempDir() + "/count"
+	l, err := varlink.Listen(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go srv.Serve(sctx, l)
+
+	run := func(args ...string) string {
+		t.Helper()
+		out, err := exec.Command(bin, args...).CombinedOutput()
+		if err != nil {
+			t.Fatalf("varlinkctl %v: %v\n%s", args, err, out)
+		}
+		return string(out)
+	}
+	if out := run("info", path); !strings.Contains(out, "io.example.Count") || !strings.Contains(out, "countd") {
+		t.Fatalf("info:\n%s", out)
+	}
+	if out := run("call", path, "io.example.Count.Add", `{"a":2,"b":40}`); !strings.Contains(out, `"sum"`) || !strings.Contains(out, "42") {
+		t.Fatalf("call:\n%s", out)
+	}
+	if out := run("call", "--more", path, "io.example.Count.Count", `{"to":3}`); strings.Count(out, `"n"`) != 3 {
+		t.Fatalf("call --more:\n%s", out)
+	}
+	if out := run("introspect", path, "io.example.Count"); !strings.Contains(out, "method Add") {
+		t.Fatalf("introspect:\n%s", out)
+	}
+	out, err := exec.Command(bin, "call", path, "io.example.Count.Add", `{"a":"x","b":1}`).CombinedOutput()
+	if err == nil || !strings.Contains(string(out), "InvalidParameter") {
+		t.Fatalf("bad parameter accepted:\n%s", out)
+	}
+}

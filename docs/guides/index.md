@@ -59,6 +59,13 @@ first; it takes five minutes and makes everything here click.
     `json.RawMessage` calls, `CallReply`, `WithFiles`, introspection and the
     IDL parser.
 
+-   :material-server-network:{ .lg .middle } **[Serving Varlink](server.md)**
+
+    ---
+
+    Serve your own interfaces, or systemd's, with typed handlers, live and
+    list streams, peer credentials and socket activation.
+
 -   :material-test-tube:{ .lg .middle } **[Testing with varlinktest](testing.md)**
 
     ---

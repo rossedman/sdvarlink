@@ -30,4 +30,8 @@
 //
 // Fields of type *os.File tagged `varlink:"name,fd"` are sent and received
 // as file descriptors; see Marshal.
+//
+// The package also serves Varlink: NewServer, Interface, Handle and
+// HandleStream register typed handlers, Listen and ListenActivated provide
+// sockets, and Server.Serve runs until its context ends. See Server.
 package varlink

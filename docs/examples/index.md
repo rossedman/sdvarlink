@@ -153,6 +153,30 @@ The varlink core and IDL parser, no bindings needed.
 
 </div>
 
+## Servers
+
+Serve Varlink interfaces from Go.
+
+<div class="grid cards" markdown>
+
+-   :material-tray-full:{ .lg .middle } **[A job queue service](queued.md)**
+
+    ---
+
+    A complete service with a typed call, a stream, a typed error, peer-credential checks and socket activation.
+
+    `io.example.Queue` · Unprivileged
+
+-   :material-chart-line:{ .lg .middle } **[Publish metrics](metrics-provider.md)**
+
+    ---
+
+    Serve io.systemd.Metrics with the generated types, readable by systemd tooling.
+
+    `io.systemd.Metrics` · Unprivileged
+
+</div>
+
 ## Testing
 
 Test code built on sdvarlink without systemd.
