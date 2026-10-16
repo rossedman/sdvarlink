@@ -1,0 +1,44 @@
+# A tiny job queue, served by examples/queued.
+interface io.example.Queue
+
+type Job(
+	# Unique job identifier.
+	id: int,
+	# What to run.
+	command: string,
+	# Scheduling priority.
+	priority: Priority
+)
+
+type Priority(
+	low,
+	normal,
+	high
+)
+
+# Returns the number of queued jobs.
+method Depth() -> (
+	jobs: int
+)
+
+# Adds a job. Only the queue's owner (and root) may enqueue.
+method Enqueue(
+	command: string,
+	priority: ?Priority
+) -> (
+	job: Job
+)
+
+# Streams queue events as jobs are added.
+# [Requires 'more' flag]
+method Watch(
+	# Also replay jobs already queued.
+	replay: ?bool
+) -> (
+	job: Job
+)
+
+# The queue holds as many jobs as it may.
+error QueueFull(
+	capacity: int
+)

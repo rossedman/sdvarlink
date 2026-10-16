@@ -145,6 +145,7 @@ nav:
       - Versioning & feature detection: guides/versioning.md
       - Concurrency & pools: guides/concurrency.md
       - Raw calls & the core package: guides/raw-calls.md
+      - Serving Varlink: guides/server.md
       - Testing with varlinktest: guides/testing.md
       - Migrating from go-systemd D-Bus: guides/migrating-from-dbus.md
       - Security model: guides/security.md
@@ -167,6 +168,9 @@ nav:
           - Introspect a service: examples/introspect.md
           - Raw calls: examples/raw-call.md
           - Feature detection: examples/feature-detect.md
+      - Servers:
+          - A job queue service: examples/queued.md
+          - Publish metrics: examples/metrics-provider.md
       - Testing:
           - Testing with a fake: examples/testing-with-fake.md
           - Record & replay: examples/record-replay.md

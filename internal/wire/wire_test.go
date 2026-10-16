@@ -204,3 +204,12 @@ func itoa(i int) string {
 	}
 	return string(b)
 }
+
+func TestFrameLimitOnCompleteMessage(t *testing.T) {
+	a, b := pair(t)
+	go a.Write(append(bytes.Repeat([]byte("x"), 2048), 0))
+	r := New(b, 1024, 4)
+	if _, _, err := r.ReadMessage(); !errors.Is(err, ErrFrameTooLarge) {
+		t.Fatalf("err = %v", err)
+	}
+}

@@ -204,6 +204,16 @@ passes file descriptors in both directions and ships a fake server for your test
 
     [:octicons-arrow-right-24: Versioning](guides/versioning.md)
 
+-   :material-server-network:{ .lg .middle } **Serve interfaces too**
+
+    ---
+
+    `varlink.Server` serves your own interfaces, or systemd's such as
+    `io.systemd.Metrics`, with typed handlers, streams, peer credentials and
+    socket activation.
+
+    [:octicons-arrow-right-24: Serving Varlink](guides/server.md)
+
 -   :material-test-tube:{ .lg .middle } **A fake server for tests**
 
     ---
