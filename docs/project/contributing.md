@@ -19,7 +19,7 @@ make docs-deps   # pip install -r docs/requirements.txt
 make docs-serve  # docs at http://127.0.0.1:8000
 ```
 
-You need Go 1.24 or newer. Linux is required for the fd-passing tests; the
+You need Go 1.26 or newer. Linux is required for the fd-passing tests; the
 core, the parser and the fake server also build and test on macOS.
 
 ## Make targets

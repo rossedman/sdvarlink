@@ -239,7 +239,7 @@ in disposable VMs.
 
 ## Compatibility, security and performance
 
-**Compatibility.** The two newest Go releases (Go 1.24+ today). systemd v257
+**Compatibility.** The two newest Go releases (Go 1.26+ today). systemd v257
 floor: older hosts get `ErrUnsupported` from `Dial` and fall back to go-systemd
 D-Bus. Linux only, amd64 and arm64 tested; other OSes compile the core and the
 fake for tests, but `Dial` returns `ErrUnsupported`. Dependencies: stdlib +
