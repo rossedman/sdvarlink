@@ -84,6 +84,11 @@ func (t *Transport) ReadMessage() ([]byte, []*os.File, error) {
 	for {
 		if i := bytes.IndexByte(t.buf[scanned:], 0); i >= 0 {
 			end := scanned + i
+			if end > t.maxFrame {
+				// A complete message can arrive in one read; the limit
+				// applies to it as much as to a partial one.
+				return nil, nil, ErrFrameTooLarge
+			}
 			msg := t.buf[:end]
 			last := t.bufStart + int64(end)
 			var files []*os.File

@@ -20,5 +20,7 @@ need root.
 | [feature-detect](feature-detect/) | `ErrUnsupported` and `Supports` across releases | several |
 | [introspect](introspect/) | `GetInfo`, `GetInterfaceDescription` and the `idl` parser | any |
 | [raw-call](raw-call/) | The core package alone: a tiny `varlinkctl call` | any |
+| [queued](queued/) | **Serving:** a complete service with a stream, typed errors, peer credentials and socket activation | `io.example.Queue` (its own) |
+| [metrics-provider](metrics-provider/) | **Serving:** publish `io.systemd.Metrics` with the generated types | `io.systemd.Metrics` |
 | [testing-with-fake](testing-with-fake/) | Unit tests against `varlinktest` | `io.systemd.Resolve` |
 | [record-replay](record-replay/) | Golden files recorded from a real journald | `io.systemd.Journal` |

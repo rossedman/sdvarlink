@@ -254,3 +254,48 @@ func TestExtraRoundTrips(t *testing.T) {
 		t.Fatalf("encoded = %s", data)
 	}
 }
+
+// TestServeGeneratedInterface serves io.systemd.Resolve with the generated
+// types and calls it with the generated client: both halves of sdvarlink
+// agree on the wire.
+func TestServeGeneratedInterface(t *testing.T) {
+	srv := varlink.NewServer(varlink.ServerInfo{Product: "fake-resolved"})
+	iface := srv.Interface(resolve.InterfaceName, resolve.InterfaceDescription)
+	varlink.Handle(iface, "ResolveHostname", func(ctx context.Context, call *varlink.Call, in resolve.ResolveHostnameIn) (resolve.ResolveHostnameOut, error) {
+		if in.Name == "missing.example" {
+			return resolve.ResolveHostnameOut{}, &resolve.NoSuchResourceRecordError{}
+		}
+		return resolve.ResolveHostnameOut{
+			Name:      in.Name,
+			Addresses: []resolve.ResolvedAddress{{Family: 2, Address: []int64{192, 0, 2, 1}}},
+		}, nil
+	})
+	dir := t.TempDir()
+	l, err := varlink.Listen(dir + "/resolve")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go srv.Serve(ctx, l)
+
+	c, err := resolve.DialPath(ctx, dir+"/resolve")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	out, err := c.ResolveHostname(ctx, resolve.ResolveHostnameIn{Name: "db.example"})
+	if err != nil || out.Name != "db.example" || out.Addresses[0].Address[3] != 1 {
+		t.Fatalf("out=%+v err=%v", out, err)
+	}
+	if _, err := c.ResolveHostname(ctx, resolve.ResolveHostnameIn{Name: "missing.example"}); !errors.Is(err, resolve.ErrNoSuchResourceRecord) {
+		t.Fatalf("err = %v", err)
+	}
+	// Methods without a handler answer MethodNotImplemented.
+	if _, err := c.ResolveAddress(ctx, resolve.ResolveAddressIn{Family: 2, Address: []int64{1, 2, 3, 4}}); !errors.Is(err, varlink.ErrMethodNotImplemented) {
+		t.Fatalf("err = %v", err)
+	}
+	if ok, _ := c.Supports(ctx, "BrowseServices"); !ok {
+		t.Fatal("Supports read the served IDL wrongly")
+	}
+}

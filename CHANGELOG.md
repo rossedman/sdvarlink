@@ -11,6 +11,30 @@ for what changed in systemd itself.
 
 ### Added
 
+- `varlink.Server`: serve Varlink interfaces from Go.
+  - Typed handlers (`Handle`, `HandleStream`) checked against the IDL at
+    registration, and parameters validated against it per call, as
+    sd-varlink does.
+  - Live and list streams (`LastIsFinal`), `AllowSingle`,
+    `AllowUnknownFields`, `oneway`, pipelined calls answered in order, and
+    file descriptors in both directions.
+  - Built-in `org.varlink.service` introspection, standard errors, and
+    handler errors mapped to `io.systemd.System`.
+  - Peer credentials (`Call.Peer`), `Listen` and `ListenActivated` (systemd
+    socket activation by `FileDescriptorName=`), and graceful shutdown.
+  - Connection, frame, fd and idle limits.
+- Examples `queued` (a complete service) and `metrics-provider` (serves
+  `io.systemd.Metrics` with the generated types).
+
+### Fixed
+
+- The frame size limit now also applies to complete messages that arrive in
+  a single read, on both the client and server side.
+
+## [0.1.0]
+
+### Added
+
 - `varlink`: Varlink client core — `Dial`, `DialService`, `NewConn`,
   `Conn.Call`, `CallReply`, `Stream` (as `iter.Seq2`), `Oneway`; `Pool`;
   `StreamAs`; context deadlines and cancellation.
@@ -35,4 +59,5 @@ for what changed in systemd itself.
 - GoReleaser releases of `sdvarlink-gen` for Linux, macOS and FreeBSD, with
   a snapshot build on every branch push.
 
-[Unreleased]: https://github.com/rossedman/sdvarlink/commits/main
+[Unreleased]: https://github.com/rossedman/sdvarlink/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/rossedman/sdvarlink/releases/tag/v0.1.0

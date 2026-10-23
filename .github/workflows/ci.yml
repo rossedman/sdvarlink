@@ -22,8 +22,8 @@ jobs:
         go: [stable, oldstable]
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
       - name: Unit tests (race)
@@ -32,7 +32,7 @@ jobs:
         run: go test -run 'Fuzz' ./internal/wire/ ./varlink/ ./idl/
       - name: Benchmarks (smoke)
         run: go test -run '^$' -bench . -benchtime 200x ./varlink/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
         with:
           name: coverage
@@ -42,8 +42,8 @@ jobs:
     name: Test (macOS, fake only)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       # Dial to systemd returns ErrUnsupported off Linux; the core and the
@@ -54,8 +54,8 @@ jobs:
     name: Cross-compile
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - run: |
@@ -68,13 +68,13 @@ jobs:
     name: Lint
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           # golangci-lint must be built with a Go at least as new as the one
           # it type-checks; lint at the module's minimum Go version.
           go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.5.0
 
@@ -82,8 +82,8 @@ jobs:
     name: Generated code is fresh
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - run: make check-generated
