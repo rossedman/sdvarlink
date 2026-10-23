@@ -6,7 +6,7 @@ description: Write, run and understand your first sdvarlink program in five minu
 
 In five minutes you'll ask `systemd-hostnamed` about your machine, the way
 `hostnamectl` does, then resolve a name through `systemd-resolved` and handle
-its typed errors. You need Go 1.24+ and a Linux host with systemd v257 or newer.
+its typed errors. You need Go 1.26+ and a Linux host with systemd v257 or newer.
 
 ## 1. Create a module
 

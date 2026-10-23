@@ -63,7 +63,7 @@ go get github.com/rossedman/sdvarlink@latest
 
 | Requirement | Supported |
 | --- | --- |
-| Go | 1.24+ (uses range-over-func iterators) |
+| Go | 1.26+ (uses range-over-func iterators) |
 | systemd | v257+ for the generated clients (older hosts get `varlink.ErrUnsupported`; fall back to D-Bus) |
 | OS | Linux (amd64, arm64 tested). Core, parser and fake also build and test on macOS/BSD. |
 
