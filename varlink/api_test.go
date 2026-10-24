@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -356,6 +357,17 @@ func TestDialErrors(t *testing.T) {
 	if _, err := varlink.Dial(t.Context(), missing); !errors.Is(err, syscall.ENOENT) {
 		t.Errorf("Dial missing = %v", err)
 	}
+	srv := newEcho(t)
+	if runtime.GOOS != "linux" {
+		// systemd only runs on Linux: DialService reports every path as
+		// unsupported, even one with a live server.
+		for _, path := range []string{missing, srv.Path()} {
+			if _, err := varlink.DialService(t.Context(), path); !errors.Is(err, varlink.ErrUnsupported) {
+				t.Errorf("DialService(%s) on %s = %v, want ErrUnsupported", path, runtime.GOOS, err)
+			}
+		}
+		return
+	}
 	_, err := varlink.DialService(t.Context(), missing)
 	if !errors.Is(err, varlink.ErrUnsupported) || !errors.Is(err, syscall.ENOENT) || !strings.Contains(err.Error(), missing) {
 		t.Errorf("DialService missing = %v", err)
@@ -365,7 +377,6 @@ func TestDialErrors(t *testing.T) {
 	if err == nil || errors.Is(err, varlink.ErrUnsupported) {
 		t.Errorf("DialService on an overlong path = %v", err)
 	}
-	srv := newEcho(t)
 	c, err := varlink.DialService(t.Context(), srv.Path())
 	if err != nil {
 		t.Fatal(err)
@@ -606,7 +617,7 @@ func ptr[T any](v T) *T { return &v }
 
 func TestWithSocketOwner(t *testing.T) {
 	t.Parallel()
-	path := t.TempDir() + "/sock"
+	path := sockPath(t)
 	l, err := varlink.Listen(path, varlink.WithSocketOwner(os.Getuid(), os.Getgid()))
 	if err != nil {
 		t.Fatal(err)
@@ -622,7 +633,7 @@ func TestWithSocketOwner(t *testing.T) {
 	}
 	// An owner change that is not permitted fails the Listen.
 	if os.Getuid() != 0 {
-		if _, err := varlink.Listen(t.TempDir()+"/s2", varlink.WithSocketOwner(0, -1)); !errors.Is(err, syscall.EPERM) {
+		if _, err := varlink.Listen(sockPath(t), varlink.WithSocketOwner(0, -1)); !errors.Is(err, syscall.EPERM) {
 			t.Errorf("Listen with foreign owner = %v", err)
 		}
 	}

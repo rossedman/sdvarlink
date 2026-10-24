@@ -54,10 +54,11 @@ func TestListenRefusals(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			dir := t.TempDir()
-			path := filepath.Join(dir, "sock")
+			// sockPath, not t.TempDir: the test name would push the path
+			// past the socket path limit on macOS (104 bytes).
+			path := sockPath(t)
 			if tc.name == "parent is a file" {
-				path = filepath.Join(dir, "blocker", "sock")
+				path = filepath.Join(filepath.Dir(path), "blocker", "sock")
 			}
 			tc.setup(t, path)
 			l, err := varlink.Listen(path)
@@ -77,7 +78,7 @@ func TestListenRefusals(t *testing.T) {
 
 func TestListenCloseKeepsReplacedSocket(t *testing.T) {
 	t.Parallel()
-	path := filepath.Join(t.TempDir(), "sock")
+	path := sockPath(t)
 	l, err := varlink.Listen(path)
 	if err != nil {
 		t.Fatal(err)

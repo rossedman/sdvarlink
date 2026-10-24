@@ -339,9 +339,11 @@ func TestParseRights(t *testing.T) {
 		return unix.UnixRights(d0, d1)
 	}
 	// A control message of another type, as the kernel could deliver.
+	// SCM_RIGHTS+1 is SCM_CREDENTIALS on Linux and SCM_TIMESTAMP on macOS
+	// and the BSDs; either way it is not SCM_RIGHTS.
 	other := make([]byte, unix.CmsgSpace(4))
 	h := (*unix.Cmsghdr)(unsafe.Pointer(&other[0]))
-	h.Level, h.Type = unix.SOL_SOCKET, unix.SCM_CREDENTIALS
+	h.Level, h.Type = unix.SOL_SOCKET, unix.SCM_RIGHTS+1
 	h.SetLen(unix.CmsgLen(4))
 
 	tests := []struct {
