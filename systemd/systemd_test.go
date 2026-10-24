@@ -6,10 +6,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"iter"
 	"os"
+	"reflect"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 
 	latestresolve "github.com/rossedman/sdvarlink/systemd/latest/resolve"
@@ -190,16 +194,51 @@ func TestSupportsAgainstFake(t *testing.T) {
 	}
 }
 
+// newestRelease returns the highest N among the systemd/vN directories, the
+// release systemd/latest must re-export.
+func newestRelease(t *testing.T) int {
+	t.Helper()
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	newest := 0
+	for _, e := range entries {
+		rest, ok := strings.CutPrefix(e.Name(), "v")
+		if !e.IsDir() || !ok {
+			continue
+		}
+		if n, err := strconv.Atoi(rest); err == nil && n > newest {
+			newest = n
+		}
+	}
+	if newest == 0 {
+		t.Fatal("no systemd/vN release directories")
+	}
+	return newest
+}
+
 func TestLatestAliases(t *testing.T) {
-	// latest re-exports the newest release, so values are interchangeable.
-	in := resolve.ResolveHostnameIn{Name: "x"}
-	var _ *latestresolve.ResolveHostnameIn = &in //nolint:staticcheck // asserts the alias is the same type
-	if latestresolve.SystemdVersion != resolve.SystemdVersion || latestresolve.DefaultSocket != resolve.DefaultSocket {
-		t.Fatal("latest does not match newest release")
+	// latest re-exports the newest release, whichever that is, so this test
+	// must not import a numbered release: the drift workflow adds new ones.
+	newest := newestRelease(t)
+	if latestresolve.SystemdVersion != newest {
+		t.Fatalf("latest.SystemdVersion = %d, newest release is v%d", latestresolve.SystemdVersion, newest)
+	}
+	// Aliases keep the defining package, so the types must come from vN.
+	want := fmt.Sprintf("github.com/rossedman/sdvarlink/systemd/v%d/resolve", newest)
+	for _, typ := range []reflect.Type{
+		reflect.TypeFor[latestresolve.ResolveHostnameIn](),
+		reflect.TypeFor[latestresolve.ResolveHostnameOut](),
+		reflect.TypeFor[latestresolve.Client](),
+	} {
+		if got := typ.PkgPath(); got != want {
+			t.Errorf("latest %s is defined in %s, want %s", typ.Name(), got, want)
+		}
 	}
 	srv := varlinktest.NewServer(t)
-	srv.Handle("io.systemd.Resolve.ResolveHostname", func(in resolve.ResolveHostnameIn) (resolve.ResolveHostnameOut, error) {
-		return resolve.ResolveHostnameOut{Name: in.Name}, nil
+	srv.Handle("io.systemd.Resolve.ResolveHostname", func(in latestresolve.ResolveHostnameIn) (latestresolve.ResolveHostnameOut, error) {
+		return latestresolve.ResolveHostnameOut{Name: in.Name}, nil
 	})
 	c, err := latestresolve.DialPath(context.Background(), srv.Path())
 	if err != nil {
