@@ -87,6 +87,10 @@ func Record(tb testing.TB, upstream, golden string) *Server {
 		}
 	})
 	tb.Cleanup(func() {
+		// A handler appends its exchange after the client has its reply, so
+		// stop the server and wait for every handler before writing; else the
+		// last call can be missing from the golden file.
+		s.Close()
 		up.Close()
 		mu.Lock()
 		defer mu.Unlock()
