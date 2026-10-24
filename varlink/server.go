@@ -176,6 +176,8 @@ func LastIsFinal() HandlerOption { return func(m *method) { m.holdLast = true } 
 // instead of answering InvalidParameter.
 func AllowUnknownFields() HandlerOption { return func(m *method) { m.allowUnknown = true } }
 
+// register checks a handler's Go types against the method's IDL and records
+// it. It panics on any mismatch or duplicate.
 func (i *Interface) register(name string, inType, outType any, stream bool, run func(context.Context, *Call, []byte, []*os.File, *replyWriter) error, opts []HandlerOption) {
 	def := i.def.Method(name)
 	if def == nil {
@@ -434,6 +436,8 @@ func (s *Server) Serve(ctx context.Context, l net.Listener) error {
 	return nil
 }
 
+// temporaryAcceptError reports whether an Accept error is transient (resource
+// exhaustion, an aborted connection, a timeout) and worth retrying.
 func temporaryAcceptError(err error) bool {
 	if errors.Is(err, net.ErrClosed) {
 		return false
@@ -468,6 +472,7 @@ type serverConn struct {
 	peerErr  error
 }
 
+// newConn wraps an accepted connection for serving.
 func (s *Server) newConn(nc *net.UnixConn, hard, streams context.Context, shutdown <-chan struct{}) *serverConn {
 	return &serverConn{
 		s: s, nc: nc,
@@ -476,11 +481,14 @@ func (s *Server) newConn(nc *net.UnixConn, hard, streams context.Context, shutdo
 	}
 }
 
+// peer returns the client's credentials, read once and cached.
 func (sc *serverConn) peer() (Peer, error) {
 	sc.peerOnce.Do(func() { sc.peerVal, sc.peerErr = peerCredentials(sc.nc) })
 	return sc.peerVal, sc.peerErr
 }
 
+// serve reads and answers calls on the connection until the client leaves, an
+// error occurs or the server shuts down. It closes the connection on return.
 func (sc *serverConn) serve() {
 	defer sc.t.Close()
 	// The client's lifetime: ends when it disconnects or calls are cut off.
@@ -613,6 +621,7 @@ func (sc *serverConn) dispatch(connCtx context.Context, m incoming) bool {
 	return sc.writeError(call.method, sc.errorFor(call, err))
 }
 
+// isObjectOrNull reports whether raw is empty, null or a JSON object.
 func isObjectOrNull(raw json.RawMessage) bool {
 	t := bytes.TrimSpace(raw)
 	return len(t) == 0 || bytes.Equal(t, []byte("null")) || t[0] == '{'
@@ -678,6 +687,7 @@ func (sc *serverConn) route(connCtx context.Context, call *Call, cm callMsg, fil
 	return herr
 }
 
+// runHandler runs a method's handler, turning a panic into errHandlerPanic.
 func (sc *serverConn) runHandler(ctx context.Context, call *Call, m *method, params []byte, files []*os.File, w *replyWriter) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -690,6 +700,7 @@ func (sc *serverConn) runHandler(ctx context.Context, call *Call, m *method, par
 
 var errHandlerPanic = errors.New("varlink: handler panicked")
 
+// builtin answers the methods of org.varlink.service.
 func (sc *serverConn) builtin(method string, cm callMsg, w *replyWriter) error {
 	switch method {
 	case "GetInfo":
@@ -723,6 +734,7 @@ func (sc *serverConn) builtin(method string, cm callMsg, w *replyWriter) error {
 	return &Error{Name: ErrMethodNotFound.Name, Parameters: mustParams(map[string]string{"method": cm.Method})}
 }
 
+// orEmpty returns b, or an empty JSON object if b is empty.
 func orEmpty(b []byte) []byte {
 	if len(b) == 0 {
 		return []byte("{}")
@@ -775,10 +787,12 @@ func (sc *serverConn) sanitize(call *Call, e *Error) *Error {
 	return e
 }
 
+// logHandlerError logs an error returned by a handler.
 func (sc *serverConn) logHandlerError(call *Call, err error) {
 	sc.s.cfg.logger.Error("varlink: handler failed", "method", call.method, "err", err)
 }
 
+// errnoError builds the io.systemd.System error for errno.
 func errnoError(errno syscall.Errno) *Error {
 	return &Error{Name: "io.systemd.System", Parameters: mustParams(map[string]any{
 		"origin":    "linux",
@@ -787,6 +801,8 @@ func errnoError(errno syscall.Errno) *Error {
 	})}
 }
 
+// invalidParameter builds an InvalidParameter error naming field, or
+// "parameters" if field is empty.
 func invalidParameter(field string) *Error {
 	if field == "" {
 		field = "parameters"
@@ -803,6 +819,7 @@ func fieldOf(err error) string {
 	return "parameters"
 }
 
+// mustParams marshals v as error parameters. It panics if v cannot be encoded.
 func mustParams(v any) json.RawMessage {
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -817,6 +834,7 @@ type serverReply struct {
 	Error      string          `json:"error,omitempty"`
 }
 
+// write sends one reply and its files, serialized with other writers.
 func (sc *serverConn) write(r serverReply, files []*os.File) error {
 	msg, err := json.Marshal(r)
 	if err != nil {
@@ -867,6 +885,8 @@ var (
 	errCallOver     = errors.New("varlink: send after the handler returned")
 )
 
+// encode marshals v into a reply and its files, refusing more files than the
+// limit allows.
 func (w *replyWriter) encode(v any) (*serverReply, []*os.File, error) {
 	params, files, err := Marshal(v)
 	if err != nil {
@@ -900,6 +920,8 @@ func (w *replyWriter) emitLocked(r *serverReply, files []*os.File, continues boo
 	return nil
 }
 
+// flushPendingLocked sends the held-back reply, if any, marked as continuing
+// or final. The caller must hold w.mu.
 func (w *replyWriter) flushPendingLocked(continues bool) error {
 	if w.pending == nil {
 		return nil
@@ -909,6 +931,8 @@ func (w *replyWriter) flushPendingLocked(continues bool) error {
 	return w.emitLocked(r, files, continues)
 }
 
+// usableLocked returns an error if the call is over or the connection is
+// broken. The caller must hold w.mu.
 func (w *replyWriter) usableLocked() error {
 	switch {
 	case w.closed:
@@ -984,6 +1008,7 @@ func (w *replyWriter) finish() error {
 	return w.emitLocked(&serverReply{Parameters: json.RawMessage("{}")}, nil, false)
 }
 
+// abandon records that the handler's context ended before it returned.
 func (w *replyWriter) abandon() {
 	w.mu.Lock()
 	w.abandoned = true

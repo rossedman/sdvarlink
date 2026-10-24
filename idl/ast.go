@@ -39,8 +39,9 @@ const (
 
 var kindNames = [...]string{"bool", "int", "float", "string", "object", "any", "named", "struct", "enum", "array", "map", "nullable"}
 
+// String returns the IDL name of k.
 func (k Kind) String() string {
-	if int(k) < len(kindNames) {
+	if k >= 0 && int(k) < len(kindNames) {
 		return kindNames[k]
 	}
 	return fmt.Sprintf("Kind(%d)", int(k))
@@ -87,6 +88,7 @@ const (
 	MoreRequired
 )
 
+// String returns a short name for the streaming mode m.
 func (m More) String() string {
 	switch m {
 	case MoreSupported:
@@ -159,6 +161,7 @@ func (t *Type) String() string {
 	return b.String()
 }
 
+// write formats t in IDL syntax into b.
 func (t *Type) write(b *strings.Builder) {
 	switch t.Kind {
 	case Nullable:

@@ -58,7 +58,10 @@ type QueueFullError struct {
 	Capacity int64 `json:"capacity"`
 }
 
-func (e *QueueFullError) Error() string        { return "queue full" }
+// Error implements error.
+func (e *QueueFullError) Error() string { return "queue full" }
+
+// VarlinkError returns the Varlink error name sent to the client.
 func (e *QueueFullError) VarlinkError() string { return "io.example.Queue.QueueFull" }
 
 // queue is the service's state: jobs plus subscribers for Watch.
@@ -70,6 +73,8 @@ type queue struct {
 	subs     map[chan Job]struct{}
 }
 
+// add queues a job and sends it to every subscriber, or returns a
+// *QueueFullError when the queue is at capacity.
 func (q *queue) add(command, priority string) (Job, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -88,6 +93,8 @@ func (q *queue) add(command, priority string) (Job, error) {
 	return j, nil
 }
 
+// subscribe returns a channel of jobs added from now on, a snapshot of the
+// jobs already queued, and a function that ends the subscription.
 func (q *queue) subscribe() (chan Job, []Job, func()) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -100,6 +107,7 @@ func (q *queue) subscribe() (chan Job, []Job, func()) {
 	}
 }
 
+// main runs the example; see the package comment for usage.
 func main() {
 	socket := flag.String("socket", "/run/queued/io.example.Queue", "socket path when not socket-activated")
 	capacity := flag.Int("capacity", 100, "maximum queued jobs")

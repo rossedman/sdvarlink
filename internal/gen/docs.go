@@ -161,6 +161,7 @@ func ReferenceDocs(cfg *Config, releases []Release) []Page {
 	return pages
 }
 
+// hasFD reports whether t has a field that carries a file descriptor index, per cfg.FDFieldSuffix.
 func hasFD(cfg *Config, t *idl.Type) bool {
 	for _, f := range t.Fields {
 		ft := f.Type
@@ -174,6 +175,7 @@ func hasFD(cfg *Config, t *idl.Type) bool {
 	return false
 }
 
+// goSignature renders the Go client method signature(s) generated for m.
 func goSignature(m *idl.Method) string {
 	name := GoName(m.Name)
 	in := ""
@@ -200,6 +202,7 @@ func goSignature(m *idl.Method) string {
 	return single
 }
 
+// fieldTable writes a Markdown table of t's fields to b.
 func fieldTable(b *strings.Builder, t *idl.Type) {
 	b.WriteString("| Field | Type | Description |\n| --- | --- | --- |\n")
 	for _, f := range t.Fields {
@@ -208,6 +211,7 @@ func fieldTable(b *strings.Builder, t *idl.Type) {
 	b.WriteString("\n")
 }
 
+// cell makes s safe for a Markdown table cell by escaping pipes and flattening newlines.
 func cell(s string) string {
 	s = strings.ReplaceAll(s, "|", "\\|")
 	s = strings.ReplaceAll(s, "\n", " ")

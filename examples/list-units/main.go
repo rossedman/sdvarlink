@@ -18,6 +18,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	name := flag.String("unit", "", "show a single unit")
 	flag.Parse()

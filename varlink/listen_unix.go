@@ -127,6 +127,8 @@ type pathListener struct {
 // Addr reports the socket's final path, not the one it was created at.
 func (l *pathListener) Addr() net.Addr { return &net.UnixAddr{Name: l.path, Net: "unix"} }
 
+// Close closes the listener and removes the socket file if it is still the one
+// Listen created.
 func (l *pathListener) Close() error {
 	err := l.UnixListener.Close()
 	l.once.Do(func() {

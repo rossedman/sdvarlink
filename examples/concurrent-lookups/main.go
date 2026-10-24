@@ -16,6 +16,7 @@ import (
 	"github.com/rossedman/sdvarlink/systemd/v257/resolve"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()

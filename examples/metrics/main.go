@@ -17,6 +17,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	sockets := os.Args[1:]
 	if len(sockets) == 0 {

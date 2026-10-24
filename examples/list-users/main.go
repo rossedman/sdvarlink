@@ -28,6 +28,7 @@ type userRecord struct {
 	Disposition   string `json:"disposition"`
 }
 
+// main runs the example; see the package comment for usage.
 func main() {
 	user := flag.String("user", "", "look up a single user")
 	flag.Parse()
@@ -63,6 +64,7 @@ func main() {
 	}
 }
 
+// print writes one user record as a row of w.
 func print(w *tabwriter.Writer, raw json.RawMessage) {
 	var u userRecord
 	if err := json.Unmarshal(raw, &u); err != nil {

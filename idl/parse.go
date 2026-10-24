@@ -12,6 +12,7 @@ type SyntaxError struct {
 	Msg       string
 }
 
+// Error formats the position and message of e.
 func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("idl:%d:%d: %s", e.Line, e.Col, e.Msg)
 }
@@ -54,10 +55,12 @@ type parser struct {
 	peeked    bool
 }
 
+// errorf returns a SyntaxError located at token t.
 func (p *parser) errorf(t token, format string, args ...any) error {
 	return &SyntaxError{Line: t.line, Col: t.col, Msg: fmt.Sprintf(format, args...)}
 }
 
+// advance moves the cursor forward n bytes, tracking line and column.
 func (p *parser) advance(n int) {
 	for i := 0; i < n; i++ {
 		if p.src[p.pos] == '\n' {
@@ -70,6 +73,7 @@ func (p *parser) advance(n int) {
 	}
 }
 
+// lex scans the next token, collecting the comment lines directly before it.
 func (p *parser) lex() token {
 	var comments []string
 	for p.pos < len(p.src) {
@@ -116,8 +120,10 @@ func (p *parser) lex() token {
 	return token{kind: tEOF, line: p.line, col: p.col, comments: comments}
 }
 
+// isIdent reports whether r may appear in an identifier.
 func isIdent(r rune) bool { return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) }
 
+// next consumes and returns the next token.
 func (p *parser) next() token {
 	if p.peeked {
 		p.peeked = false
@@ -127,6 +133,7 @@ func (p *parser) next() token {
 	return p.tok
 }
 
+// peek returns the next token without consuming it.
 func (p *parser) peek() token {
 	if !p.peeked {
 		p.tok = p.lex()
@@ -135,6 +142,7 @@ func (p *parser) peek() token {
 	return p.tok
 }
 
+// expect consumes the next token and fails unless its text is text.
 func (p *parser) expect(text string) (token, error) {
 	t := p.next()
 	if t.text != text {
@@ -143,6 +151,7 @@ func (p *parser) expect(text string) (token, error) {
 	return t, nil
 }
 
+// ident consumes the next token and fails unless it is an identifier.
 func (p *parser) ident() (token, error) {
 	t := p.next()
 	if t.kind != tIdent {
@@ -151,8 +160,10 @@ func (p *parser) ident() (token, error) {
 	return t, nil
 }
 
+// doc joins comment lines into one doc string.
 func doc(lines []string) string { return strings.Join(lines, "\n") }
 
+// parse parses a whole interface definition.
 func (p *parser) parse() (*Interface, error) {
 	t, err := p.expect("interface")
 	if err != nil {
@@ -228,6 +239,7 @@ func (p *parser) parse() (*Interface, error) {
 	}
 }
 
+// parseStruct parses a parenthesized list of name: type fields.
 func (p *parser) parseStruct() (*Type, error) {
 	t := p.peek()
 	typ, err := p.parseParens()
@@ -283,6 +295,7 @@ func (p *parser) parseParens() (*Type, error) {
 	}
 }
 
+// parseType parses one type expression.
 func (p *parser) parseType() (*Type, error) {
 	t := p.peek()
 	switch t.text {

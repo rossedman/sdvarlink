@@ -151,6 +151,9 @@ func Replay(tb testing.TB, golden string) *Server {
 	return s
 }
 
+// jsonEqual reports whether a and b hold the same JSON value, ignoring
+// formatting and key order. Empty input equals {}; input that is not valid
+// JSON is compared as raw text.
 func jsonEqual(a, b json.RawMessage) bool {
 	norm := func(m json.RawMessage) any {
 		if len(bytes.TrimSpace(m)) == 0 {

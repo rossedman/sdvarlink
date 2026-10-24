@@ -20,6 +20,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	more := flag.Bool("more", false, "request a stream of replies")
 	oneway := flag.Bool("oneway", false, "send without waiting for a reply")
@@ -69,6 +70,7 @@ func main() {
 	}
 }
 
+// print writes a reply to stdout, indented when it is valid JSON.
 func print(raw json.RawMessage) {
 	var buf bytes.Buffer
 	if json.Indent(&buf, raw, "", "  ") != nil {

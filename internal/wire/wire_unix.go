@@ -229,6 +229,9 @@ func (t *Transport) Close() error {
 	return t.conn.Close()
 }
 
+// parseRights returns the descriptors in the SCM_RIGHTS control messages of
+// oob as close-on-exec files, ignoring other control messages. On a parse
+// error it returns the files decoded so far along with the error.
 func parseRights(oob []byte) ([]*os.File, error) {
 	msgs, err := unix.ParseSocketControlMessage(oob)
 	if err != nil {

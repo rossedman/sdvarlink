@@ -32,6 +32,7 @@ type connOptions struct {
 	maxFiles int
 }
 
+// defaultOptions applies opts on top of the default frame and file limits.
 func defaultOptions(opts []Option) connOptions {
 	o := connOptions{maxFrame: DefaultMaxFrameSize, maxFiles: DefaultMaxFiles}
 	for _, opt := range opts {
@@ -179,6 +180,8 @@ func (c *Conn) Err() error {
 	return c.err
 }
 
+// fail marks the connection unusable with err, once, and closes the transport.
+// Later calls are no-ops.
 func (c *Conn) fail(err error) {
 	c.once.Do(func() {
 		c.mu.Lock()
@@ -216,6 +219,7 @@ func (c *Conn) acquire(ctx context.Context) error {
 	return nil
 }
 
+// release gives up the connection's call slot taken by acquire.
 func (c *Conn) release() { <-c.sem }
 
 var longAgo = time.Unix(1, 0)
@@ -312,6 +316,7 @@ func (c *Conn) encode(method string, in any, more, oneway bool, opts []CallOptio
 	return &outgoing{msg: msg, files: files}, nil
 }
 
+// send writes one prepared message with its files.
 func (c *Conn) send(out *outgoing) error { return c.t.WriteMessage(out.msg, out.files) }
 
 // recv reads one reply. A reply carrying an error is returned as an error;

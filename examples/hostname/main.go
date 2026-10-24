@@ -11,6 +11,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	ctx := context.Background()
 	c, err := hostname.Dial(ctx)

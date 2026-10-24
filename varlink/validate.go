@@ -45,8 +45,10 @@ func validateParams(iface *idl.Interface, in *idl.Type, params []byte, allowUnkn
 	return "", nil
 }
 
+// hasKey reports whether m has key k.
 func hasKey(m map[string]any, k string) bool { _, ok := m[k]; return ok }
 
+// hasField reports whether the struct type t defines a field called name.
 func hasField(t *idl.Type, name string) bool {
 	for _, f := range t.Fields {
 		if f.Name == name {
@@ -62,6 +64,8 @@ type validator struct {
 	depth        int
 }
 
+// field checks one struct field: a missing or null value is allowed only for
+// nullable types.
 func (vc validator) field(f *idl.Field, v any, present bool) error {
 	if !present || v == nil {
 		if f.Type.Kind == idl.Nullable {
@@ -72,6 +76,7 @@ func (vc validator) field(f *idl.Field, v any, present bool) error {
 	return vc.value(f.Type, v)
 }
 
+// value checks v, a decoded JSON value, against the IDL type t.
 func (vc validator) value(t *idl.Type, v any) error {
 	vc.depth++
 	if vc.depth > 64 {
@@ -194,6 +199,8 @@ func checkStruct(iface *idl.Interface, goType reflect.Type, t *idl.Type, output 
 	return tc.check(goType, t, "")
 }
 
+// check compares Go type g with IDL type t and reports the first mismatch,
+// naming it by its path.
 func (tc typeChecker) check(g reflect.Type, t *idl.Type, path string) error {
 	where := func(format string, args ...any) error {
 		p := path
@@ -320,6 +327,7 @@ func customJSON(t reflect.Type) bool {
 	return t.Implements(marshalerType) || reflect.PointerTo(t).Implements(unmarshalerType)
 }
 
+// nonNull returns the element of a nullable type, or t itself.
 func nonNull(t *idl.Type) *idl.Type {
 	if t.Kind == idl.Nullable {
 		return t.Elem
@@ -327,6 +335,7 @@ func nonNull(t *idl.Type) *idl.Type {
 	return t
 }
 
+// join appends name to a dotted field path.
 func join(path, name string) string {
 	if path == "" {
 		return name

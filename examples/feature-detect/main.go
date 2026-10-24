@@ -38,10 +38,13 @@ type probe struct {
 	method  string
 }
 
+// wrap adapts a generated client's Dial function to the probe's dial
+// signature.
 func wrap[C supporter](f func(context.Context, ...varlink.Option) (C, error)) func(context.Context) (supporter, error) {
 	return func(ctx context.Context) (supporter, error) { return f(ctx) }
 }
 
+// main runs the example; see the package comment for usage.
 func main() {
 	ctx := context.Background()
 	probes := []probe{
@@ -63,6 +66,7 @@ func main() {
 	w.Flush()
 }
 
+// check dials p's service and reports whether it offers p's method.
 func check(ctx context.Context, p probe) string {
 	c, err := p.dial(ctx)
 	if errors.Is(err, varlink.ErrUnsupported) {

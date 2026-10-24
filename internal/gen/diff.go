@@ -59,6 +59,7 @@ func Diff(old, new map[string]*idl.Interface) []Change {
 	return out
 }
 
+// methodSig renders a method's input, output and streaming mode as one comparable string.
 func methodSig(m *idl.Method) string {
 	s := m.In.String() + " -> " + m.Out.String()
 	if m.More != idl.MoreNone {
@@ -67,6 +68,7 @@ func methodSig(m *idl.Method) string {
 	return s
 }
 
+// union returns the sorted union of the keys of a and b.
 func union[V any](a, b map[string]V) []string {
 	set := map[string]bool{}
 	for k := range a {
@@ -83,6 +85,7 @@ func union[V any](a, b map[string]V) []string {
 	return keys
 }
 
+// diffMap compares two name-to-signature maps and reports added, removed and changed entries of the given kind.
 func diffMap(iface, kind string, o, n map[string]string) []Change {
 	var out []Change
 	for _, k := range union(o, n) {
@@ -185,4 +188,5 @@ func DiffMarkdown(from, to string, changes []Change) string {
 	return b.String()
 }
 
+// escapePipes escapes pipe characters so s fits in a Markdown table cell.
 func escapePipes(s string) string { return strings.ReplaceAll(s, "|", "\\|") }

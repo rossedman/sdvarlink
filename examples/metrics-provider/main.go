@@ -39,6 +39,7 @@ type sample struct {
 	value  any
 }
 
+// main runs the example; see the package comment for usage.
 func main() {
 	socket := flag.String("socket", "/run/systemd/report/io.example.MetricsDemo", "socket path when not socket-activated")
 	flag.Parse()
