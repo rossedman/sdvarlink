@@ -7,6 +7,7 @@ APIs for shutting down or rebooting the system.
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/shutdown`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/shutdown) |
+| Socket | `/run/systemd/io.systemd.Shutdown` |
 | Available since | systemd v262 |
 | Methods · types · errors | 5 · 0 · 2 |
 

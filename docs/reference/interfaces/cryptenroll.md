@@ -7,6 +7,7 @@ API for enrolling credentials into LUKS2 volumes via systemd-cryptenroll.
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/cryptenroll`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/cryptenroll) |
+| Socket | `/run/systemd/io.systemd.CryptEnroll` |
 | Available since | systemd v262 |
 | Methods · types · errors | 2 · 1 · 5 |
 

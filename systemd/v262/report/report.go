@@ -5,8 +5,8 @@
 //
 // Frontend API for generating system reports. This interface is implemented by systemd-report, which aggregates the metrics exposed by the io.systemd.Metrics services linked into /run/systemd/report/.
 //
-// systemd has no single well-known socket for this interface; connect
-// with DialPath, or wrap an existing connection with New.
+// systemd serves this interface at /run/systemd/io.systemd.Report. Connect with Dial, or with
+// DialPath for another socket such as a varlinktest fake.
 package report
 
 import (
@@ -23,6 +23,8 @@ const (
 	InterfaceName = "io.systemd.Report"
 	// SystemdVersion is the systemd release the bindings were generated from.
 	SystemdVersion = 262
+	// DefaultSocket is where systemd serves io.systemd.Report.
+	DefaultSocket = "/run/systemd/io.systemd.Report"
 )
 
 // InterfaceDescription is the IDL these bindings were generated from. Pass
@@ -40,6 +42,13 @@ type Client struct {
 // New returns a client that sends calls through c, for example a
 // *varlink.Conn, a *varlink.Pool or a test double.
 func New(c varlink.Caller) *Client { return &Client{c: c} }
+
+// Dial connects to systemd at DefaultSocket. If the socket does not exist
+// (older systemd, or the service is not running) or the platform is not
+// Linux, the error matches varlink.ErrUnsupported.
+func Dial(ctx context.Context, opts ...varlink.Option) (*Client, error) {
+	return dial(ctx, DefaultSocket, varlink.DialService, opts)
+}
 
 // DialPath connects to a service implementing the interface at path. The
 // client keeps a pool of connections, so concurrent calls do not wait for

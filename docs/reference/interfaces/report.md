@@ -7,6 +7,7 @@ Frontend API for generating system reports. This interface is implemented by sys
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/report`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/report) |
+| Socket | `/run/systemd/io.systemd.Report` |
 | Available since | systemd v262 |
 | Methods · types · errors | 2 · 1 · 0 |
 

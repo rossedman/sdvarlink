@@ -7,6 +7,7 @@ APIs to manage system updates
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/sysupdate`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/sysupdate) |
+| Socket | `/run/systemd/io.systemd.SysUpdate` |
 | Available since | systemd v262 |
 | Methods · types · errors | 3 · 4 · 2 |
 

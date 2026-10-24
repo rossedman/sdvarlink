@@ -18,6 +18,11 @@ func New(c varlink.Caller) *Client {
 	return v262.New(c)
 }
 
+// Dial calls v262.Dial.
+func Dial(ctx context.Context, opts ...varlink.Option) (*Client, error) {
+	return v262.Dial(ctx, opts...)
+}
+
 // DialPath calls v262.DialPath.
 func DialPath(ctx context.Context, path string, opts ...varlink.Option) (*Client, error) {
 	return v262.DialPath(ctx, path, opts...)
@@ -42,6 +47,7 @@ type (
 const (
 	InterfaceName           = v262.InterfaceName
 	SystemdVersion          = v262.SystemdVersion
+	DefaultSocket           = v262.DefaultSocket
 	WellKnownBase           = v262.WellKnownBase
 	WellKnownHostname       = v262.WellKnownHostname
 	WellKnownRegion         = v262.WellKnownRegion

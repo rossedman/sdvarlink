@@ -7,6 +7,7 @@ APIs for acquiring cloud IMDS information.
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/instancemetadata`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/instancemetadata) |
+| Socket | `/run/systemd/io.systemd.InstanceMetadata` |
 | Available since | systemd v262 |
 | Methods · types · errors | 2 · 1 · 6 |
 

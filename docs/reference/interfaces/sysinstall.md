@@ -7,6 +7,7 @@ API for installing the OS to another block device.
 | Property | Value |
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/sysinstall`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/sysinstall) |
+| Socket | `/run/systemd/io.systemd.SysInstall` |
 | Available since | systemd v262 |
 | Methods · types · errors | 2 · 4 · 4 |
 
