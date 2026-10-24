@@ -148,9 +148,9 @@ passes file descriptors in both directions and ships a fake server for your test
     ```
 
 <div class="sd-stats" markdown>
-<div class="sd-stat"><b>33</b><span>interfaces in systemd v260</span></div>
-<div class="sd-stat"><b>102</b><span>typed methods, generated</span></div>
-<div class="sd-stat"><b>3</b><span>pinned releases: v257 · v258 · v260</span></div>
+<div class="sd-stat"><b>46</b><span>interfaces in systemd v262</span></div>
+<div class="sd-stat"><b>168</b><span>typed methods, generated</span></div>
+<div class="sd-stat"><b>4</b><span>pinned releases: v257 · v258 · v260 · v262</span></div>
 <div class="sd-stat"><b>0</b><span>cgo, brokers or daemons</span></div>
 <div class="sd-stat"><b>1</b><span>dependency: golang.org/x/sys</span></div>
 </div>

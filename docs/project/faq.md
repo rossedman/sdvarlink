@@ -12,18 +12,19 @@ description: Frequently asked questions about sdvarlink.
 
 ??? question "Which systemd versions are supported?"
 
-    v257 and newer. Bindings are generated for v257, v258 and v260, and
-    `systemd/latest` points at v260. On older systemd, a service's socket
+    v257 and newer. Bindings are generated for v257, v258, v260 and v262, and
+    `systemd/latest` points at v262. On older systemd, a service's socket
     doesn't exist and `Dial` returns an error matching `varlink.ErrUnsupported`,
     which is your cue to fall back to D-Bus. See
     [Versioning & feature detection](../guides/versioning.md).
 
-??? question "Why is there no v259 package?"
+??? question "Why is there no v259 or v261 package?"
 
-    sdvarlink generates bindings for selected releases (v257, v258, v260). Each
-    package works against any newer systemd too, because newer releases accept
-    older calls and unknown reply fields land in `Extra`. For v259 hosts, import
-    `v258` packages (or `v260` and feature-detect what's new).
+    sdvarlink generates bindings for selected releases (v257, v258, v260, v262).
+    Each package works against any newer systemd too, because newer releases
+    accept older calls and unknown reply fields land in `Extra`. For v259 hosts,
+    import `v258` packages (or `v260` and feature-detect what's new); for v261,
+    import `v260` (or `v262` and feature-detect).
 
 ??? question "Should I import `systemd/v257/...` or `systemd/latest/...`?"
 

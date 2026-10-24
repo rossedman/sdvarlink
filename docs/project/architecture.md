@@ -15,7 +15,7 @@ is plain Go that needs only the standard library and `golang.org/x/sys`.
 ```mermaid
 flowchart TB
     APP["<b>Your program</b>"]
-    GEN["<b>Generated clients</b><br/>systemd/v257 · v258 · v260 · latest<br/>resolve.Client · userdatabase.Client · …"]
+    GEN["<b>Generated clients</b><br/>systemd/v257 · v258 · v260 · v262 · latest<br/>resolve.Client · userdatabase.Client · …"]
     CORE["<b>varlink</b> (core)<br/>Caller · Pool · Conn · codec · errors · introspection"]
     WIRE["<b>internal/wire</b><br/>NUL framing · SCM_RIGHTS · frame and fd limits"]
     SOCK[/"Unix socket /run/systemd/…"/]

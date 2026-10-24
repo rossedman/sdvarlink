@@ -130,7 +130,7 @@ at a time; a `Pool` hands out connections; generated clients wrap a `Pool`.
     Snapshots can also be **extracted from systemd's source** without booting
     it: `hack/extract-idl.sh` runs systemd's `SD_VARLINK_DEFINE_*` macros
     through the C preprocessor (`hack/idl-from-source/`). The committed
-    snapshots for v257, v258 and v260 came from this path; `hack/capture-idl.sh`
+    snapshots for v257, v258, v260 and v262 came from this path; `hack/capture-idl.sh`
     implements the boot-and-introspect path.
 
 **Type mapping.**
@@ -159,7 +159,7 @@ at a time; a `Pool` hands out connections; generated clients wrap a `Pool`.
     - The Go keyword package `import` is generated as `importd`.
     - The full rules are in [Type mapping & naming](../reference/type-mapping.md).
 
-**Layout.** `systemd/v257/…`, `v258`, `v260` are separate packages; import the
+**Layout.** `systemd/v257/…`, `v258`, `v260`, `v262` are separate packages; import the
 oldest you support. `systemd/latest` re-exports the newest. Each client exposes
 `Supports(ctx, "Method")` via live introspection. Unstable interfaces are
 generated under `x/` with no compatibility promise. Semver applies to the core
