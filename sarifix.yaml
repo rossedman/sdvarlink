@@ -3,7 +3,7 @@
 # working tree and HEAD with golangci-lint and Semgrep and reports only the
 # findings the uncommitted changes introduced. .github/workflows/sarifix.yml
 # runs the same scanners on pull requests and the default branch, and imports
-# CodeQL's alerts from code scanning (.github/workflows/codeql.yml).
+# CodeQL's alerts from code scanning (GitHub's CodeQL default setup).
 # Docs: https://rossedman.io/sarifix/configuration/
 version: 1
 
@@ -16,7 +16,7 @@ scanners:
     match: ["Semgrep OSS", "Semgrep"]
     command: ["semgrep", "scan", "--quiet", "--metrics=off", "--config", "p/default", "--sarif-output={out}", "{dir}"]
     timeout: 10m
-  # CodeQL runs in .github/workflows/codeql.yml and reports to code scanning.
+  # CodeQL runs as GitHub's code scanning default setup (Go, Actions, Python).
   # With no command, sarifix never runs it: the action imports its open alerts
   # so they become issues too. The local check and Stop hook skip it.
   - name: codeql

@@ -91,12 +91,6 @@
             "context": "gate"
           },
           {
-            "context": "analyze (go)"
-          },
-          {
-            "context": "analyze (actions)"
-          },
-          {
             "context": "systemd v257 (fedora:42)"
           },
           {

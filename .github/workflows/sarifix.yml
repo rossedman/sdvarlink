@@ -4,7 +4,8 @@ name: sarifix
 # requests it reports the findings the change introduces. On main, weekly and
 # on demand it uploads every finding to code scanning and keeps one GitHub
 # issue per batch of allowed rules (rules.allow in sarifix.yaml), including
-# the CodeQL alerts that codeql.yml reports, which it imports.
+# the CodeQL alerts that GitHub's code scanning default setup reports, which
+# it imports.
 # Docs: https://rossedman.io/sarifix/action/
 
 on:

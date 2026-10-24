@@ -48,8 +48,8 @@ Use `make check FUZZTIME=5s` for a quicker local run. You need
   each edit and runs the gate before Claude finishes; the rules it follows are
   in `.claude/rules/`.
 - [sarifix](https://github.com/rossedman/sarifix) runs golangci-lint and
-  Semgrep, configured in `sarifix.yaml`. CodeQL runs in its own workflow and
-  reports to code scanning; sarifix imports its alerts. On pull requests the
+  Semgrep, configured in `sarifix.yaml`. CodeQL runs as GitHub's code scanning
+  default setup; sarifix imports its alerts. On pull requests the
   `sarifix` workflow reports findings your change introduces; `sarifix check`
   does the same locally against `HEAD`. The `sarifix` Claude Code plugin runs
   it before Claude finishes. On `main`, allowed rules (`rules.allow`) become
