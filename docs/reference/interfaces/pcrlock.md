@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/pcrlock`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/pcrlock) |
 | Socket | `/run/systemd/io.systemd.PCRLock` |
 | Available since | systemd v257 |
-| Methods · types · errors | 3 · 0 · 1 |
+| Methods · types · errors | 5 · 2 · 1 |
 
 ## Methods
 
@@ -24,6 +24,23 @@ func (c *Client) ReadEventLog(ctx context.Context) iter.Seq2[*ReadEventLogOut, e
 | Field | Type | Description |
 | --- | --- | --- |
 | `record` | `object` |  |
+
+### ListComponents
+
+:material-waves: streaming (requires `more`) · :material-new-box: since v262
+
+Lists the defined .pcrlock components, streamed one component per reply. Must be called with the 'more' flag.
+
+```go
+func (c *Client) ListComponents(ctx context.Context) iter.Seq2[*ListComponentsOut, error]
+```
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | The identifier of the component. |
+| `variants` | `[]ComponentVariant` | The variants defined for this component, each backed by a .pcrlock file. |
 
 ### MakePolicy
 
@@ -42,6 +59,45 @@ func (c *Client) MakePolicy(ctx context.Context, in MakePolicyIn) error
 ```go
 func (c *Client) RemovePolicy(ctx context.Context) error
 ```
+
+### Lock
+
+:material-new-box: since v262
+
+Generates or removes the .pcrlock file(s) for the selected category of measurements. Generates (locks) them by default, or removes (unlocks) them if 'lock' is false.
+
+```go
+func (c *Client) Lock(ctx context.Context, in LockIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `category` | `LockCategory` | The category of measurements to generate or remove a .pcrlock file for. |
+| `lock` | `?bool` | If true (the default), generate the .pcrlock file(s) for the selected category; if false, remove them again. |
+
+## Types
+
+### LockCategory
+
+The category of measurements a .pcrlock file can be generated for or removed, as used by the Lock() method.
+
+| Value | Description |
+| --- | --- |
+| `firmwareCode` | Firmware code measurements (PCRs 0, 2, 4). |
+| `firmwareConfig` | Firmware configuration measurements (PCRs 1, 3, 5). |
+| `secureBootPolicy` | SecureBoot policy, i.e. the SecureBoot, PK, KEK, db and dbx EFI variables (PCR 7). |
+| `secureBootAuthority` | SecureBoot authority measurements, i.e. the certificates used to validate the boot components (PCR 7). |
+
+### ComponentVariant
+
+A single variant of a .pcrlock component, i.e. one alternative the component may take, backed by a specific .pcrlock file.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | The identifier of this component variant. |
+| `path` | `string` | The path of the .pcrlock file that defines this variant. |
 
 ## Errors
 

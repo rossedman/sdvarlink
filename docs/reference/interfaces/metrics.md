@@ -60,6 +60,7 @@ An enum representing various metric family types
 | `counter` | A counter metric family type which is a monotonically increasing value |
 | `gauge` | A gauge metric family type which is a value that can go up and down |
 | `string` | A string metric family type |
+| `object` | An object metric family type whose value is an arbitrary JSON object |
 
 ## Errors
 

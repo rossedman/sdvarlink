@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/unit`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/unit) |
 | Socket | `/run/systemd/io.systemd.Manager` |
 | Available since | systemd v258 |
-| Methods · types · errors | 2 · 43 · 6 |
+| Methods · types · errors | 3 · 121 · 9 |
 
 ## Methods
 
@@ -56,7 +56,585 @@ func (c *Client) SetProperties(ctx context.Context, in SetPropertiesIn) error
 | `runtime` | `bool` | Whether to apply the change ephemerally or persistently. |
 | `properties` | `UnitRuntime` | The runtime properties to set. |
 
+### StartTransient
+
+:material-waves: streaming optional · :material-new-box: since v262
+
+Create a transient unit and start it
+
+```go
+func (c *Client) StartTransient(ctx context.Context, in StartTransientIn) (*StartTransientOut, error)
+func (c *Client) StartTransientMore(ctx context.Context, in StartTransientIn) iter.Seq2[*StartTransientOut, error]
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `UnitContext` | Unit context. Must include ID (the unit name). Only the subset of fields settable at creation time is accepted; supplying any other field returns PropertyNotSupported. |
+| `mode` | `?JobMode` | Job mode. Defaults to replace. |
+| `notifyJobChanges` | `?bool` | If true and 'more' is set, stream job state change notifications. Defaults to false. |
+| `notifyUnitChanges` | `?bool` | If true and 'more' is set, stream unit runtime notifications on state changes. Defaults to false. |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `?UnitContext` | Unit context. Set in the final reply. |
+| `runtime` | `?UnitRuntime` | Unit runtime state. Set in the final reply and in intermediate streaming notifications when notifyUnitChanges is true. |
+| `job` | `?Job` | The job that was enqueued. Always set in the final streaming reply; also included in intermediate streaming notifications when notifyJobChanges is true. |
+
 ## Types
+
+### CGroupDevicePolicy
+
+| Value | Description |
+| --- | --- |
+| `auto` |  |
+| `closed` |  |
+| `strict` |  |
+
+### ManagedOOMMode
+
+| Value | Description |
+| --- | --- |
+| `auto` |  |
+| `kill` |  |
+
+### ManagedOOMPreference
+
+| Value | Description |
+| --- | --- |
+| `none` |  |
+| `avoid` |  |
+| `omit` |  |
+
+### CGroupPressureWatch
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `auto` |  |
+| `skip` |  |
+
+### CGroupController
+
+| Value | Description |
+| --- | --- |
+| `cpu` |  |
+| `cpuacct` |  |
+| `cpuset` |  |
+| `io` |  |
+| `blkio` |  |
+| `memory` |  |
+| `devices` |  |
+| `pids` |  |
+| `bpf_firewall` |  |
+| `bpf_devices` |  |
+| `bpf_foreign` |  |
+| `bpf_socket_bind` |  |
+| `bpf_restrict_network_interfaces` |  |
+| `bpf_bind_network_interface` |  |
+
+### CPUSetPartition
+
+| Value | Description |
+| --- | --- |
+| `member` |  |
+| `root` |  |
+| `isolated` |  |
+
+### ExecInputType
+
+| Value | Description |
+| --- | --- |
+| `null` |  |
+| `tty` |  |
+| `tty_force` |  |
+| `tty_fail` |  |
+| `socket` |  |
+| `fd` |  |
+| `data` |  |
+| `file` |  |
+
+### ExecOutputType
+
+| Value | Description |
+| --- | --- |
+| `inherit` |  |
+| `null` |  |
+| `tty` |  |
+| `kmsg` |  |
+| `kmsg_console` |  |
+| `journal` |  |
+| `journal_console` |  |
+| `socket` |  |
+| `fd` |  |
+| `file` |  |
+| `append` |  |
+| `truncate` |  |
+
+### ExecUtmpMode
+
+| Value | Description |
+| --- | --- |
+| `init` |  |
+| `login` |  |
+| `user` |  |
+
+### ExecPreserveMode
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `restart` |  |
+| `on_success` |  |
+
+### ExecKeyringMode
+
+| Value | Description |
+| --- | --- |
+| `inherit` |  |
+| `private` |  |
+| `shared` |  |
+
+### MemoryTHP
+
+| Value | Description |
+| --- | --- |
+| `inherit` |  |
+| `disable` |  |
+| `madvise` |  |
+| `system` |  |
+
+### ProtectProc
+
+| Value | Description |
+| --- | --- |
+| `default` |  |
+| `noaccess` |  |
+| `invisible` |  |
+| `ptraceable` |  |
+
+### ProcSubset
+
+| Value | Description |
+| --- | --- |
+| `all` |  |
+| `pid` |  |
+
+### ProtectSystem
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `full` |  |
+| `strict` |  |
+
+### ProtectHome
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `read_only` |  |
+| `tmpfs` |  |
+
+### PrivateTmp
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `connected` |  |
+| `disconnected` |  |
+
+### PrivateUsers
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `self` |  |
+| `identity` |  |
+| `full` |  |
+| `managed` |  |
+
+### ProtectHostname
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `private` |  |
+
+### ProtectControlGroups
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `private` |  |
+| `strict` |  |
+
+### PrivatePIDs
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+
+### PrivateBPF
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+
+### CPUSchedulingPolicy
+
+| Value | Description |
+| --- | --- |
+| `other` |  |
+| `batch` |  |
+| `idle` |  |
+| `fifo` |  |
+| `ext` |  |
+| `rr` |  |
+
+### IOSchedulingClass
+
+| Value | Description |
+| --- | --- |
+| `none` |  |
+| `realtime` |  |
+| `best_effort` |  |
+| `idle` |  |
+
+### NUMAPolicy
+
+| Value | Description |
+| --- | --- |
+| `default` |  |
+| `preferred` |  |
+| `bind` |  |
+| `interleave` |  |
+| `local` |  |
+| `preferred_many` |  |
+| `weighted_interleave` |  |
+
+### MountPropagationFlag
+
+| Value | Description |
+| --- | --- |
+| `shared` |  |
+| `slave` |  |
+| `private` |  |
+
+### KillMode
+
+| Value | Description |
+| --- | --- |
+| `control_group` |  |
+| `process` |  |
+| `mixed` |  |
+| `none` |  |
+
+### AutomountResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `start_limit_hit` |  |
+| `mount_start_limit_hit` |  |
+| `unmounted` |  |
+
+### MountResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `timeout` |  |
+| `exit_code` |  |
+| `signal` |  |
+| `core_dump` |  |
+| `start_limit_hit` |  |
+| `protocol` |  |
+
+### PathType
+
+| Value | Description |
+| --- | --- |
+| `PathExists` |  |
+| `PathExistsGlob` |  |
+| `DirectoryNotEmpty` |  |
+| `PathChanged` |  |
+| `PathModified` |  |
+
+### PathResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `start_limit_hit` |  |
+| `unit_start_limit_hit` |  |
+| `trigger_limit_hit` |  |
+
+### OOMPolicy
+
+| Value | Description |
+| --- | --- |
+| `continue` |  |
+| `stop` |  |
+| `kill` |  |
+
+### ScopeResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `timeout` |  |
+| `oom_kill` |  |
+
+### SocketBindIPv6Only
+
+| Value | Description |
+| --- | --- |
+| `default` |  |
+| `both` |  |
+| `ipv6_only` |  |
+
+### SocketTimestamping
+
+| Value | Description |
+| --- | --- |
+| `off` |  |
+| `us` |  |
+| `ns` |  |
+
+### SocketDeferTrigger
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `patient` |  |
+
+### SocketResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `timeout` |  |
+| `exit_code` |  |
+| `signal` |  |
+| `core_dump` |  |
+| `start_limit_hit` |  |
+| `trigger_limit_hit` |  |
+| `service_start_limit_hit` |  |
+
+### SwapResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `timeout` |  |
+| `exit_code` |  |
+| `signal` |  |
+| `core_dump` |  |
+| `start_limit_hit` |  |
+
+### TimerBase
+
+| Value | Description |
+| --- | --- |
+| `OnActiveUSec` |  |
+| `OnBootUSec` |  |
+| `OnStartupUSec` |  |
+| `OnUnitActiveUSec` |  |
+| `OnUnitInactiveUSec` |  |
+| `OnCalendar` |  |
+
+### TimerResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `start_limit_hit` |  |
+
+### CollectMode
+
+| Value | Description |
+| --- | --- |
+| `inactive` |  |
+| `inactive_or_failed` |  |
+
+### EmergencyAction
+
+| Value | Description |
+| --- | --- |
+| `none` |  |
+| `exit` |  |
+| `exit_force` |  |
+| `reboot` |  |
+| `reboot_force` |  |
+| `reboot_immediate` |  |
+| `poweroff` |  |
+| `poweroff_force` |  |
+| `poweroff_immediate` |  |
+| `soft_reboot` |  |
+| `soft_reboot_force` |  |
+| `kexec` |  |
+| `kexec_force` |  |
+| `halt` |  |
+| `halt_force` |  |
+| `halt_immediate` |  |
+
+### NotifyAccess
+
+| Value | Description |
+| --- | --- |
+| `none` |  |
+| `all` |  |
+| `exec` |  |
+| `main` |  |
+
+### ServiceExitType
+
+| Value | Description |
+| --- | --- |
+| `main` |  |
+| `cgroup` |  |
+
+### ServiceRestart
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `on_success` |  |
+| `on_failure` |  |
+| `on_abnormal` |  |
+| `on_watchdog` |  |
+| `on_abort` |  |
+| `always` |  |
+
+### ServiceRestartMode
+
+| Value | Description |
+| --- | --- |
+| `normal` |  |
+| `direct` |  |
+| `debug` |  |
+
+### ServiceResult
+
+| Value | Description |
+| --- | --- |
+| `success` |  |
+| `resources` |  |
+| `protocol` |  |
+| `timeout` |  |
+| `exit_code` |  |
+| `signal` |  |
+| `core_dump` |  |
+| `watchdog` |  |
+| `start_limit_hit` |  |
+| `oom_kill` |  |
+| `exec_condition` |  |
+
+### ServiceTimeoutFailureMode
+
+| Value | Description |
+| --- | --- |
+| `terminate` |  |
+| `abort` |  |
+| `kill` |  |
+
+### ServiceType
+
+Service type
+
+| Value | Description |
+| --- | --- |
+| `simple` |  |
+| `exec` |  |
+| `forking` |  |
+| `oneshot` |  |
+| `dbus` |  |
+| `notify` |  |
+| `notify_reload` | Like notify, but also implements a reload protocol via SIGHUP. |
+| `idle` |  |
+
+### JobMode
+
+Job mode
+
+| Value | Description |
+| --- | --- |
+| `fail` |  |
+| `lenient` |  |
+| `replace` |  |
+| `replace_irreversibly` |  |
+| `isolate` |  |
+| `flush` |  |
+| `ignore_dependencies` |  |
+| `ignore_requirements` |  |
+| `triggering` |  |
+| `restart_dependencies` |  |
+
+### JobType
+
+Job type (defined in io.systemd.Job)
+
+| Value | Description |
+| --- | --- |
+| `start` |  |
+| `verify_active` |  |
+| `stop` |  |
+| `reload` |  |
+| `reload_or_start` |  |
+| `restart` |  |
+| `try_restart` |  |
+| `try_reload` |  |
+| `nop` |  |
+
+### JobState
+
+Job state (defined in io.systemd.Job)
+
+| Value | Description |
+| --- | --- |
+| `waiting` |  |
+| `running` |  |
+| `finished` |  |
+
+### JobResult
+
+Job result (defined in io.systemd.Job)
+
+| Value | Description |
+| --- | --- |
+| `done` |  |
+| `canceled` |  |
+| `timeout` |  |
+| `failed` |  |
+| `dependency` |  |
+| `skipped` |  |
+| `invalid` |  |
+| `assert` |  |
+| `unsupported` |  |
+| `collected` |  |
+| `once` |  |
+| `frozen` |  |
+| `concurrency` |  |
 
 ### RateLimit
 
@@ -82,60 +660,60 @@ An object to represent a unit's context
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `Type` | `string` | The unit type |
+| `Type` | `?string` | The unit type |
 | `ID` | `string` | The unit ID |
 | `Names` | `?[]string` | The aliases of this unit |
-| `Description` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Description= |
-| `Documentation` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Documentation= |
-| `Wants` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Wants= |
-| `WantedBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy= |
-| `Requires` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requires= |
-| `RequiredBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy= |
-| `Requisite` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requisite= |
-| `RequisiteOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Requisite= |
-| `BindsTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#BindsTo= |
-| `BoundBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#BindsTo= |
-| `PartOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PartOf= |
-| `ConsistsOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PartOf= |
-| `Upholds` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Upholds= |
-| `UpheldBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantedBy= |
-| `Conflicts` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Conflicts= |
+| `Description` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Description= |
+| `Documentation` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Documentation= |
+| `Wants` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Wants= |
+| `WantedBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#WantedBy= |
+| `Requires` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Requires= |
+| `RequiredBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#WantedBy= |
+| `Requisite` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Requisite= |
+| `RequisiteOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Requisite= |
+| `BindsTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#BindsTo= |
+| `BoundBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#BindsTo= |
+| `PartOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PartOf= |
+| `ConsistsOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PartOf= |
+| `Upholds` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Upholds= |
+| `UpheldBy` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#WantedBy= |
+| `Conflicts` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Conflicts= |
 | `ConflictedBy` | `?[]string` | The ConflictedBy= dependencies of this unit |
-| `Before` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Before= |
-| `After` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#Before= |
-| `OnFailure` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnFailure= |
+| `Before` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Before= |
+| `After` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#Before= |
+| `OnFailure` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#OnFailure= |
 | `OnFailureOf` | `?[]string` | The OnFailureOf= dependencies of this unit |
-| `OnSuccess` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccess= |
+| `OnSuccess` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#OnSuccess= |
 | `OnSuccessOf` | `?[]string` | The OnSuccessOf= dependencies of this unit |
-| `PropagatesReloadTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesReloadTo= |
-| `ReloadPropagatedFrom` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesReloadTo= |
-| `PropagatesStopTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesStopTo= |
-| `StopPropagatedFrom` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#PropagatesStopTo= |
-| `JoinsNamespaceOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JoinsNamespaceOf= |
-| `RequiresMountsFor` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RequiresMountsFor= |
-| `WantsMountsFor` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#WantsMountsFor= |
-| `OnSuccessJobMode` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccessJobMode= |
-| `OnFailureJobMode` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#OnSuccessJobMode= |
-| `IgnoreOnIsolate` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#IgnoreOnIsolate= |
-| `StopWhenUnneeded` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StopWhenUnneeded= |
-| `RefuseManualStart` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RefuseManualStart= |
-| `RefuseManualStop` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RefuseManualStart= |
-| `AllowIsolate` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#AllowIsolate= |
-| `DefaultDependencies` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#DefaultDependencies= |
-| `SurviveFinalKillSignal` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#SurviveFinalKillSignal= |
-| `CollectMode` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#CollectMode= |
-| `FailureAction` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureAction= |
-| `SuccessAction` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureAction= |
-| `FailureActionExitStatus` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureActionExitStatus= |
-| `SuccessActionExitStatus` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#FailureActionExitStatus= |
-| `JobTimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutSec= |
-| `JobRunningTimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutSec= |
-| `JobTimeoutAction` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutAction= |
-| `JobTimeoutRebootArgument` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#JobTimeoutAction= |
-| `StartLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StartLimitIntervalSec=interval |
-| `StartLimitAction` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#StartLimitIntervalSec=interval |
-| `RebootArgument` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#RebootArgument= |
-| `SourcePath` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.unit.html#SourcePath= |
+| `PropagatesReloadTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PropagatesReloadTo= |
+| `ReloadPropagatedFrom` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PropagatesReloadTo= |
+| `PropagatesStopTo` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PropagatesStopTo= |
+| `StopPropagatedFrom` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#PropagatesStopTo= |
+| `JoinsNamespaceOf` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#JoinsNamespaceOf= |
+| `RequiresMountsFor` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#RequiresMountsFor= |
+| `WantsMountsFor` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#WantsMountsFor= |
+| `OnSuccessJobMode` | `?JobMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#OnSuccessJobMode= |
+| `OnFailureJobMode` | `?JobMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#OnSuccessJobMode= |
+| `IgnoreOnIsolate` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#IgnoreOnIsolate= |
+| `StopWhenUnneeded` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#StopWhenUnneeded= |
+| `RefuseManualStart` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#RefuseManualStart= |
+| `RefuseManualStop` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#RefuseManualStart= |
+| `AllowIsolate` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#AllowIsolate= |
+| `DefaultDependencies` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#DefaultDependencies= |
+| `SurviveFinalKillSignal` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#SurviveFinalKillSignal= |
+| `CollectMode` | `?CollectMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#CollectMode= |
+| `FailureAction` | `?EmergencyAction` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#FailureAction= |
+| `SuccessAction` | `?EmergencyAction` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#FailureAction= |
+| `FailureActionExitStatus` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#FailureActionExitStatus= |
+| `SuccessActionExitStatus` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#FailureActionExitStatus= |
+| `JobTimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#JobTimeoutSec= |
+| `JobRunningTimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#JobTimeoutSec= |
+| `JobTimeoutAction` | `?EmergencyAction` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#JobTimeoutAction= |
+| `JobTimeoutRebootArgument` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#JobTimeoutAction= |
+| `StartLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#StartLimitIntervalSec=interval |
+| `StartLimitAction` | `?EmergencyAction` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#StartLimitIntervalSec=interval |
+| `RebootArgument` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#RebootArgument= |
+| `SourcePath` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.unit.html#SourcePath= |
 | `Conditions` | `?[]Condition` | The conditions of this unit |
 | `Asserts` | `?[]Condition` | The asserts of this unit |
 | `Triggers` | `?[]string` | The Triggers= dependencies of this unit |
@@ -144,11 +722,20 @@ An object to represent a unit's context
 | `FragmentPath` | `?string` | The unit file path this unit was read from |
 | `DropInPaths` | `?[]string` | The paths from which drop-in files were read for this unit |
 | `UnitFilePreset` | `?string` | The unit file preset for this unit |
-| `Transient` | `bool` | Whether this unit is transient |
-| `Perpetual` | `bool` | Whether this unit is perpetual |
-| `DebugInvocation` | `bool` | When true, logs about this unit will be at debug level regardless of other log level settings |
+| `Transient` | `?bool` | Whether this unit is transient |
+| `Perpetual` | `?bool` | Whether this unit is perpetual |
+| `DebugInvocation` | `?bool` | When true, logs about this unit will be at debug level regardless of other log level settings |
 | `CGroup` | `?CGroupContext` | The cgroup context of the unit |
 | `Exec` | `?ExecContext` | The exec context of the unit |
+| `Kill` | `?KillContext` | The kill context of the unit |
+| `Service` | `?ServiceContext` | The service context of the unit (only for .service units) |
+| `Automount` | `?AutomountContext` | The automount context of the unit |
+| `Mount` | `?MountContext` | The mount context of the unit |
+| `Path` | `?PathContext` | The path context of the unit |
+| `Scope` | `?ScopeContext` | The scope context of the unit |
+| `Socket` | `?SocketContext` | The socket context of the unit |
+| `Swap` | `?SwapContext` | The swap context of the unit |
+| `Timer` | `?TimerContext` | The timer context of the unit |
 
 ### UnitRuntime
 
@@ -184,6 +771,14 @@ An object to represent a unit's runtime information
 | `Markers` | `?[]string` | Reflects whether the unit has been marked for reload, restart, etc. |
 | `ActivationDetails` | `?[]ActivationDetails` | Provides details about why a unit was activated |
 | `CGroup` | `?CGroupRuntime` | The cgroup runtime of the unit |
+| `Automount` | `?AutomountRuntime` | The automount runtime of the unit |
+| `Mount` | `?MountRuntime` | The mount runtime of the unit |
+| `Path` | `?PathRuntime` | The path runtime of the unit |
+| `Scope` | `?ScopeRuntime` | The scope runtime of the unit |
+| `Service` | `?ServiceRuntime` | The service runtime of the unit |
+| `Socket` | `?SocketRuntime` | The socket runtime of the unit |
+| `Swap` | `?SwapRuntime` | The swap runtime of the unit |
+| `Timer` | `?TimerRuntime` | The timer runtime of the unit |
 
 ### Timestamp
 
@@ -295,62 +890,68 @@ CGroup context of a unit
 | Field | Type | Description |
 | --- | --- | --- |
 | `Slice` | `?string` | Slice of the CGroup |
-| `CPUWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUWeight=weight |
-| `StartupCPUWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUWeight=weight |
-| `CPUQuotaPerSecUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUQuota= |
-| `CPUQuotaPeriodUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#CPUQuotaPeriodSec= |
-| `AllowedCPUs` | `?[]int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedCPUs= |
-| `StartupAllowedCPUs` | `?[]int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedCPUs= |
-| `MemoryAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryAccounting= |
-| `MemoryMin` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
-| `MemoryLow` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
-| `StartupMemoryLow` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
-| `MemoryHigh` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryHigh=bytes |
-| `StartupMemoryHigh` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryHigh=bytes |
-| `MemoryMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMax=bytes |
-| `StartupMemoryMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryMax=bytes |
-| `MemorySwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemorySwapMax=bytes |
-| `StartupMemorySwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemorySwapMax=bytes |
-| `MemoryZSwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapMax=bytes |
-| `StartupMemoryZSwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapMax=bytes |
-| `MemoryZSwapWriteback` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryZSwapWriteback= |
-| `AllowedMemoryNodes` | `?[]int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedMemoryNodes= |
-| `StartupAllowedMemoryNodes` | `?[]int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#AllowedMemoryNodes= |
-| `TasksAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#TasksAccounting= |
-| `TasksMax` | `?CGroupTasksMax` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#TasksMax=N |
-| `IOAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOAccounting= |
-| `IOWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOWeight=weight |
-| `StartupIOWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOWeight=weight |
-| `IODeviceWeight` | `?[]CGroupIODeviceWeight` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IODeviceWeight=device%20weight |
-| `IOReadBandwidthMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes |
-| `IOWriteBandwidthMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes |
-| `IOReadIOPSMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS |
-| `IOWriteIOPSMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS |
-| `IODeviceLatencyTargetUSec` | `?[]CGroupIODeviceLatency` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IODeviceLatencyTargetSec=device%20target |
-| `IPAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAccounting= |
-| `IPAddressAllow` | `?[]CGroupAddressPrefix` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6 |
-| `IPAddressDeny` | `?[]CGroupAddressPrefix` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6 |
-| `SocketBindAllow` | `?[]CGroupSocketBind` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#SocketBindAllow=bind-rule |
-| `SocketBindDeny` | `?[]CGroupSocketBind` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#SocketBindAllow=bind-rule |
-| `RestrictNetworkInterfaces` | `?CGroupRestrictNetworkInterfaces` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#RestrictNetworkInterfaces= |
-| `BindNetworkInterface` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#BindNetworkInterface= |
-| `NFTSet` | `?[]CGroupNFTSet` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#NFTSet=family:table:set |
-| `IPIngressFilterPath` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH |
-| `IPEgressFilterPath` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH |
-| `BPFProgram` | `?[]CGroupBPFProgram` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#BPFProgram=type:program-path |
-| `DeviceAllow` | `?[]CGroupDeviceAllow` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DeviceAllow= |
-| `DevicePolicy` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DevicePolicy=auto%7Cclosed%7Cstrict |
-| `Delegate` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#Delegate= |
-| `DelegateSubgroup` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DelegateSubgroup= |
-| `DelegateControllers` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DisableControllers= |
-| `DisableControllers` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#DisableControllers= |
-| `ManagedOOMSwap` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill |
-| `ManagedOOMMemoryPressure` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill |
-| `ManagedOOMMemoryPressureLimit` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMMemoryPressureLimit= |
-| `ManagedOOMMemoryPressureDurationUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMMemoryPressureDurationSec= |
-| `ManagedOOMPreference` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#ManagedOOMPreference=none%7Cavoid%7Comit |
-| `MemoryPressureWatch` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryPressureWatch= |
-| `MemoryPressureThresholdUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd.resource-control.html#MemoryPressureThresholdSec= |
+| `CPUWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUWeight=weight |
+| `StartupCPUWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUWeight=weight |
+| `CPUQuotaPerSecUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUQuota= |
+| `CPUQuotaPeriodUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUQuotaPeriodSec= |
+| `AllowedCPUs` | `?[]int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#AllowedCPUs= |
+| `StartupAllowedCPUs` | `?[]int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#AllowedCPUs= |
+| `CPUSetPartition` | `?CPUSetPartition` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUSetPartition= |
+| `MemoryAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryAccounting= |
+| `MemoryMin` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
+| `MemoryLow` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
+| `StartupMemoryLow` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryMin=bytes,%20MemoryLow=bytes |
+| `MemoryHigh` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryHigh=bytes |
+| `StartupMemoryHigh` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryHigh=bytes |
+| `MemoryMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryMax=bytes |
+| `StartupMemoryMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryMax=bytes |
+| `MemorySwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemorySwapMax=bytes |
+| `StartupMemorySwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemorySwapMax=bytes |
+| `MemoryZSwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryZSwapMax=bytes |
+| `StartupMemoryZSwapMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryZSwapMax=bytes |
+| `MemoryZSwapWriteback` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryZSwapWriteback= |
+| `AllowedMemoryNodes` | `?[]int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#AllowedMemoryNodes= |
+| `StartupAllowedMemoryNodes` | `?[]int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#AllowedMemoryNodes= |
+| `TasksAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#TasksAccounting= |
+| `TasksMax` | `?CGroupTasksMax` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#TasksMax=N |
+| `IOAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOAccounting= |
+| `IOWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOWeight=weight |
+| `StartupIOWeight` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOWeight=weight |
+| `IODeviceWeight` | `?[]CGroupIODeviceWeight` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IODeviceWeight=device%20weight |
+| `IOReadBandwidthMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes |
+| `IOWriteBandwidthMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOReadBandwidthMax=device%20bytes |
+| `IOReadIOPSMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS |
+| `IOWriteIOPSMax` | `?[]CGroupIODeviceLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOReadIOPSMax=device%20IOPS |
+| `IODeviceLatencyTargetUSec` | `?[]CGroupIODeviceLatency` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IODeviceLatencyTargetSec=device%20target |
+| `IPAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IPAccounting= |
+| `IPAddressAllow` | `?[]CGroupAddressPrefix` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6 |
+| `IPAddressDeny` | `?[]CGroupAddressPrefix` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IPAddressAllow=ADDRESS%5B/PREFIXLENGTH%5D%E2%80%A6 |
+| `SocketBindAllow` | `?[]CGroupSocketBind` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#SocketBindAllow=bind-rule |
+| `SocketBindDeny` | `?[]CGroupSocketBind` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#SocketBindAllow=bind-rule |
+| `RestrictNetworkInterfaces` | `?CGroupRestrictNetworkInterfaces` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#RestrictNetworkInterfaces= |
+| `BindNetworkInterface` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#BindNetworkInterface= |
+| `NFTSet` | `?[]CGroupNFTSet` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#NFTSet=family:table:set |
+| `IPIngressFilterPath` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH |
+| `IPEgressFilterPath` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IPIngressFilterPath=BPF_FS_PROGRAM_PATH |
+| `BPFProgram` | `?[]CGroupBPFProgram` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#BPFProgram=type:program-path |
+| `DeviceAllow` | `?[]CGroupDeviceAllow` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#DeviceAllow= |
+| `DevicePolicy` | `CGroupDevicePolicy` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#DevicePolicy=auto%7Cclosed%7Cstrict |
+| `Delegate` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#Delegate= |
+| `DelegateSubgroup` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#DelegateSubgroup= |
+| `DelegateControllers` | `?[]CGroupController` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#DisableControllers= |
+| `DisableControllers` | `?[]CGroupController` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#DisableControllers= |
+| `ManagedOOMSwap` | `ManagedOOMMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill |
+| `ManagedOOMMemoryPressure` | `ManagedOOMMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#ManagedOOMSwap=auto%7Ckill |
+| `ManagedOOMMemoryPressureLimit` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#ManagedOOMMemoryPressureLimit= |
+| `ManagedOOMMemoryPressureDurationUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#ManagedOOMMemoryPressureDurationSec= |
+| `ManagedOOMPreference` | `ManagedOOMPreference` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#ManagedOOMPreference=none%7Cavoid%7Comit |
+| `OOMRules` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#OOMRules= |
+| `MemoryPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryPressureWatch= |
+| `MemoryPressureThresholdUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#MemoryPressureThresholdSec= |
+| `CPUPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUPressureWatch= |
+| `CPUPressureThresholdUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#CPUPressureThresholdSec= |
+| `IOPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOPressureWatch= |
+| `IOPressureThresholdUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.resource-control.html#IOPressureThresholdSec= |
 | `CoredumpReceive` | `bool` | Reflects whether to forward coredumps for processes that crash within this cgroup |
 
 ### CGroupRuntime
@@ -389,8 +990,9 @@ CGroup runtime of a unit
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `path` | `string` | The path to the working directory |
-| `missingOK` | `bool` | Whether the path to the working directory is allowed to not exist |
+| `path` | `?string` | The path to the working directory. Mutually exclusive with 'home' |
+| `home` | `?bool` | If true, use the configured user's home directory as the working directory. Mutually exclusive with 'path' |
+| `missingOK` | `?bool` | Whether the path to the working directory is allowed to not exist |
 
 ### PartitionMountOptions
 
@@ -574,145 +1176,508 @@ Exec context of a unit
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `ExecSearchPath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExecSearchPath= |
-| `WorkingDirectory` | `?WorkingDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#WorkingDirectory= |
-| `RootDirectory` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootDirectory= |
-| `RootImage` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImage= |
-| `RootMStack` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootMStack= |
-| `RootImageOptions` | `?[]PartitionMountOptions` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImageOptions= |
-| `RootEphemeral` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootEphemeral= |
-| `RootHash` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHash= |
-| `RootHashPath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHash= |
-| `RootHashSignature` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHashSignature= |
-| `RootHashSignaturePath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootHashSignature= |
-| `RootVerity` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootVerity= |
-| `RootImagePolicy` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy= |
-| `MountImagePolicy` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy= |
-| `ExtensionImagePolicy` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RootImagePolicy= |
-| `MountAPIVFS` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountAPIVFS= |
-| `BindLogSockets` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindLogSockets= |
-| `ProtectProc` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectProc= |
-| `ProcSubset` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProcSubset= |
-| `BindPaths` | `?[]BindPath` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindPaths= |
-| `BindReadOnlyPaths` | `?[]BindPath` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BindPaths= |
-| `MountImages` | `?[]MountImage` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountImages= |
-| `ExtensionImages` | `?[]ExtensionImage` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExtensionImages= |
-| `ExtensionDirectories` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ExtensionDirectories= |
-| `User` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#User= |
-| `Group` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#User= |
-| `DynamicUser` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#DynamicUser= |
-| `SupplementaryGroups` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SupplementaryGroups= |
-| `SetLoginEnvironment` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetLoginEnvironment= |
-| `PAMName` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PAMName= |
-| `CapabilityBoundingSet` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CapabilityBoundingSet= |
-| `AmbientCapabilities` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#AmbientCapabilities= |
-| `NoNewPrivileges` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NoNewPrivileges= |
-| `SecureBits` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SecureBits= |
-| `SELinuxContext` | `?SELinuxContext` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SELinuxContext= |
-| `AppArmorProfile` | `?AppArmorProfile` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#AppArmorProfile= |
-| `SmackProcessLabel` | `?SmackProcessLabel` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SmackProcessLabel= |
-| `Limits` | `ResourceLimitTable` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LimitCPU= |
-| `UMask` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UMask= |
-| `CoredumpFilter` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CoredumpFilter= |
-| `KeyringMode` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#KeyringMode= |
-| `OOMScoreAdjust` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#OOMScoreAdjust= |
-| `TimerSlackNSec` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TimerSlackNSec= |
-| `Personality` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Personality= |
-| `IgnoreSIGPIPE` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IgnoreSIGPIPE= |
-| `Nice` | `int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Nice= |
-| `CPUSchedulingPolicy` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingPolicy= |
-| `CPUSchedulingPriority` | `int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingPriority= |
-| `CPUSchedulingResetOnFork` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUSchedulingResetOnFork= |
-| `CPUAffinity` | `?CPUAffinity` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#CPUAffinity= |
-| `NUMAPolicy` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NUMAPolicy= |
-| `NUMAMask` | `?[]int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NUMAMask= |
-| `IOSchedulingClass` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IOSchedulingClass= |
-| `IOSchedulingPriority` | `int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IOSchedulingPriority= |
-| `MemoryKSM` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryKSM= |
-| `MemoryTHP` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryTHP= |
-| `ProtectSystem` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectSystem= |
-| `ProtectHome` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectHome= |
-| `RuntimeDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory= |
-| `StateDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory= |
-| `CacheDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory= |
-| `LogsDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory= |
-| `ConfigurationDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectory= |
-| `RuntimeDirectoryPreserve` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RuntimeDirectoryPreserve= |
-| `TimeoutCleanUSec` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TimeoutCleanSec= |
-| `ReadWritePaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths= |
-| `ReadOnlyPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths= |
-| `InaccessiblePaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths= |
-| `ExecPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths= |
-| `NoExecPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ReadWritePaths= |
-| `TemporaryFileSystem` | `?[]TemporaryFilesystem` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TemporaryFileSystem= |
-| `PrivateTmp` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateTmp= |
-| `PrivateDevices` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateDevices= |
-| `PrivateNetwork` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateNetwork= |
-| `NetworkNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#NetworkNamespacePath= |
-| `PrivateIPC` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateIPC= |
-| `IPCNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#IPCNamespacePath= |
-| `PrivatePIDs` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivatePIDs= |
-| `PrivateUsers` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateUsers= |
-| `UserNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UserNamespacePath= |
-| `ProtectHostname` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectHostname= |
-| `ProtectClock` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectClock= |
-| `ProtectKernelTunables` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelTunables= |
-| `ProtectKernelModules` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelModules= |
-| `ProtectKernelLogs` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectKernelLogs= |
-| `ProtectControlGroups` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ProtectControlGroups= |
-| `RestrictAddressFamilies` | `?AddressFamilyList` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictAddressFamilies= |
-| `RestrictFilesystems` | `?FilesystemList` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictFileSystems= |
-| `RestrictNamespaces` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictNamespaces= |
-| `DelegateNamespaces` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#DelegateNamespaces= |
-| `PrivatePBF` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivatePBF= |
-| `BPFDelegateCommands` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateCommands= |
-| `BPFDelegateMaps` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateMaps= |
-| `BPFDelegatePrograms` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegatePrograms= |
-| `BPFDelegateAttachments` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#BPFDelegateAttachments= |
-| `LockPersonality` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LockPersonality= |
-| `MemoryDenyWriteExecute` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MemoryDenyWriteExecute= |
-| `RestrictRealtime` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictRealtime= |
-| `RestrictSUIDSGID` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#RestrictSUIDSGID= |
-| `RemoveIPC` | `bool` | Whether to remove all System V and POSIX IPC objects owned by the user and group this unit runs under |
-| `PrivateMounts` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PrivateMounts= |
-| `MountFlags` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#MountFlags= |
-| `SystemCallFilter` | `?SystemCallList` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallFilter= |
-| `SystemCallErrorNumber` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallErrorNumber= |
-| `SystemCallArchitectures` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallArchitectures= |
-| `SystemCallLog` | `?SystemCallList` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SystemCallLog= |
-| `Environment` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#Environment= |
-| `EnvironmentFiles` | `?[]EnvironmentFile` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#EnvironmentFile= |
-| `PassEnvironment` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#PassEnvironment= |
-| `UnsetEnvironment` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UnsetEnvironment= |
-| `StandardInput` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardInput= |
-| `StandardOutput` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardOutput= |
-| `StandardError` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardError= |
+| `ExecSearchPath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ExecSearchPath= |
+| `WorkingDirectory` | `?WorkingDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#WorkingDirectory= |
+| `RootDirectory` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootDirectory= |
+| `RootImage` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootImage= |
+| `RootMStack` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootMStack= |
+| `RootImageOptions` | `?[]PartitionMountOptions` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootImageOptions= |
+| `RootEphemeral` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootEphemeral= |
+| `RootHash` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootHash= |
+| `RootHashPath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootHash= |
+| `RootHashSignature` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootHashSignature= |
+| `RootHashSignaturePath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootHashSignature= |
+| `RootVerity` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootVerity= |
+| `RootImagePolicy` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootImagePolicy= |
+| `MountImagePolicy` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootImagePolicy= |
+| `ExtensionImagePolicy` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RootImagePolicy= |
+| `MountAPIVFS` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MountAPIVFS= |
+| `BindLogSockets` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BindLogSockets= |
+| `ProtectProc` | `?ProtectProc` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectProc= |
+| `ProcSubset` | `?ProcSubset` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProcSubset= |
+| `BindPaths` | `?[]BindPath` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BindPaths= |
+| `BindReadOnlyPaths` | `?[]BindPath` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BindPaths= |
+| `MountImages` | `?[]MountImage` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MountImages= |
+| `ExtensionImages` | `?[]ExtensionImage` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ExtensionImages= |
+| `ExtensionDirectories` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ExtensionDirectories= |
+| `User` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#User= |
+| `Group` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#User= |
+| `DynamicUser` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#DynamicUser= |
+| `SupplementaryGroups` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SupplementaryGroups= |
+| `SetLoginEnvironment` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SetLoginEnvironment= |
+| `PAMName` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PAMName= |
+| `CapabilityBoundingSet` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CapabilityBoundingSet= |
+| `AmbientCapabilities` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#AmbientCapabilities= |
+| `NoNewPrivileges` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#NoNewPrivileges= |
+| `SecureBits` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SecureBits= |
+| `SELinuxContext` | `?SELinuxContext` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SELinuxContext= |
+| `AppArmorProfile` | `?AppArmorProfile` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#AppArmorProfile= |
+| `SmackProcessLabel` | `?SmackProcessLabel` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SmackProcessLabel= |
+| `Limits` | `?ResourceLimitTable` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LimitCPU= |
+| `UMask` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#UMask= |
+| `CoredumpFilter` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CoredumpFilter= |
+| `KeyringMode` | `?ExecKeyringMode` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#KeyringMode= |
+| `OOMScoreAdjust` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#OOMScoreAdjust= |
+| `TimerSlackNSec` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TimerSlackNSec= |
+| `Personality` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#Personality= |
+| `IgnoreSIGPIPE` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#IgnoreSIGPIPE= |
+| `Nice` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#Nice= |
+| `CPUSchedulingPolicy` | `?CPUSchedulingPolicy` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CPUSchedulingPolicy= |
+| `CPUSchedulingPriority` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CPUSchedulingPriority= |
+| `CPUSchedulingResetOnFork` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CPUSchedulingResetOnFork= |
+| `CPUAffinity` | `?CPUAffinity` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#CPUAffinity= |
+| `NUMAPolicy` | `?NUMAPolicy` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#NUMAPolicy= |
+| `NUMAMask` | `?[]int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#NUMAMask= |
+| `IOSchedulingClass` | `?IOSchedulingClass` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#IOSchedulingClass= |
+| `IOSchedulingPriority` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#IOSchedulingPriority= |
+| `MemoryKSM` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MemoryKSM= |
+| `MemoryTHP` | `?MemoryTHP` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MemoryTHP= |
+| `ProtectSystem` | `?ProtectSystem` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectSystem= |
+| `ProtectHome` | `?ProtectHome` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectHome= |
+| `RuntimeDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectory= |
+| `StateDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectory= |
+| `CacheDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectory= |
+| `LogsDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectory= |
+| `ConfigurationDirectory` | `?ExecDirectory` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectory= |
+| `RuntimeDirectoryPreserve` | `?ExecPreserveMode` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RuntimeDirectoryPreserve= |
+| `TimeoutCleanUSec` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TimeoutCleanSec= |
+| `ReadWritePaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ReadWritePaths= |
+| `ReadOnlyPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ReadWritePaths= |
+| `InaccessiblePaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ReadWritePaths= |
+| `ExecPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ReadWritePaths= |
+| `NoExecPaths` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ReadWritePaths= |
+| `TemporaryFileSystem` | `?[]TemporaryFilesystem` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TemporaryFileSystem= |
+| `PrivateTmp` | `?PrivateTmp` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateTmp= |
+| `PrivateDevices` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateDevices= |
+| `PrivateNetwork` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateNetwork= |
+| `NetworkNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#NetworkNamespacePath= |
+| `PrivateIPC` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateIPC= |
+| `IPCNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#IPCNamespacePath= |
+| `PrivatePIDs` | `?PrivatePIDs` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivatePIDs= |
+| `PrivateUsers` | `?PrivateUsers` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateUsers= |
+| `UserNamespacePath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#UserNamespacePath= |
+| `ProtectHostname` | `?ProtectHostname` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectHostname= |
+| `ProtectClock` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectClock= |
+| `ProtectKernelTunables` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectKernelTunables= |
+| `ProtectKernelModules` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectKernelModules= |
+| `ProtectKernelLogs` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectKernelLogs= |
+| `ProtectControlGroups` | `?ProtectControlGroups` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ProtectControlGroups= |
+| `RestrictAddressFamilies` | `?AddressFamilyList` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RestrictAddressFamilies= |
+| `RestrictFilesystems` | `?FilesystemList` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RestrictFileSystems= |
+| `RestrictNamespaces` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RestrictNamespaces= |
+| `DelegateNamespaces` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#DelegateNamespaces= |
+| `PrivatePBF` | `?PrivateBPF` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivatePBF= |
+| `BPFDelegateCommands` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BPFDelegateCommands= |
+| `BPFDelegateMaps` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BPFDelegateMaps= |
+| `BPFDelegatePrograms` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BPFDelegatePrograms= |
+| `BPFDelegateAttachments` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#BPFDelegateAttachments= |
+| `LockPersonality` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LockPersonality= |
+| `MemoryDenyWriteExecute` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MemoryDenyWriteExecute= |
+| `RestrictRealtime` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RestrictRealtime= |
+| `RestrictSUIDSGID` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#RestrictSUIDSGID= |
+| `RemoveIPC` | `?bool` | Whether to remove all System V and POSIX IPC objects owned by the user and group this unit runs under |
+| `PrivateMounts` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PrivateMounts= |
+| `MountFlags` | `?MountPropagationFlag` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#MountFlags= |
+| `SystemCallFilter` | `?SystemCallList` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SystemCallFilter= |
+| `SystemCallErrorNumber` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SystemCallErrorNumber= |
+| `SystemCallArchitectures` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SystemCallArchitectures= |
+| `SystemCallLog` | `?SystemCallList` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SystemCallLog= |
+| `Environment` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#Environment= |
+| `EnvironmentFiles` | `?[]EnvironmentFile` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#EnvironmentFile= |
+| `PassEnvironment` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#PassEnvironment= |
+| `UnsetEnvironment` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#UnsetEnvironment= |
+| `StandardInput` | `?ExecInputType` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#StandardInput= |
+| `StandardOutput` | `?ExecOutputType` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#StandardOutput= |
+| `StandardError` | `?ExecOutputType` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#StandardError= |
 | `StandardInputFileDescriptorName` | `?string` | The file descriptor name to connect standard input to |
 | `StandardOutputFileDescriptorName` | `?string` | The file descriptor name to connect standard output to |
 | `StandardErrorFileDescriptorName` | `?string` | The file descriptor name to connect standard error to |
-| `StandardInputData` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#StandardInputText= |
-| `LogLevelMax` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogLevelMax= |
-| `LogExtraFields` | `?[]string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogExtraFields= |
-| `LogRateLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogRateLimitIntervalSec= |
-| `LogFilterPatterns` | `?[]LogFilterPattern` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogFilterPatterns= |
-| `LogNamespace` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LogNamespace= |
-| `SyslogIdentifier` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogIdentifier= |
-| `SyslogFacility` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogFacility= |
-| `SyslogLevel` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogLevel= |
-| `SyslogLevelPrefix` | `bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SyslogLevelPrefix= |
-| `TTYPath` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYPath= |
-| `TTYReset` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYReset= |
-| `TTYVHangup` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYVHangup= |
-| `TTYRows` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYRows= |
-| `TTYColumns` | `?int` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYRows= |
-| `TTYVTDisallocate` | `?bool` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#TTYVTDisallocate= |
-| `LoadCredential` | `?[]LoadCredential` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LoadCredential=ID:PATH |
-| `LoadCredentialEncrypted` | `?[]LoadCredential` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#LoadCredential=ID:PATH |
-| `ImportCredential` | `?[]ImportCredential` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#ImportCredential=GLOB |
-| `SetCredential` | `?[]SetCredential` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetCredential=ID:VALUE |
-| `SetCredentialEncrypted` | `?[]SetCredential` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#SetCredential=ID:VALUE |
-| `UtmpIdentifier` | `?string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UtmpIdentifier= |
-| `UtmpMode` | `string` | https://www.freedesktop.org/software/systemd/man260systemd.exec.html#UtmpMode= |
+| `StandardInputData` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#StandardInputText= |
+| `LogLevelMax` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LogLevelMax= |
+| `LogExtraFields` | `?[]string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LogExtraFields= |
+| `LogRateLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LogRateLimitIntervalSec= |
+| `LogFilterPatterns` | `?[]LogFilterPattern` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LogFilterPatterns= |
+| `LogNamespace` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LogNamespace= |
+| `SyslogIdentifier` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SyslogIdentifier= |
+| `SyslogFacility` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SyslogFacility= |
+| `SyslogLevel` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SyslogLevel= |
+| `SyslogLevelPrefix` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SyslogLevelPrefix= |
+| `TTYPath` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYPath= |
+| `TTYReset` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYReset= |
+| `TTYVHangup` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYVHangup= |
+| `TTYRows` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYRows= |
+| `TTYColumns` | `?int` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYRows= |
+| `TTYVTDisallocate` | `?bool` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#TTYVTDisallocate= |
+| `LoadCredential` | `?[]LoadCredential` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LoadCredential=ID:PATH |
+| `LoadCredentialEncrypted` | `?[]LoadCredential` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#LoadCredential=ID:PATH |
+| `ImportCredential` | `?[]ImportCredential` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#ImportCredential=GLOB |
+| `SetCredential` | `?[]SetCredential` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SetCredential=ID:VALUE |
+| `SetCredentialEncrypted` | `?[]SetCredential` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#SetCredential=ID:VALUE |
+| `UtmpIdentifier` | `?string` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#UtmpIdentifier= |
+| `UtmpMode` | `?ExecUtmpMode` | https://www.freedesktop.org/software/systemd/man262systemd.exec.html#UtmpMode= |
+
+### KillContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `KillMode` | `?KillMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#KillMode= |
+| `KillSignal` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#KillSignal= |
+| `RestartKillSignal` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#RestartKillSignal= |
+| `SendSIGHUP` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#SendSIGHUP= |
+| `SendSIGKILL` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#SendSIGKILL= |
+| `FinalKillSignal` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#FinalKillSignal= |
+| `WatchdogSignal` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.kill.html#WatchdogSignal= |
+
+### AutomountContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Where` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.automount.html#Where= |
+| `ExtraOptions` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.automount.html#ExtraOptions= |
+| `DirectoryMode` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.automount.html#DirectoryMode= |
+| `TimeoutIdleUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.automount.html#TimeoutIdleSec= |
+
+### AutomountRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Result` | `AutomountResult` | Result of automount operation |
+
+### ExecCommand
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `path` | `string` | Path |
+| `arguments` | `?[]string` | Arguments |
+| `ignoreFailure` | `?bool` | Ignore failure of the command |
+| `privileged` | `?bool` | Run with full privileges |
+| `noSetuid` | `?bool` | Skip setuid handling |
+| `noEnvExpand` | `?bool` | Skip environment variable expansion |
+| `viaShell` | `?bool` | Run via shell |
+
+### ExecCommandStatus
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `PID` | `ProcessId` | Process ID |
+| `StartTimestamp` | `?Timestamp` | Timestamp when the process started |
+| `ExitTimestamp` | `?Timestamp` | Timestamp when the process exited |
+| `HandoffTimestamp` | `?Timestamp` | Timestamp when the process was handed off to the executor |
+| `Code` | `?int` | Termination reason (si_code): CLD_EXITED, CLD_KILLED, CLD_DUMPED |
+| `Status` | `?int` | Exit code or signal number (si_status), meaning depends on Code |
+
+### MountContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `What` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#What= |
+| `Where` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#Where= |
+| `Type` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#Type= |
+| `Options` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#Options= |
+| `SloppyOptions` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#SloppyOptions= |
+| `LazyUnmount` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#LazyUnmount= |
+| `ReadWriteOnly` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#ReadWriteOnly= |
+| `ForceUnmount` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#ForceUnmount= |
+| `DirectoryMode` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#DirectoryMode= |
+| `TimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.mount.html#TimeoutSec= |
+| `ExecMount` | `?ExecCommand` | Mount command |
+| `ExecUnmount` | `?ExecCommand` | Unmount command |
+| `ExecRemount` | `?ExecCommand` | Remount command |
+
+### MountRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ControlPID` | `?ProcessId` | PID of the current mount/remount/etc process running |
+| `Result` | `MountResult` | Result of mount operation |
+| `ReloadResult` | `MountResult` | Result of remount operation |
+| `CleanResult` | `MountResult` | Result of cleaning operation |
+| `UID` | `?int` | Reference UID |
+| `GID` | `?int` | Reference GID |
+
+### PathSpec
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `type` | `PathType` | Path spec type |
+| `path` | `string` | Path |
+
+### PathContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Paths` | `?[]PathSpec` | https://www.freedesktop.org/software/systemd/man/262/systemd.path.html#PathExists= |
+| `Unit` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.path.html#Unit= |
+| `MakeDirectory` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.path.html#MakeDirectory= |
+| `DirectoryMode` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.path.html#DirectoryMode= |
+| `TriggerLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.path.html#TriggerLimitIntervalSec= |
+
+### PathRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Result` | `PathResult` | Result of path operation |
+
+### ScopeContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `OOMPolicy` | `?OOMPolicy` | https://www.freedesktop.org/software/systemd/man/262/systemd.scope.html#OOMPolicy= |
+| `RuntimeMaxUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.scope.html#RuntimeMaxSec= |
+| `RuntimeRandomizedExtraUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.scope.html#RuntimeRandomizedExtraSec= |
+| `TimeoutStopUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.scope.html#TimeoutStopSec= |
+
+### ScopeRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Result` | `ScopeResult` | Result of scope operation |
+
+### SocketListen
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `type` | `string` | Socket type |
+| `address` | `string` | Socket address |
+
+### SocketContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Listen` | `?[]SocketListen` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ListenStream= |
+| `SocketProtocol` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SocketProtocol= |
+| `BindIPv6Only` | `?SocketBindIPv6Only` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#BindIPv6Only= |
+| `Backlog` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Backlog= |
+| `BindToDevice` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#BindToDevice= |
+| `SocketUser` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SocketUser= |
+| `SocketGroup` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SocketUser= |
+| `SocketMode` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SocketMode= |
+| `DirectoryMode` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#DirectoryMode= |
+| `Accept` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Accept= |
+| `Writable` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Writable= |
+| `FlushPending` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#FlushPending= |
+| `MaxConnections` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#MaxConnections= |
+| `MaxConnectionsPerSource` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#MaxConnectionsPerSource= |
+| `KeepAlive` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#KeepAlive= |
+| `KeepAliveTimeUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#KeepAliveTimeSec= |
+| `KeepAliveIntervalUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#KeepAliveIntervalSec= |
+| `KeepAliveProbes` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#KeepAliveProbes= |
+| `NoDelay` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#NoDelay= |
+| `Priority` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Priority= |
+| `DeferAcceptUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#DeferAcceptSec= |
+| `ReceiveBuffer` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ReceiveBuffer= |
+| `SendBuffer` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SendBuffer= |
+| `IPTOS` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#IPTOS= |
+| `IPTTL` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#IPTTL= |
+| `Mark` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Mark= |
+| `ReusePort` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ReusePort= |
+| `SmackLabel` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SmackLabel= |
+| `SmackLabelIPIn` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SmackLabelIPIn= |
+| `SmackLabelIPOut` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SmackLabelIPOut= |
+| `SELinuxContextFromNet` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#SELinuxContextFromNet= |
+| `PipeSize` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PipeSize= |
+| `MessageQueueMaxMessages` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#MessageQueueMaxMessages= |
+| `MessageQueueMessageSize` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#MessageQueueMessageSize= |
+| `FreeBind` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#FreeBind= |
+| `Transparent` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Transparent= |
+| `Broadcast` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Broadcast= |
+| `PassCredentials` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PassCredentials= |
+| `PassPIDFD` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PassPIDFD= |
+| `PassSecurity` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PassSecurity= |
+| `PassPacketInfo` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PassPacketInfo= |
+| `AcceptFileDescriptors` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#AcceptFileDescriptors= |
+| `Timestamping` | `?SocketTimestamping` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Timestamping= |
+| `TCPCongestion` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#TCPCongestion= |
+| `ExecStartPre` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ExecStartPre= |
+| `ExecStartPost` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ExecStartPost= |
+| `ExecStopPre` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ExecStopPre= |
+| `ExecStopPost` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#ExecStopPost= |
+| `TimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#TimeoutSec= |
+| `RemoveOnStop` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#RemoveOnStop= |
+| `Symlinks` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#Symlinks= |
+| `FileDescriptorName` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#FileDescriptorName= |
+| `TriggerLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#TriggerLimitIntervalSec= |
+| `PollLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PollLimitIntervalSec= |
+| `DeferTrigger` | `?SocketDeferTrigger` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#DeferTrigger= |
+| `DeferTriggerMaxUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#DeferTriggerMaxSec= |
+| `PassFileDescriptorsToExec` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.socket.html#PassFileDescriptorsToExec= |
+
+### SocketRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ControlPID` | `?ProcessId` | PID of the current socket control process |
+| `Result` | `SocketResult` | Result of socket operation |
+| `CleanResult` | `SocketResult` | Result of cleaning operation |
+| `NConnections` | `?int` | Number of current connections |
+| `NAccepted` | `?int` | Number of accepted connections |
+| `NRefused` | `?int` | Number of refused connections |
+| `UID` | `?int` | Reference UID |
+| `GID` | `?int` | Reference GID |
+
+### SwapContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `What` | `string` | https://www.freedesktop.org/software/systemd/man/262/systemd.swap.html#What= |
+| `Priority` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.swap.html#Priority= |
+| `Options` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.swap.html#Options= |
+| `TimeoutUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.swap.html#TimeoutSec= |
+| `ExecActivate` | `?ExecCommand` | Activate command |
+| `ExecDeactivate` | `?ExecCommand` | Deactivate command |
+
+### SwapRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ControlPID` | `?ProcessId` | PID of the current swap control process |
+| `Result` | `SwapResult` | Result of swap operation |
+| `CleanResult` | `SwapResult` | Result of cleaning operation |
+| `UID` | `?int` | Reference UID |
+| `GID` | `?int` | Reference GID |
+
+### TimerSpec
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `base` | `TimerBase` | Timer base type |
+| `usec` | `?int` | Timer value in microseconds (for monotonic timers) |
+| `calendar` | `?string` | Calendar specification string (for calendar timers) |
+
+### TimerContext
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Timers` | `?[]TimerSpec` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#OnActiveSec= |
+| `Unit` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#Unit= |
+| `OnClockChange` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#OnClockChange= |
+| `OnTimezoneChange` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#OnClockChange= |
+| `AccuracyUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#AccuracySec= |
+| `RandomizedDelayUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#RandomizedDelaySec= |
+| `RandomizedOffsetUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#RandomizedOffsetSec= |
+| `FixedRandomDelay` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#FixedRandomDelay= |
+| `Persistent` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#Persistent= |
+| `WakeSystem` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#WakeSystem= |
+| `RemainAfterElapse` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#RemainAfterElapse= |
+| `DeferReactivation` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.timer.html#DeferReactivation= |
+
+### TimerRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Result` | `TimerResult` | Result of timer operation |
+| `NextElapseUSecRealtime` | `?int` | Next elapse time in realtime clock |
+| `NextElapseUSecMonotonic` | `?int` | Next elapse time in monotonic clock |
+| `LastTriggerUSec` | `?Timestamp` | Last time the timer triggered |
+
+### ExitStatusSet
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `statuses` | `?[]int` | Exit status codes |
+| `signals` | `?[]string` | Signal names |
+
+### OpenFile
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `path` | `string` | Path to the file to open |
+| `fileDescriptorName` | `string` | Name for the file descriptor |
+| `flags` | `?int` | Open file flags |
+
+### ServiceContext
+
+Service-specific context
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Type` | `?ServiceType` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#Type= |
+| `StandardInputFileDescriptor` | `?int` | Index of a file descriptor passed along with the method call to connect to the service's standard input. Only settable at unit creation time via StartTransient(); never set in unit descriptions returned by List(). |
+| `StandardOutputFileDescriptor` | `?int` | Index of a file descriptor passed along with the method call to connect to the service's standard output. Only settable at unit creation time via StartTransient(). |
+| `StandardErrorFileDescriptor` | `?int` | Index of a file descriptor passed along with the method call to connect to the service's standard error. Only settable at unit creation time via StartTransient(). |
+| `ExitType` | `?ServiceExitType` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExitType= |
+| `Restart` | `?ServiceRestart` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#Restart= |
+| `RestartMode` | `?ServiceRestartMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartMode= |
+| `PIDFile` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#PIDFile= |
+| `RestartUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartSec= |
+| `RestartSteps` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartSteps= |
+| `RestartMaxDelayUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartMaxDelaySec= |
+| `RestartRandomizedDelayUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartRandomizedDelaySec= |
+| `TimeoutStartUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#TimeoutStartSec= |
+| `TimeoutStopUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#TimeoutStopSec= |
+| `TimeoutStartFailureMode` | `?ServiceTimeoutFailureMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#TimeoutStartFailureMode= |
+| `TimeoutStopFailureMode` | `?ServiceTimeoutFailureMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#TimeoutStopFailureMode= |
+| `RuntimeMaxUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RuntimeMaxSec= |
+| `RuntimeRandomizedExtraUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RuntimeRandomizedExtraSec= |
+| `WatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#WatchdogSec= |
+| `RemainAfterExit` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RemainAfterExit= |
+| `RootDirectoryStartOnly` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RootDirectoryStartOnly= |
+| `GuessMainPID` | `?bool` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#GuessMainPID= |
+| `SuccessExitStatus` | `?ExitStatusSet` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#SuccessExitStatus= |
+| `RestartPreventExitStatus` | `?ExitStatusSet` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartPreventExitStatus= |
+| `RestartForceExitStatus` | `?ExitStatusSet` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RestartForceExitStatus= |
+| `BusName` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#BusName= |
+| `NotifyAccess` | `?NotifyAccess` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#NotifyAccess= |
+| `FileDescriptorStoreMax` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#FileDescriptorStoreMax= |
+| `FileDescriptorStorePreserve` | `?ExecPreserveMode` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#FileDescriptorStorePreserve= |
+| `USBFunctionDescriptors` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#USBFunctionDescriptors= |
+| `USBFunctionStrings` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#USBFunctionStrings= |
+| `OOMPolicy` | `?OOMPolicy` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#OOMPolicy= |
+| `OpenFile` | `?[]OpenFile` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#OpenFile= |
+| `ExtraFileDescriptorNames` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExtraFileDescriptorNames= |
+| `ReloadSignal` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ReloadSignal= |
+| `RefreshOnReload` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#RefreshOnReload= |
+| `ExecCondition` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecCondition= |
+| `ExecStart` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecStart= |
+| `ExecStartPre` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecStartPre= |
+| `ExecStartPost` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecStartPost= |
+| `ExecReload` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecReload= |
+| `ExecReloadPost` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecReloadPost= |
+| `ExecStop` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecStop= |
+| `ExecStopPost` | `?[]ExecCommand` | https://www.freedesktop.org/software/systemd/man/262/systemd.service.html#ExecStopPost= |
+
+### ServiceRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `MainPID` | `?ProcessId` | Main process PID |
+| `ControlPID` | `?ProcessId` | Control process PID |
+| `StatusText` | `?string` | Status text set by the service |
+| `StatusErrno` | `?int` | Status errno set by the service |
+| `StatusBusError` | `?string` | Status D-Bus error set by the service |
+| `StatusVarlinkError` | `?string` | Status Varlink error set by the service |
+| `Result` | `ServiceResult` | Result of service operation |
+| `ReloadResult` | `ServiceResult` | Result of reload operation |
+| `CleanResult` | `ServiceResult` | Result of cleaning operation |
+| `LiveMountResult` | `ServiceResult` | Result of live mount operation |
+| `NFileDescriptorStore` | `?int` | Number of file descriptors in the store |
+| `NRestarts` | `?int` | Number of restarts |
+| `RestartUSecNext` | `?int` | Next restart delay |
+| `TimeoutAbortUSec` | `?int` | Timeout for abort |
+| `ExecMain` | `?ExecCommandStatus` | Main process execution status |
+| `ExecConditionStatus` | `?[]ExecCommandStatus` | Execution status of ExecCondition commands |
+| `ExecStartPreStatus` | `?[]ExecCommandStatus` | Execution status of ExecStartPre commands |
+| `ExecStartStatus` | `?[]ExecCommandStatus` | Execution status of ExecStart commands |
+| `ExecStartPostStatus` | `?[]ExecCommandStatus` | Execution status of ExecStartPost commands |
+| `ExecReloadStatus` | `?[]ExecCommandStatus` | Execution status of ExecReload commands |
+| `ExecReloadPostStatus` | `?[]ExecCommandStatus` | Execution status of ExecReloadPost commands |
+| `ExecStopStatus` | `?[]ExecCommandStatus` | Execution status of ExecStop commands |
+| `ExecStopPostStatus` | `?[]ExecCommandStatus` | Execution status of ExecStopPost commands |
+| `UID` | `?int` | Reference UID |
+| `GID` | `?int` | Reference GID |
+
+### Job
+
+A job object (defined in io.systemd.Job)
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `int` | The numeric job ID |
+| `Unit` | `?string` | The unit name this job operates on |
+| `JobType` | `JobType` | The job type |
+| `State` | `?JobState` | Current job state. 'finished' indicates the job has completed; in that case Result is also set. |
+| `Result` | `?JobResult` | Job result. Only set once the job has reached the 'finished' state. |
+| `ActivationDetails` | `?[string]string` | Activation details describing what triggered this job, as key-value pairs |
 
 ## Errors
 
@@ -721,7 +1686,10 @@ Exec context of a unit
 | `NoSuchUnit` | `NoSuchUnitError` | No matching unit found |
 | `UnitMasked` | `UnitMaskedError` | The unit is masked |
 | `UnitError` | `UnitError` | Unit is in a fatal error state |
-| `PropertyNotSupported` | `PropertyNotSupportedError` | Changing this property via SetProperties() is not supported |
+| `PropertyNotSupported` | `PropertyNotSupportedError` | The named property cannot be set (via SetProperties() or at creation time via StartTransient()) |
 | `OnlyByDependency` | `OnlyByDependencyError` | Job for the unit may only be enqueued by dependencies |
 | `DBusShuttingDown` | `DBusShuttingDownError` | A unit that requires D-Bus cannot be started as D-Bus is shutting down |
+| `UnitExists` | `UnitExistsError` | A unit with this name already exists |
+| `UnitTypeNotSupported` | `UnitTypeNotSupportedError` | This unit type does not support transient units |
+| `BadUnitSetting` | `BadUnitSettingError` | The unit file content contains invalid settings |
 

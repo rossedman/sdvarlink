@@ -91,10 +91,11 @@ For `Supports 'more'` methods, pick the variant that matches your intent:
     }
     ```
 
-!!! note "Empty results can be errors"
+!!! note "Empty results: no values, or an error"
 
-    Some services report "nothing to list" as an error reply rather than an
-    empty stream. `systemd-machined` answers `ListMore` with
+    Most services answer "nothing to list" with a single empty final reply,
+    which ends the stream without yielding anything, so the loop body never
+    runs. Some report it as an error reply instead. `systemd-machined` answers `ListMore` with
     `io.systemd.Machine.NoSuchMachine` when no machines are registered;
     userdb uses `io.systemd.UserDatabase.NoRecordFound`. Treat those as an
     empty result:

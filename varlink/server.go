@@ -236,7 +236,8 @@ func Handle[In, Out any](iface *Interface, name string, fn func(ctx context.Cont
 
 // HandleStream registers fn as a streaming handler. Each send writes one
 // reply with "continues" set, immediately, which suits live streams; when
-// fn returns, an empty final reply ends the stream. For finite lists use
+// fn returns, an empty final reply ends the stream (Conn.Stream does not
+// yield it). For finite lists use
 // LastIsFinal, which makes the last value the final reply. Calls made
 // without "more" get org.varlink.service.ExpectedMore unless the method is
 // registered with AllowSingle. send returns an error once the client is

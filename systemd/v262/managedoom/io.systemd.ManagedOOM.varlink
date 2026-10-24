@@ -1,0 +1,22 @@
+interface io.systemd.ManagedOOM
+
+type ManagedOOMMode(
+	auto,
+	kill
+)
+
+type ControlGroup(
+	mode: ManagedOOMMode,
+	path: string,
+	property: string,
+	limit: ?int,
+	duration: ?int,
+	rules: ?[]string
+)
+
+# [Supports 'more' flag]
+method SubscribeManagedOOMCGroups() -> (
+	cgroups: []ControlGroup
+)
+
+error SubscriptionTaken()

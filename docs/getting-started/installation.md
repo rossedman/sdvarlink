@@ -19,7 +19,7 @@ runtime depends only on the standard library and `golang.org/x/sys`.
 | Component | Supported | Notes |
 | --- | --- | --- |
 | **Go** | 1.26 or newer | Streaming uses range-over-func iterators (`iter.Seq2`). The module tracks the two newest Go releases. |
-| **systemd** | v257 or newer | The floor. Bindings are generated for v257, v258 and v260; individual interfaces appeared later (see [Default sockets](../reference/sockets.md)). |
+| **systemd** | v257 or newer | The floor. Bindings are generated for v257, v258, v260 and v262; individual interfaces appeared later (see [Default sockets](../reference/sockets.md)). |
 | **OS** | Linux | Other platforms compile the core and `varlinktest` (so tests run on a Mac), but `Dial` returns `varlink.ErrUnsupported`. |
 | **Architecture** | amd64, arm64 | Tested. Other Linux architectures are expected to work; nothing is architecture-specific. |
 | **Dependencies** | stdlib + `golang.org/x/sys` | The generator may use more; the runtime never does. |

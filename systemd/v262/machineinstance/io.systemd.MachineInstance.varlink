@@ -1,0 +1,81 @@
+interface io.systemd.MachineInstance
+
+# Forcefully terminate the machine immediately
+method Terminate() -> ()
+
+# Request a clean shutdown of the machine
+method PowerOff() -> ()
+
+# Reboot the machine
+method Reboot() -> ()
+
+# Pause/freeze the machine
+method Pause() -> ()
+
+# Resume a paused machine
+method Resume() -> ()
+
+# Query the current status of the machine
+method Describe() -> (
+	# True iff vCPUs are executing
+	running: bool,
+	# Backend-specific state string (e.g. 'running', 'paused', 'shutdown'); 'unknown' if unavailable
+	status: string
+)
+
+# Subscribe to machine events. Returns a stream of events as they occur.
+# [Requires 'more' flag]
+method SubscribeEvents(
+	# If specified, only deliver events whose name matches one of these strings; null means all events
+	filter: ?[]string
+) -> (
+	# Name of the event
+	event: string,
+	# Event-specific payload
+	data: ?object
+)
+
+# Attach a storage volume (passed via file descriptor) to the running machine
+method AddStorage(
+	# Index of the attached file descriptor for the storage volume
+	fileDescriptorIndex: int,
+	# Caller-supplied identifier for this binding (any non-empty string; machinectl uses '<provider>:<volume>' from the StorageProvider, but the form is not required)
+	name: string,
+	# Backend-specific configuration
+	config: ?string
+) -> ()
+
+# Detach a previously-attached storage volume from the running machine
+method RemoveStorage(
+	# Identifier of the binding to detach (as supplied to AddStorage)
+	name: string
+) -> ()
+
+# Replace the backing of a previously-attached storage volume in place
+method ReplaceStorage(
+	# Index of the attached file descriptor for the new backing storage
+	fileDescriptorIndex: int,
+	# Identifier of the existing binding whose backing is being replaced (as supplied to AddStorage)
+	name: string
+) -> ()
+
+# The connection to the machine backend is not available
+error NotConnected()
+
+# The requested operation is not supported
+error NotSupported()
+
+# The named storage binding does not exist
+error NoSuchStorage()
+
+# A storage binding with this name already exists
+error StorageExists()
+
+# The storage binding cannot be detached at runtime (e.g. attached at boot)
+error StorageImmutable()
+
+# The supplied 'config' value is not valid for this backend
+error BadConfig()
+
+# The supplied 'config' value is recognized but not supported by this backend
+error ConfigNotSupported()

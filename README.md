@@ -46,7 +46,7 @@ Until now, Go programs had to hand-roll JSON over sockets or shell out to
 
 |  | |
 | --- | --- |
-| **Typed clients, generated from systemd's own IDL** | Every `io.systemd.*` interface in systemd v257, v258 and v260 — 33 interfaces, structs, enums and errors — with doc comments from upstream. |
+| **Typed clients, generated from systemd's own IDL** | Every `io.systemd.*` interface in systemd v257, v258, v260 and v262 — 46 interfaces, structs, enums and errors — with doc comments from upstream. |
 | **Streaming as Go iterators** | Methods that stream return `iter.Seq2[*T, error]`; `break` or cancel the context to stop. |
 | **File-descriptor passing** | `*os.File` fields travel as `SCM_RIGHTS` in both directions, attached to the right message, with leak-proof ownership rules. |
 | **Typed errors** | `errors.As(err, &resolve.NoNameServersError{})`, `errors.Is(err, resolve.ErrNoNameServers)`, and `io.systemd.System` errors that unwrap to `syscall.Errno`. |
@@ -157,7 +157,7 @@ files, and two servers: a job queue and an `io.systemd.Metrics` provider.
 ```mermaid
 flowchart LR
     subgraph build["Build time"]
-        src["systemd sources<br/>or a booted system"] -->|"hack/extract-idl.sh<br/>hack/capture-idl.sh"| idl["idl/v257 · v258 · v260<br/>*.varlink"]
+        src["systemd sources<br/>or a booted system"] -->|"hack/extract-idl.sh<br/>hack/capture-idl.sh"| idl["idl/v257 · v258 · v260 · v262<br/>*.varlink"]
         idl -->|sdvarlink-gen| gen["systemd/vN/&lt;pkg&gt;<br/>systemd/latest/&lt;pkg&gt;"]
         idl -->|sdvarlink-gen docs| docs["reference docs<br/>API change reports"]
     end

@@ -9,7 +9,7 @@ Boot Loader control APIs
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/bootcontrol`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/bootcontrol) |
 | Socket | `/run/systemd/io.systemd.BootControl` |
 | Available since | systemd v257 |
-| Methods · types · errors | 4 · 6 · 4 |
+| Methods · types · errors | 7 · 7 · 6 |
 
 ## Methods
 
@@ -75,8 +75,98 @@ func (c *Client) Install(ctx context.Context, in InstallIn) error
 | `graceful` | `?bool` | If true, continue on various failures |
 | `rootFileDescriptor` | `?int` | Index into array of file descriptors passed along with this message, pointing to file descriptor to root file system to operate on |
 | `rootDirectory` | `?string` | Root directory to operate relative to. If both this and rootFileDescriptor is specified, this is purely informational. If only this is specified, it is what will be used. |
+| `espPath` | `?string` | Path to the EFI System Partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the ESP is auto-discovered. |
+| `xbootldrPath` | `?string` | Path to the XBOOTLDR partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the XBOOTLDR partition is auto-discovered. |
 | `bootEntryTokenType` | `?BootEntryTokenType` | Selects how to identify boot entries |
+| `makeEntryDirectory` | `?bool` | Whether to create the '$BOOT/ENTRY-TOKEN/' directory for Boot Loader Specification Type #1 snippets. If not specified this is decided automatically. |
 | `touchVariables` | `?bool` | If true the boot loader will be registered in an EFI boot entry via EFI variables, otherwise this is omitted |
+
+### Unlink
+
+:material-new-box: since v262 · :material-file-swap: passes file descriptors
+
+Unlink a boot menu item
+
+```go
+func (c *Client) Unlink(ctx context.Context, in UnlinkIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `rootFileDescriptor` | `?int` | Index into array of file descriptors passed along with this message, pointing to file descriptor to root file system to operate on |
+| `rootDirectory` | `?string` | Root directory to operate relative to. If both this and rootFileDescriptor is specified, this is purely informational. If only this is specified, it is what will be used. |
+| `espPath` | `?string` | Path to the EFI System Partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the ESP is auto-discovered. |
+| `xbootldrPath` | `?string` | Path to the XBOOTLDR partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the XBOOTLDR partition is auto-discovered. |
+| `bootEntryTokenType` | `?BootEntryTokenType` | Selects how to identify boot entries |
+| `id` | `?string` | The ID of the boot loader entry to remove. |
+| `oldest` | `?bool` | If true, remove the oldest entry. |
+
+### Link
+
+:material-new-box: since v262 · :material-file-swap: passes file descriptors
+
+Install a kernel as boot menu item
+
+```go
+func (c *Client) Link(ctx context.Context, in LinkIn) (*LinkOut, error)
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `rootFileDescriptor` | `?int` | Index into array of file descriptors passed along with this message, pointing to file descriptor to root file system to operate on |
+| `rootDirectory` | `?string` | Root directory to operate relative to. If both this and rootFileDescriptor is specified, this is purely informational. If only this is specified, it is what will be used. |
+| `espPath` | `?string` | Path to the EFI System Partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the ESP is auto-discovered. |
+| `xbootldrPath` | `?string` | Path to the XBOOTLDR partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the XBOOTLDR partition is auto-discovered. |
+| `bootEntryTokenType` | `?BootEntryTokenType` | Selects how to identify boot entries |
+| `entryTitle` | `?string` | The entry title for the newly created boot menu entry |
+| `entryVersion` | `?string` | The entry version for the newly created boot menu entry |
+| `entryCommit` | `?int` | The commit number for the newly created boot menu entry |
+| `kernelFilename` | `string` | Target filename for the kernel image (UKI) in the $BOOT partition |
+| `kernelFileDescriptor` | `int` | Index into array of file descriptors passed along with this message, pointing to file descriptor to the kernel image to copy |
+| `extraFiles` | `?[]BootEntryExtraFile` | An array of 'extra' files for this entry, i.e. credentials, confexts, sysexts, addons. |
+| `triesLeft` | `?int` | What to set the triesLeft counter of the boot menu entry to initially. |
+| `keepFree` | `?int` | How much space to always keep free on ESP/XBOOTLDR. Defaults to 1 MiB |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ids` | `[]string` | The IDs of the created boot loader entries. |
+
+### LinkAuto
+
+:material-new-box: since v262 · :material-file-swap: passes file descriptors
+
+Like Link(), but automatically discovers the UKI and extra resources staged below /var/lib/systemd/uki/
+
+```go
+func (c *Client) LinkAuto(ctx context.Context, in LinkAutoIn) (*LinkAutoOut, error)
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `rootFileDescriptor` | `?int` | Index into array of file descriptors passed along with this message, pointing to file descriptor to root file system to operate on |
+| `rootDirectory` | `?string` | Root directory to operate relative to. If both this and rootFileDescriptor is specified, this is purely informational. If only this is specified, it is what will be used. |
+| `espPath` | `?string` | Path to the EFI System Partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the ESP is auto-discovered. |
+| `xbootldrPath` | `?string` | Path to the XBOOTLDR partition mount point, resolved relative to rootDirectory/rootFileDescriptor if either is set. If not specified the XBOOTLDR partition is auto-discovered. |
+| `bootEntryTokenType` | `?BootEntryTokenType` | Selects how to identify boot entries |
+| `entryTitle` | `?string` | The entry title for the newly created boot menu entry |
+| `entryVersion` | `?string` | The entry version for the newly created boot menu entry |
+| `entryCommit` | `?int` | The commit number for the newly created boot menu entry |
+| `triesLeft` | `?int` | What to set the triesLeft counter of the boot menu entry to initially. |
+| `keepFree` | `?int` | How much space to always keep free on ESP/XBOOTLDR. Defaults to 1 MiB |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ids` | `[]string` | The IDs of the created boot loader entries. |
 
 ## Types
 
@@ -129,7 +219,17 @@ A structure encapsulating an addon of a boot entry
 | --- | --- | --- |
 | `globalAddon` | `?string` | The location of the global addon. |
 | `localAddon` | `?string` | The location of the local addon. |
-| `options` | `string` | The command line options by the addon. |
+| `options` | `?string` | The command line options by the addon. |
+
+### BootEntryExtraFile
+
+An additional file to install
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `filename` | `string` | The name of the extra file |
+| `fileDescriptor` | `?int` | Index into array of file descriptors, pointing to a file descriptor referencing the extra file to copy in. Either this or the 'data' field below must be set – not both, not neither. |
+| `data` | `?string` | Literal data to place in the extra file. |
 
 ### BootEntry
 
@@ -146,6 +246,7 @@ A structure encapsulating a boot entry
 | `showTitle` | `?string` | The possibly mangled/augmented title to show for the entry |
 | `sortKey` | `?string` | An explicitly configured sorting key for the enry |
 | `version` | `?string` | The version of the entry |
+| `uname` | `?string` | The kernel version from the UKI's .uname section |
 | `machineId` | `?string` | Machine ID of the OS installation belonging to the entry, if known |
 | `architecture` | `?string` | EFI architecture name for this entry |
 | `options` | `?string` | Command line options to pass to the invoked kernel or EFI binary |
@@ -162,6 +263,7 @@ A structure encapsulating a boot entry
 | `isDefault` | `?bool` | Indicates whether this entry is the default entry. |
 | `isSelected` | `?bool` | Indicates whether this entry has been booted. |
 | `addons` | `?[]BootEntryAddon` | Addon images of the entry. |
+| `extras` | `?[]string` | Extra files associated with the entry. |
 | `cmdline` | `?string` | Command line options of the entry. |
 
 ## Errors
@@ -171,5 +273,7 @@ A structure encapsulating a boot entry
 | `RebootToFirmwareNotSupported` | `RebootToFirmwareNotSupportedError` | SetRebootToFirmware() and GetRebootToFirmware() return this if the firmware does not actually support the reboot-to-firmware-UI concept. |
 | `NoSuchBootEntry` | `NoSuchBootEntryError` | No boot entry defined. |
 | `NoESPFound` | `NoESPFoundError` | No EFI System Partition (ESP) found. |
-| `BootEntryTokenUnavailable` | `BootEntryTokenUnavailableError` | The select boot entry token could not be determined. |
+| `NoDollarBootFound` | `NoDollarBootFoundError` | Neither ESP nor XBOOTLDR found, hence no $BOOT location identified. |
+| `BootEntryTokenUnavailable` | `BootEntryTokenUnavailableError` | The selected boot entry token could not be determined. |
+| `InvalidKernelImage` | `InvalidKernelImageError` | The specified kernel image is not valid. |
 

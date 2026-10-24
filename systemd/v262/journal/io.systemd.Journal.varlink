@@ -1,0 +1,20 @@
+# Journal control APIs
+interface io.systemd.Journal
+
+# Write out all pending log messages out to disk, and reply only after that's complete.
+method Synchronize(
+	# Controls whether to offline the journal files as part of the synchronization operation.
+	offline: ?bool
+) -> ()
+
+# Rotate journal files, i.e. close existing files, start new ones.
+method Rotate() -> ()
+
+# Flush runtime logs to persistent logs, i.e. flush log data from /run/ into /var/, and continue writing future log data to the latter location.
+method FlushToVar() -> ()
+
+# Relinquish use of /var/ again, return to do runtime logging into /run/ only.
+method RelinquishVar() -> ()
+
+# Journal service running as per-namespace instance, and requested operation is not supported for namespaced journal.
+error NotSupportedByNamespaces()

@@ -9,7 +9,7 @@ TPM PCR Extension APIs
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/pcrextend`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/pcrextend) |
 | Socket | `/run/systemd/io.systemd.PCRExtend` |
 | Available since | systemd v257 |
-| Methods · types · errors | 1 · 1 · 1 |
+| Methods · types · errors | 1 · 1 · 2 |
 
 ## Methods
 
@@ -29,6 +29,7 @@ func (c *Client) Extend(ctx context.Context, in ExtendIn) error
 | `nvpcr` | `?string` | NvPCR to extend, identified by a string. Either this or 'pcr' must be specified, not both, not neither. |
 | `text` | `?string` | Text string to measure. (Specify either this, or the 'data' field below, not both) |
 | `data` | `?string` | Binary data to measure, encoded in Base64. (Specify either this, or the 'text' field above, not both) |
+| `secret` | `?string` | HMAC key, encoded in Base64. When set, the HMAC of the measured data keyed by this secret is extended rather than a plain hash. |
 | `eventType` | `?EventType` | Event type to include in the (userspace) event log). This is optional, and mostly for debugging. |
 
 ## Types
@@ -48,10 +49,12 @@ Event type to store in event log
 | `nvpcr_init` |  |
 | `nvpcr_separator` |  |
 | `dm_verity` |  |
+| `imds_userdata` |  |
 
 ## Errors
 
 | Error | Go type | Description |
 | --- | --- | --- |
 | `NoSuchNvPCR` | `NoSuchNvPCRError` |  |
+| `NvPCRSpaceExhausted` | `NvPCRSpaceExhaustedError` | Space for NV indexes/NvPCRs exhausted, cannot measure. |
 

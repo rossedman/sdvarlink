@@ -150,8 +150,9 @@ func TestStreamingHandlers(t *testing.T) {
 		want    []int
 		wantErr string
 	}{
-		// A stream that yields nothing is answered with one empty reply.
-		{name: "empty", n: 0, want: []int{0}},
+		// A stream that yields nothing is answered with one empty final
+		// reply, which the client does not yield.
+		{name: "empty", n: 0, want: nil},
 		{name: "single", n: 1, want: []int{1}},
 		{name: "several", n: 4, want: []int{1, 2, 3, 4}},
 		{name: "error after values", n: 5, failAt: 3, want: []int{1, 2}, wantErr: "com.example.Ticks.Stopped"},

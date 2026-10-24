@@ -1,0 +1,37 @@
+# TPM PCR Extension APIs
+interface io.systemd.PCRExtend
+
+# Event type to store in event log
+type EventType(
+	phase,
+	filesystem,
+	volume_key,
+	machine_id,
+	product_id,
+	keyslot,
+	nvpcr_init,
+	nvpcr_separator,
+	dm_verity,
+	imds_userdata
+)
+
+# Measure some text or binary data into a PCR
+method Extend(
+	# PCR number to extend, in range of 0…23. Either this or 'nvpcr' must be specified, not both, not neither.
+	pcr: ?int,
+	# NvPCR to extend, identified by a string. Either this or 'pcr' must be specified, not both, not neither.
+	nvpcr: ?string,
+	# Text string to measure. (Specify either this, or the 'data' field below, not both)
+	text: ?string,
+	# Binary data to measure, encoded in Base64. (Specify either this, or the 'text' field above, not both)
+	data: ?string,
+	# HMAC key, encoded in Base64. When set, the HMAC of the measured data keyed by this secret is extended rather than a plain hash.
+	secret: ?string,
+	# Event type to include in the (userspace) event log). This is optional, and mostly for debugging.
+	eventType: ?EventType
+) -> ()
+
+error NoSuchNvPCR()
+
+# Space for NV indexes/NvPCRs exhausted, cannot measure.
+error NvPCRSpaceExhausted()

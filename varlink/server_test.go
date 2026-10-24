@@ -364,12 +364,9 @@ func TestServerStream(t *testing.T) {
 		var v nOut
 		r.Decode(&v)
 		got = append(got, v.N)
-		if !r.Continues && v.N != 0 {
-			t.Fatalf("final reply carried a value: %+v", v)
-		}
 	}
-	// Three values, then the empty final reply.
-	if fmt.Sprint(got) != "[1 2 3 0]" {
+	// Three values; the empty final reply that ends a live stream is not one.
+	if fmt.Sprint(got) != "[1 2 3]" {
 		t.Fatalf("got %v", got)
 	}
 }

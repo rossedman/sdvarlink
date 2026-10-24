@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/machine`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/machine) |
 | Socket | `/run/systemd/machine/io.systemd.Machine` |
 | Available since | systemd v257 |
-| Methods · types · errors | 12 · 5 · 12 |
+| Methods · types · errors | 12 · 7 · 12 |
 
 ## Methods
 
@@ -24,16 +24,17 @@ func (c *Client) Register(ctx context.Context, in RegisterIn) error
 | `name` | `string` |  |
 | `id` | `?string` |  |
 | `service` | `?string` |  |
-| `class` | `string` |  |
+| `class` | `MachineClass` |  |
 | `leader` | `?int` | The leader PID as simple positive integer. |
 | `leaderProcessId` | `?ProcessId` | The leader PID as ProcessId structure. If both the leader and leaderProcessId parameters are specified they must reference the same process. Typically one would only specify one or the other however. It's generally recommended to specify leaderProcessId as it references a process in a robust way without risk of identifier recycling. |
-| `supervisor` | `?int` | The supervisor PID as simple positive integer. |
-| `supervisorProcessId` | `?ProcessId` | The supervisor PID as ProcessId structure. If both the supervisor and supervisorProcessId parameters are specified they must reference the same process. Typically only one or the other would be specified. It's generally recommended to specify supervisorProcessId as it references a process in a robust way without risk of identifier recycling. |
+| `supervisor` | `?int` | The supervisor PID as simple positive integer. Deprecated and ignored: the supervisor is now always derived from the caller's socket (kept for backward compatibility). |
+| `supervisorProcessId` | `?ProcessId` | The supervisor PID as ProcessId structure. Deprecated and ignored: the supervisor is now always derived from the caller's socket (kept for backward compatibility). |
 | `rootDirectory` | `?string` |  |
 | `ifIndices` | `?[]int` |  |
 | `vSockCid` | `?int` |  |
 | `sshAddress` | `?string` |  |
 | `sshPrivateKeyPath` | `?string` |  |
+| `controlAddress` | `?string` | Varlink socket address for direct machine control. The server at this address is expected to implement io.systemd.MachineInstance and optionally io.systemd.VirtualMachineInstance. |
 | `allocateUnit` | `?bool` | Controls whether to allocate a scope unit for the machine to register. If false, the client already took care of that and registered a service/scope specific to the machine. |
 | `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
 
@@ -82,7 +83,7 @@ func (c *Client) Kill(ctx context.Context, in KillIn) error
 | `name` | `?string` | If non-null the name of a machine. |
 | `pid` | `?ProcessId` | If non-null the PID of a machine. Special value 0 means to take pid of the machine the caller is part of. |
 | `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
-| `whom` | `?string` | Identifier that specifies what precisely to send the signal to (either 'leader', 'supervisor', or 'all'). |
+| `whom` | `?KillWhom` | Identifier that specifies what precisely to send the signal to (either 'leader', 'supervisor', or 'all'). |
 | `signal` | `int` | Numeric UNIX signal integer. |
 
 ### List
@@ -112,7 +113,7 @@ func (c *Client) ListMore(ctx context.Context, in ListIn) iter.Seq2[*ListOut, er
 | `name` | `string` | Name of the machine |
 | `id` | `?string` | 128bit ID identifying this machine, formatted in hexadecimal |
 | `service` | `?string` | Name of the software that registered this machine |
-| `class` | `string` | The class of this machine |
+| `class` | `MachineClass` | The class of this machine |
 | `leader` | `?ProcessId` | Leader process PID of this machine |
 | `supervisor` | `?ProcessId` | Supervisor process PID of this machine |
 | `rootDirectory` | `?string` | Root directory of this machine, if known, relative to host file system |
@@ -121,6 +122,7 @@ func (c *Client) ListMore(ctx context.Context, in ListIn) iter.Seq2[*ListOut, er
 | `vSockCid` | `?int` | AF_VSOCK CID of the machine if known and applicable |
 | `sshAddress` | `?string` | SSH address to connect to |
 | `sshPrivateKeyPath` | `?string` | Path to private SSH key |
+| `controlAddress` | `?string` | Varlink socket address for direct machine control, implementing io.systemd.MachineInstance and optionally further interfaces |
 | `addresses` | `?[]Address` | List of addresses of the machine |
 | `OSRelease` | `?[]string` | OS release information of the machine. It contains an array of key value pairs read from the os-release(5) file in the image. |
 | `UIDShift` | `?int` | Return the base UID/GID of the machine |
@@ -298,6 +300,26 @@ func (c *Client) OpenRootDirectory(ctx context.Context, in OpenRootDirectoryIn) 
 | `fileDescriptor` | `int` | File descriptor of opened root directory |
 
 ## Types
+
+### MachineClass
+
+The class of a machine
+
+| Value | Description |
+| --- | --- |
+| `container` |  |
+| `vm` |  |
+| `host` |  |
+
+### KillWhom
+
+What to send a signal to in a machine
+
+| Value | Description |
+| --- | --- |
+| `leader` |  |
+| `supervisor` |  |
+| `all` |  |
 
 ### AcquireMetadata
 

@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/oom`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/oom) |
 | Socket | `/run/systemd/oom/io.systemd.ManagedOOM` |
 | Available since | systemd v257 |
-| Methods · types · errors | 1 · 1 · 0 |
+| Methods · types · errors | 1 · 2 · 0 |
 
 ## Methods
 
@@ -25,13 +25,21 @@ func (c *Client) ReportManagedOOMCGroups(ctx context.Context, in ReportManagedOO
 
 ## Types
 
+### ManagedOOMMode
+
+| Value | Description |
+| --- | --- |
+| `auto` |  |
+| `kill` |  |
+
 ### ControlGroup
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `mode` | `string` |  |
+| `mode` | `ManagedOOMMode` |  |
 | `path` | `string` |  |
 | `property` | `string` |  |
 | `limit` | `?int` |  |
 | `duration` | `?int` |  |
+| `rules` | `?[]string` |  |
 

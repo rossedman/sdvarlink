@@ -1,0 +1,10 @@
+# Backend API for uploading reports. This interface shall be implemented by services linked into /run/systemd/report.upload/
+interface io.systemd.Report.Uploader
+
+# Upload a report now.
+method Upload(
+	# Report data as JSON variant. Either this field or reportData (below) have to be specified. This mode is used if signing is not used, and hence a precise binary formatting of the JSON data is not relevant.
+	report: ?object,
+	# Report data in Base64. Either this field or report (above) have to be specified. This mode is used if signing is enabled, as a precise binary formatting of the JSON data is important to authenticate the signature. This data contains a JSON-SEQ compliant stream of objects, the first being the report, the following ones signature objects.
+	reportData: ?string
+) -> ()

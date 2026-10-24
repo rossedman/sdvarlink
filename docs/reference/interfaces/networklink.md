@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/networklink`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/networklink) |
 | Socket | `/run/systemd/netif/io.systemd.Network` |
 | Available since | systemd v260 |
-| Methods · types · errors | 2 · 0 · 0 |
+| Methods · types · errors | 6 · 27 · 1 |
 
 ## Methods
 
@@ -42,4 +42,446 @@ func (c *Client) Down(ctx context.Context, in DownIn) error
 | `InterfaceIndex` | `?int` | Index of the interface. If specified together with InterfaceName, both must reference the same link. |
 | `InterfaceName` | `?string` | Name of the interface. If specified together with InterfaceIndex, both must reference the same link. |
 | `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
+### Renew
+
+:material-new-box: since v262
+
+Renew DHCP leases on the specified link.
+
+```go
+func (c *Client) Renew(ctx context.Context, in RenewIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `InterfaceIndex` | `?int` | Index of the interface. If specified together with InterfaceName, both must reference the same link. |
+| `InterfaceName` | `?string` | Name of the interface. If specified together with InterfaceIndex, both must reference the same link. |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
+### ForceRenew
+
+:material-new-box: since v262
+
+Force-renew DHCP server leases on the specified link.
+
+```go
+func (c *Client) ForceRenew(ctx context.Context, in ForceRenewIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `InterfaceIndex` | `?int` | Index of the interface. If specified together with InterfaceName, both must reference the same link. |
+| `InterfaceName` | `?string` | Name of the interface. If specified together with InterfaceIndex, both must reference the same link. |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
+### Reconfigure
+
+:material-new-box: since v262
+
+Unconditionally reconfigure the specified link.
+
+```go
+func (c *Client) Reconfigure(ctx context.Context, in ReconfigureIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `InterfaceIndex` | `?int` | Index of the interface. If specified together with InterfaceName, both must reference the same link. |
+| `InterfaceName` | `?string` | Name of the interface. If specified together with InterfaceIndex, both must reference the same link. |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
+### Describe
+
+:material-new-box: since v262
+
+Describe the specified link by index or name.
+
+```go
+func (c *Client) Describe(ctx context.Context, in DescribeIn) (*DescribeOut, error)
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `InterfaceIndex` | `?int` | Index of the interface. If specified together with InterfaceName, both must reference the same link. |
+| `InterfaceName` | `?string` | Name of the interface. If specified together with InterfaceIndex, both must reference the same link. |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Interface` | `Interface` | Interface description |
+
+## Types
+
+### LinkState
+
+| Value | Description |
+| --- | --- |
+| `pending` |  |
+| `initialized` |  |
+| `configuring` |  |
+| `configured` |  |
+| `unmanaged` |  |
+| `failed` |  |
+| `linger` |  |
+
+### LinkAddressState
+
+| Value | Description |
+| --- | --- |
+| `off` |  |
+| `degraded` |  |
+| `routable` |  |
+
+### LinkOnlineState
+
+| Value | Description |
+| --- | --- |
+| `offline` |  |
+| `partial` |  |
+| `online` |  |
+
+### LinkRequiredAddressFamily
+
+| Value | Description |
+| --- | --- |
+| `any` |  |
+| `ipv4` |  |
+| `ipv6` |  |
+| `both` |  |
+
+### Address
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ifindex` | `?int` |  |
+| `family` | `int` |  |
+| `address` | `[]int` |  |
+
+### BitRates
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `TxBitRate` | `int` | Transmit bitrate in bits per second |
+| `RxBitRate` | `int` | Receive bitrate in bits per second |
+
+### DHCPLease
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `LeaseTimestampUSec` | `?int` | Timestamp when the lease was acquired in microseconds |
+| `Timeout1USec` | `?int` | T1 timeout (lease renewal time) in microseconds |
+| `Timeout2USec` | `?int` | T2 timeout (lease rebinding time) in microseconds |
+| `Hostname` | `?string` | Hostname received from DHCP server |
+
+### DHCPServer
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `PoolOffset` | `int` | Offset from the network address for the DHCP address pool |
+| `PoolSize` | `int` | Size of the DHCP address pool |
+| `Leases` | `?[]DHCPServerLease` | Active DHCP leases assigned by the server |
+| `StaticLeases` | `?[]DHCPServerLease` | Static DHCP leases configured for specific clients |
+
+### DHCPServerLease
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ClientId` | `?[]int` | DHCP client identifier |
+| `Address` | `?[]int` | Address assigned to the client |
+| `AddressString` | `?string` | Address assigned to the client (human-readable format) |
+| `Hostname` | `?string` | Hostname provided by the DHCP client |
+| `HardwareAddressType` | `?int` | Hardware address type (ARPHRD_* value) |
+| `HardwareAddressLength` | `?int` | Length of hardware address in bytes |
+| `HardwareAddress` | `?[]int` | Hardware (MAC) address of the DHCP client |
+| `ExpirationUSec` | `?int` | Lease expiration time in monotonic microseconds |
+| `ExpirationRealtimeUSec` | `?int` | Lease expiration time in realtime microseconds |
+
+### DHCPv6Client
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Lease` | `?DHCPLease` | DHCPv6 lease information including timestamps and timeouts |
+| `Prefixes` | `?[]DHCPv6ClientPD` | Delegated prefixes received from DHCPv6 server |
+| `VendorSpecificOptions` | `?[]DHCPv6ClientVendorOption` | Vendor-specific options received in DHCPv6 response |
+| `DUID` | `[]int` | DHCP Unique Identifier (DUID) of the client |
+
+### DHCPv6ClientPD
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Prefix` | `?[]int` | Delegated IPv6 prefix |
+| `PrefixString` | `?string` | Human-readable delegated IPv6 prefix |
+| `PrefixLength` | `int` | Length of the delegated prefix in bits |
+| `PreferredLifetimeUSec` | `?int` | Preferred lifetime of the prefix in microseconds |
+| `ValidLifetimeUSec` | `?int` | Valid lifetime of the prefix in microseconds |
+
+### DHCPv6ClientVendorOption
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `EnterpriseId` | `int` | IANA enterprise number identifying the vendor |
+| `SubOptionCode` | `int` | Vendor-specific sub-option code |
+| `SubOptionData` | `string` | Raw data of the vendor-specific sub-option |
+
+### DNS
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Family` | `int` | Address family (AF_INET or AF_INET6) |
+| `Address` | `[]int` | DNS server IP address |
+| `AddressString` | `string` | DNS server IP address (human-readable format) |
+| `Port` | `?int` | DNS server port number |
+| `InterfaceIndex` | `?int` | Interface index for link-local DNS servers |
+| `ServerName` | `?string` | DNS server hostname for DoT/DoH |
+| `ConfigSource` | `string` | Configuration source for this DNS server |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+
+### DNSSECNegativeTrustAnchor
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `DNSSECNegativeTrustAnchor` | `string` | Domain name for which DNSSEC validation is disabled |
+| `ConfigSource` | `string` | Configuration source for this negative trust anchor |
+
+### DNSSetting
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `LLMNR` | `?string` | Link-Local Multicast Name Resolution setting |
+| `MDNS` | `?string` | Multicast DNS setting |
+| `DNSDefaultRoute` | `?bool` | Whether this connection can be used as a default route for DNS lookups |
+| `DNSOverTLS` | `?string` | DNS-over-TLS mode setting |
+| `ConfigSource` | `string` | Configuration source for this DNS setting |
+
+### Domain
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Domain` | `string` | DNS search or route domain name |
+| `ConfigSource` | `string` | Configuration source for this domain |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+
+### Interface
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Index` | `int` | Network interface index |
+| `Name` | `string` | Primary interface name |
+| `AlternativeNames` | `?[]string` | Alternative interface names |
+| `MasterInterfaceIndex` | `?int` | Interface index of the master device (for bridge/bond slaves) |
+| `Kind` | `?string` | Interface kind (vlan, bridge, bond, etc.) |
+| `Type` | `string` | Interface type (ether, loopback, etc.) |
+| `Driver` | `?string` | Kernel driver name |
+| `Flags` | `int` | Interface flags (IFF_* values) |
+| `FlagsString` | `string` | Human-readable interface flags |
+| `KernelOperationalState` | `int` | Kernel operational state (IF_OPER_* value) |
+| `KernelOperationalStateString` | `string` | Human-readable kernel operational state |
+| `MTU` | `int` | Current MTU in bytes |
+| `MinimumMTU` | `int` | Minimum allowed MTU in bytes |
+| `MaximumMTU` | `int` | Maximum allowed MTU in bytes |
+| `HardwareAddress` | `?[]int` | Current hardware (MAC) address |
+| `PermanentHardwareAddress` | `?[]int` | Permanent hardware (MAC) address from factory |
+| `BroadcastAddress` | `?[]int` | Broadcast address for Ethernet interfaces |
+| `IPv6LinkLocalAddress` | `?[]int` | IPv6 link-local address |
+| `IPv6LinkLocalAddressString` | `?string` | IPv6 link-local address (human-readable format) |
+| `WirelessLanInterfaceType` | `?int` | Wireless LAN interface type (NL80211_IFTYPE_* value) |
+| `WirelessLanInterfaceTypeString` | `?string` | Human-readable wireless LAN interface type |
+| `SSID` | `?string` | Wireless network SSID |
+| `BSSID` | `?[]int` | Wireless access point BSSID (MAC address) |
+| `AdministrativeState` | `LinkState` | Administrative state (configuring, configured, etc.) |
+| `OperationalState` | `string` | Operational state (routable, degraded, etc.) |
+| `CarrierState` | `string` | Carrier state (carrier, no-carrier, etc.) |
+| `AddressState` | `LinkAddressState` | Address configuration state |
+| `IPv4AddressState` | `LinkAddressState` | IPv4 address configuration state |
+| `IPv6AddressState` | `LinkAddressState` | IPv6 address configuration state |
+| `OnlineState` | `?LinkOnlineState` | Online state (online, offline, etc.) |
+| `NetworkFile` | `?string` | Path to .network configuration file |
+| `NetworkFileDropins` | `?[]string` | Paths to .network drop-in configuration files |
+| `RequiredForOnline` | `?bool` | Whether this interface is required for online state |
+| `RequiredOperationalStateForOnline` | `?[]string` | Required operational state range for considering interface online [min, max] |
+| `RequiredFamilyForOnline` | `?LinkRequiredAddressFamily` | Required address family for considering interface online |
+| `ActivationPolicy` | `?string` | Activation policy (up, always-up, manual, etc.) |
+| `NetDevFile` | `?string` | Path to .netdev configuration file |
+| `NetDevFileDropins` | `?[]string` | Paths to .netdev drop-in configuration files |
+| `LinkFile` | `?string` | Path to .link configuration file |
+| `LinkFileDropins` | `?[]string` | Paths to .link drop-in configuration files |
+| `Path` | `?string` | Device path in sysfs |
+| `Vendor` | `?string` | Hardware vendor name |
+| `Model` | `?string` | Hardware model name |
+| `DNS` | `?[]DNS` | DNS servers configured for this interface |
+| `DNR` | `?[]object` | Discovery of Network-designated Resolvers (RFC9463) |
+| `NTP` | `?[]NTP` | NTP servers configured for this interface |
+| `SIP` | `?[]SIP` | SIP servers configured for this interface |
+| `SearchDomains` | `?[]Domain` | DNS search domains |
+| `RouteDomains` | `?[]Domain` | DNS route-only domains |
+| `DNSSECNegativeTrustAnchors` | `?[]DNSSECNegativeTrustAnchor` | DNSSEC negative trust anchors |
+| `DNSSettings` | `?[]DNSSetting` | DNS resolution settings (LLMNR, mDNS, etc.) |
+| `CaptivePortal` | `?string` | Captive portal detection URL (RFC8910) |
+| `NDisc` | `?NDisc` | IPv6 Neighbor Discovery information |
+| `Addresses` | `?[]Address` | IP addresses configured on this interface |
+| `Neighbors` | `?[]Neighbor` | Neighbor entries (ARP/NDP cache) |
+| `NextHops` | `?[]NextHop` | Next hops for multipath routing |
+| `Routes` | `?[]Route` | Routes configured on this interface |
+| `DHCPServer` | `?DHCPServer` | DHCP server configuration and leases |
+| `DHCPv4Client` | `?object` | DHCPv4 client configuration and lease information |
+| `DHCPv6Client` | `?DHCPv6Client` | DHCPv6 client configuration and lease information |
+| `LLDP` | `?LLDPNeighbor` | LLDP transmit configuration for this interface |
+| `BitRates` | `?BitRates` | Current transmit/receive bitrates from speed meter |
+
+### LLDPNeighbor
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ChassisID` | `?string` | Chassis identifier in human-readable format |
+| `RawChassisID` | `[]int` | Raw chassis identifier bytes |
+| `PortID` | `string` | Port identifier in human-readable format |
+| `RawPortID` | `[]int` | Raw port identifier bytes |
+| `PortDescription` | `?string` | Description of the port |
+| `SystemName` | `?string` | System name of the LLDP neighbor |
+| `SystemDescription` | `?string` | System description of the LLDP neighbor |
+| `EnabledCapabilities` | `int` | Enabled capabilities bitmap (bridge, router, WLAN, etc.) |
+| `MUDURL` | `?string` | Manufacturer Usage Description URL (RFC8520) |
+| `VlanID` | `?int` | VLAN identifier |
+
+### NDisc
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `PREF64` | `?[]Pref64` | PREF64 (RFC8781) prefixes advertised via IPv6 Router Advertisements |
+
+### Neighbor
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Family` | `int` | Address family (AF_INET or AF_INET6) |
+| `Destination` | `[]int` | IP address of the neighbor |
+| `DestinationString` | `string` | IP address of the neighbor (human-readable format) |
+| `LinkLayerAddress` | `[]int` | Link layer (MAC) address of the neighbor |
+| `ConfigSource` | `string` | Configuration source for this neighbor entry |
+| `ConfigState` | `string` | Configuration state of this neighbor entry |
+
+### NextHop
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ID` | `int` | Next hop identifier |
+| `Family` | `int` | Address family (AF_INET or AF_INET6) |
+| `Gateway` | `?[]int` | Gateway address for this next hop |
+| `GatewayString` | `?string` | Gateway address for this next hop (human-readable format) |
+| `Flags` | `?int` | Next hop flags (RTNH_F_* values) |
+| `FlagsString` | `?string` | Human-readable flags string |
+| `Protocol` | `?int` | Routing protocol identifier |
+| `ProtocolString` | `?string` | Human-readable routing protocol name |
+| `Blackhole` | `?bool` | Whether this is a blackhole next hop (drops packets) |
+| `Group` | `?[]NextHopGroup` | Multipath group members with weights for load balancing |
+| `ConfigSource` | `string` | Configuration source for this next hop |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+| `ConfigState` | `?string` | Configuration state of this next hop |
+
+### NextHopGroup
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ID` | `int` | Next hop identifier in the multipath group |
+| `Weight` | `int` | Weight for load balancing (higher means more traffic) |
+
+### NTP
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Family` | `?int` | Address family (AF_INET or AF_INET6) for address-based servers |
+| `Address` | `?[]int` | NTP server IP address |
+| `AddressString` | `?string` | NTP server IP address (human-readable format) |
+| `Server` | `?string` | NTP server |
+| `ConfigSource` | `string` | Configuration source for this NTP server |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+
+### Pref64
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Prefix` | `?[]int` | IPv6 prefix for NAT64/DNS64 |
+| `PrefixString` | `?string` | Human-readable IPv6 prefix |
+| `PrefixLength` | `int` | Length of the prefix in bits |
+| `LifetimeUSec` | `?int` | Lifetime of the prefix in microseconds |
+| `ConfigProvider` | `?[]int` | Address of router that provided this prefix |
+| `ConfigProviderString` | `?string` | Address of router that provided this prefix (human-readable format) |
+
+### PrivateOption
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Option` | `?int` | DHCP option number |
+| `PrivateOptionData` | `?string` | Raw data of the private DHCP option |
+
+### Route
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Family` | `int` | Address family (AF_INET or AF_INET6) |
+| `Destination` | `[]int` | Destination network address |
+| `DestinationString` | `string` | Destination network address (human-readable format) |
+| `DestinationPrefixLength` | `int` | Destination network prefix length |
+| `Gateway` | `?[]int` | Gateway address for this route |
+| `GatewayString` | `?string` | Gateway address for this route (human-readable format) |
+| `Source` | `?[]int` | Source address prefix for route selection |
+| `SourceString` | `?string` | Source address prefix for route selection (human-readable format) |
+| `SourcePrefixLength` | `?int` | Source prefix length |
+| `PreferredSource` | `?[]int` | Preferred source address for outgoing packets |
+| `PreferredSourceString` | `?string` | Preferred source address for outgoing packets (human-readable format) |
+| `TOS` | `int` | Type of Service (TOS) field |
+| `Scope` | `int` | Route scope (RT_SCOPE_* value) |
+| `ScopeString` | `?string` | Human-readable scope string |
+| `Protocol` | `int` | Routing protocol identifier |
+| `ProtocolString` | `?string` | Human-readable routing protocol name |
+| `Type` | `int` | Route type (RTN_* value) |
+| `TypeString` | `?string` | Human-readable route type |
+| `Priority` | `int` | Route priority/metric |
+| `Table` | `int` | Routing table number |
+| `TableString` | `?string` | Human-readable routing table name |
+| `Flags` | `int` | Route flags (RTM_F_* values) |
+| `FlagsString` | `?string` | Human-readable flags string |
+| `NextHopID` | `?int` | Next hop ID for multipath routing |
+| `MTU` | `?int` | Maximum Transmission Unit for this route |
+| `Preference` | `?int` | Route preference for IPv6 (low/medium/high) |
+| `LifetimeUSec` | `?int` | Route lifetime in microseconds |
+| `ConfigSource` | `string` | Configuration source for this route |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+| `ConfigState` | `?string` | Configuration state of this route |
+| `InterfaceIndex` | `?int` | Interface index for serialization |
+| `Metrics` | `?[]int` | Route metrics (RTAX_* values) |
+| `TCPCongestionControlAlgorithm` | `?string` | TCP congestion control algorithm for this route |
+
+### SIP
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Family` | `?int` | Address family (AF_INET or AF_INET6) for address-based servers |
+| `Address` | `?[]int` | SIP server IP address |
+| `AddressString` | `?string` | SIP server IP address (human-readable format) |
+| `Domain` | `?string` | SIP server domain name |
+| `ConfigSource` | `string` | Configuration source for this SIP server |
+| `ConfigProvider` | `?[]int` | Address of the configuration provider |
+| `ConfigProviderString` | `?string` | Address of the configuration provider (human-readable format) |
+
+## Errors
+
+| Error | Go type | Description |
+| --- | --- | --- |
+| `InterfaceUnmanaged` | `InterfaceUnmanagedError` | The specified interface is not managed by systemd-networkd. |
 

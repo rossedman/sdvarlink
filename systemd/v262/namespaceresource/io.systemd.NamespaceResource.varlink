@@ -1,0 +1,114 @@
+# Allocate transient UID ranges for user namespace, and assign mounts, cgroups and networking devices to them
+interface io.systemd.NamespaceResource
+
+# The type of user range allocation to perform.
+type AllocateUserRangeType(
+	# Allocate a transient UID/GID range from the dynamic range pool. This is the default.
+	managed,
+	# Create a user namespace that maps the peer UID/GID to itself instead of allocating a transient UID range.
+	self
+)
+
+# Assigns a UID range to a client-allocated user namespace that has no UID range assigned so far, and registers it for assignment of other resources.
+method AllocateUserRange(
+	# The name for the user namespace, a short string that must be fit to be included in a file name and in a user name. This name is included in the user records announced via NSS and is otherwise useful for debugging.
+	name: string,
+	# Controls whether to mangle the provided name if needed so that it is suitable for naming a user namespace. If true this will shorten the name as necessary or randomize it if that's not sufficient. If null defaults to false.
+	mangleName: ?bool,
+	# The number of UIDs to assign. Must be 1 or 65536. If type is 'self', must be 1.
+	size: int,
+	# The target UID inside the user namespace. If not specified defaults to 0. If type is 'self', must be 0 or unset in which case the peer UID is mapped to itself.
+	target: ?int,
+	# A file descriptor to an allocated userns with no current UID range assignments
+	userNamespaceFileDescriptor: int,
+	# The type of allocation to perform. If 'managed' (the default), a transient UID/GID range is allocated from the dynamic range pool. If 'self', the peer UID/GID is mapped to itself. Defaults to 'managed'.
+	type: ?AllocateUserRangeType,
+	# Number of transient 64K container UID/GID ranges to delegate. These are mapped 1:1 into the user namespace and can be used by nested user namespaces for container workloads. Must be between 0 and 16. Defaults to 0.
+	delegateContainerRanges: ?int,
+	# If true, map the foreign UID range 1:1 into the user namespace.
+	mapForeign: ?bool
+) -> (
+	# The name assigned to the user namespace. (This is particularly interesting in case mangleName was enabled).
+	name: ?string
+)
+
+# Registers an already initialized user namespace for assignment of resources.
+method RegisterUserNamespace(
+	# The name for the user namespace, a short string that must be fit to be included in a file name and in a user name, as in AllocateUserRange().
+	name: string,
+	# Controls whether to mangle the provided name if needed so that it is suitable for naming a user namespace, as in AllocateUserRange()
+	mangleName: ?bool,
+	# A user namespace file descriptor that is fully initialized
+	userNamespaceFileDescriptor: int
+) -> (
+	# The name assigned to the user namespace
+	name: ?string
+)
+
+# Adds a mount to a user namespace previously allocated or registered via AllocateUserRange() or RegisterUserNamespace(). This allowlists the mount for access by the user namespace.
+method AddMountToUserNamespace(
+	# A user namespace file descriptor previously allocated via AllocateUserRange() or registered via RegisterUserNamespace().
+	userNamespaceFileDescriptor: int,
+	# A mount file descriptor for the mount to allowlist for the specified user namespace.
+	mountFileDescriptor: int
+) -> ()
+
+# Adds a cgroup to a user namespace previously allocated or registered via AllocateUserRange() or RegisterUserNamespace(). This passes ownership of the referenced cgroup to the user namespace's root user, and ensures the cgroup gets deleted when the user namespace is released.
+method AddControlGroupToUserNamespace(
+	# A user namespace file descriptor previously allocated via AllocateUserRange() or registered via RegisterUserNamespace().
+	userNamespaceFileDescriptor: int,
+	# A file descriptor referencing a cgroup to assign to the root user of the specified user namespace.
+	controlGroupFileDescriptor: int
+) -> ()
+
+# Adds a network interface to a user namespace previously allocated or registered via AllocateUserRange() or RegisterUserNamespace(). This creates a 'veth' or 'tap' device that is assigned to the user namespace, or owned by its root user.
+method AddNetworkToUserNamespace(
+	# A user namespace file descriptor previously allocated via AllocateUserRange() or registered via RegisterUserNamespace().
+	userNamespaceFileDescriptor: int,
+	# A network namespace file descriptor to assign the network interface to. Only applies to network interfaces of type 'veth'.
+	networkNamespaceFileDescriptor: ?int,
+	# The network interface name to use for the network interface inside the network namespace. Only applies to network interfaces of type 'veth'.
+	namespaceInterfaceName: ?string,
+	# The networking mode, one of 'veth' or 'tap'. If the former is selected a virtual Ethernet link between host and namespace is created. If the latter is selected an Ethernet Tap link is created and a file descriptor is returned for the namespace side.
+	mode: string
+) -> (
+	# The chosen network interface name for the host side of the network.
+	hostInterfaceName: string,
+	# The chosen network interface name for the namespace side of the network. Only applies to network interfaces of type 'veth'.
+	namespaceInterfaceName: ?string,
+	# The file descriptor for the namespace side of the network. Only applies to network interfaces of type 'tap'.
+	interfaceFileDescriptor: ?int
+)
+
+# User namespace delegation via io.systemd.NamespaceResource is not supported.
+error UserNamespaceInterfaceNotSupported()
+
+# A user namespace under the specified name exists already.
+error NameExists()
+
+# The specified user namespace has been registered before.
+error UserNamespaceExists()
+
+# The dynamic UID range is exhausted already.
+error DynamicRangeUnavailable()
+
+# The dynamic UID range is not available on this system.
+error NoDynamicRange()
+
+# The specified user namespace has not been registered.
+error UserNamespaceNotRegistered()
+
+# The specified user namespace has no UID range assigned.
+error UserNamespaceWithoutUserRange()
+
+# The per-user namespace limit of cgroups has been reached.
+error TooManyControlGroups()
+
+# The specified cgroup has already been added to the user namespace.
+error ControlGroupAlreadyAdded()
+
+# The per-user namespace limit of network interfaces has been reached.
+error TooManyNetworkInterfaces()
+
+# The specified number of delegations exceeds the maximum allowed.
+error TooManyDelegations()

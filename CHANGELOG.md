@@ -25,6 +25,41 @@ for what changed in systemd itself.
   - Connection, frame, fd and idle limits.
 - Examples `queued` (a complete service) and `metrics-provider` (serves
   `io.systemd.Metrics` with the generated types).
+- Bindings for systemd v262 under `systemd/v262/`: 46 interfaces, 13 of
+  them new (`CryptEnroll`, `InstanceMetadata`, `Job`, `MachineInstance`,
+  `Report`, `Report.Signer`, `Report.Uploader`, `Shutdown`,
+  `StorageProvider`, `SysInstall`, `SysUpdate`, `SysUpdate.Notify`,
+  `VirtualMachineInstance`), and new methods such as `Unit.StartTransient`,
+  `Login.ListSessions`, `Hostname.SetHostname` and `Manager.Reboot`. See
+  [API changes](https://rossedman.github.io/sdvarlink/reference/api-changes/)
+  for everything systemd changed.
+
+### Changed
+
+- **`systemd/latest` now re-exports v262** (was v260). systemd v262 turned
+  many plain fields into enums or made them optional, so code using these
+  through `latest` may no longer compile:
+  - `unit`: most of `ExecContext`, `UnitContext` and `CGroupContext`
+    (for example `ExecContext.NoNewPrivileges` is now `*bool` and
+    `ExecContext.ProtectSystem` is now `*ProtectSystem`), and
+    `WorkingDirectory.Path`.
+  - `manager`: `ManagerContext.LogTarget`, `DefaultOOMPolicy`,
+    `DefaultStandardOutput`, `DefaultStandardError`,
+    `DefaultMemoryPressureWatch` and `CtrlAltDelBurstAction` are enums.
+  - `machine`: `KillIn.Whom` is `*KillWhom`; `ListOut.Class` and
+    `RegisterIn.Class` are `MachineClass`.
+  - `managedoom` and `oom`: `ControlGroup.Mode` is `ManagedOOMMode`.
+  - `bootcontrol`: `BootEntryAddon.Options` is `*string`.
+  - `repart`: `ListCandidateDevicesOut.Node` is `*string`.
+
+  Enums are string types, so untyped string constants still compile. To
+  keep the old types, import `systemd/v260/...` instead of `latest`.
+- `Conn.Stream`, and with it every generated `...More` method and
+  `StreamAs`, no longer yields a final reply that has no parameters and no
+  file descriptors. sd-varlink services send one to end an empty stream
+  (logind's `ListSessions` with no sessions, for example), and
+  `HandleStream` sends one when a live stream ends; both used to show up as
+  one zero-valued item. An empty list now yields nothing.
 
 ### Fixed
 

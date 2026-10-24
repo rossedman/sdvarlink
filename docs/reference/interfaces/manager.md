@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/manager`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/manager) |
 | Socket | `/run/systemd/io.systemd.Manager` |
 | Available since | systemd v258 |
-| Methods · types · errors | 4 · 7 · 1 |
+| Methods · types · errors | 9 · 12 · 1 |
 
 ## Methods
 
@@ -64,47 +64,177 @@ func (c *Client) EnqueueMarkedJobsMore(ctx context.Context) iter.Seq2[*EnqueueMa
 | `error` | `?string` | Varlink error ID (on failure) |
 | `errorMessage` | `?string` | Job enqueue error message (on failure) |
 
+### PowerOff
+
+:material-new-box: since v262
+
+Power off the system
+
+```go
+func (c *Client) PowerOff(ctx context.Context) error
+```
+
+### Reboot
+
+:material-new-box: since v262
+
+Reboot the system
+
+```go
+func (c *Client) Reboot(ctx context.Context) error
+```
+
+### Halt
+
+:material-new-box: since v262
+
+Halt the system
+
+```go
+func (c *Client) Halt(ctx context.Context) error
+```
+
+### KExec
+
+:material-new-box: since v262
+
+Reboot the system via kexec
+
+```go
+func (c *Client) KExec(ctx context.Context) error
+```
+
+### SoftReboot
+
+:material-new-box: since v262
+
+Soft-reboot the userspace
+
+```go
+func (c *Client) SoftReboot(ctx context.Context, in SoftRebootIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `root` | `?string` | New root directory for the soft reboot |
+
 ## Types
+
+### LogTarget
+
+| Value | Description |
+| --- | --- |
+| `console` |  |
+| `kmsg` |  |
+| `journal` |  |
+| `syslog` |  |
+| `console_prefixed` |  |
+| `journal_or_kmsg` |  |
+| `syslog_or_kmsg` |  |
+| `auto` |  |
+| `null` |  |
+
+### OOMPolicy
+
+| Value | Description |
+| --- | --- |
+| `continue` |  |
+| `stop` |  |
+| `kill` |  |
+
+### ExecOutputType
+
+| Value | Description |
+| --- | --- |
+| `inherit` |  |
+| `null` |  |
+| `tty` |  |
+| `kmsg` |  |
+| `kmsg_console` |  |
+| `journal` |  |
+| `journal_console` |  |
+| `socket` |  |
+| `fd` |  |
+| `file` |  |
+| `append` |  |
+| `truncate` |  |
+
+### CGroupPressureWatch
+
+| Value | Description |
+| --- | --- |
+| `no` |  |
+| `yes` |  |
+| `auto` |  |
+| `skip` |  |
+
+### EmergencyAction
+
+| Value | Description |
+| --- | --- |
+| `none` |  |
+| `exit` |  |
+| `exit_force` |  |
+| `reboot` |  |
+| `reboot_force` |  |
+| `reboot_immediate` |  |
+| `poweroff` |  |
+| `poweroff_force` |  |
+| `poweroff_immediate` |  |
+| `soft_reboot` |  |
+| `soft_reboot_force` |  |
+| `kexec` |  |
+| `kexec_force` |  |
+| `halt` |  |
+| `halt_force` |  |
+| `halt_immediate` |  |
 
 ### ManagerContext
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `ShowStatus` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#LogColor= |
-| `LogLevel` | `LogLevelStruct` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#LogColor= |
-| `LogTarget` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#LogColor= |
-| `Environment` | `?[]string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#ManagerEnvironment= |
-| `DefaultStandardOutput` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultStandardOutput= |
-| `DefaultStandardError` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultStandardError= |
-| `ServiceWatchdogs` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#ServiceWatchdogs= |
-| `DefaultTimerAccuracyUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTimerAccuracySec= |
-| `DefaultTimeoutStartUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTimeoutStartSec= |
-| `DefaultTimeoutStopUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTimeoutStopSec= |
-| `DefaultTimeoutAbortUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTimeoutAbortSec= |
-| `DefaultDeviceTimeoutUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultDeviceTimeoutSec= |
-| `DefaultRestartUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultRestartSec= |
-| `DefaultStartLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultStartLimit= |
-| `DefaultIOAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultIOAccounting= |
-| `DefaultIPAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultIPAccounting= |
-| `DefaultMemoryAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultMemoryAccounting= |
-| `DefaultTasksAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTasksAccounting= |
-| `DefaultLimits` | `ResourceLimitTable` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultLimitCPU= |
-| `DefaultTasksMax` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultTasksMax= |
-| `DefaultMemoryPressureThresholdUSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultMemoryPressureThresholdUSec= |
-| `DefaultMemoryPressureWatch` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultMemoryPressureWatch= |
-| `RuntimeWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#RuntimeWatchdogSec= |
-| `RebootWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#RebootWatchdogSec= |
-| `KExecWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#KExecWatchdogSec= |
-| `RuntimeWatchdogPreUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#RuntimeWatchdogPreSec= |
-| `RuntimeWatchdogPreGovernor` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#RuntimeWatchdogPreGovernor= |
-| `WatchdogDevice` | `?string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#WatchdogDevice= |
-| `TimerSlackNSec` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#TimerSlackNSec= |
-| `DefaultOOMPolicy` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultOOMPolicy= |
-| `DefaultOOMScoreAdjust` | `int` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultOOMScoreAdjust= |
-| `DefaultRestrictSUIDSGID` | `bool` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#DefaultRestrictSUIDSGID= |
-| `CtrlAltDelBurstAction` | `string` | https://www.freedesktop.org/software/systemd/man/260/systemd-system.conf.html#CtrlAltDelBurstAction= |
+| `ShowStatus` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#LogColor= |
+| `LogLevel` | `LogLevelStruct` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#LogColor= |
+| `LogTarget` | `LogTarget` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#LogColor= |
+| `Environment` | `?[]string` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#ManagerEnvironment= |
+| `DefaultStandardOutput` | `ExecOutputType` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultStandardOutput= |
+| `DefaultStandardError` | `ExecOutputType` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultStandardError= |
+| `ServiceWatchdogs` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#ServiceWatchdogs= |
+| `DefaultTimerAccuracyUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTimerAccuracySec= |
+| `DefaultTimeoutStartUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTimeoutStartSec= |
+| `DefaultTimeoutStopUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTimeoutStopSec= |
+| `DefaultTimeoutAbortUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTimeoutAbortSec= |
+| `DefaultDeviceTimeoutUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultDeviceTimeoutSec= |
+| `DefaultRestartUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultRestartSec= |
+| `DefaultStartLimit` | `?RateLimit` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultStartLimit= |
+| `DefaultIOAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultIOAccounting= |
+| `DefaultIPAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultIPAccounting= |
+| `DefaultMemoryAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultMemoryAccounting= |
+| `DefaultTasksAccounting` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTasksAccounting= |
+| `DefaultLimits` | `ResourceLimitTable` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultLimitCPU= |
+| `DefaultTasksMax` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultTasksMax= |
+| `DefaultMemoryPressureThresholdUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultMemoryPressureThresholdUSec= |
+| `DefaultMemoryPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultMemoryPressureWatch= |
+| `DefaultCPUPressureThresholdUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultCPUPressureThresholdUSec= |
+| `DefaultCPUPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultCPUPressureWatch= |
+| `DefaultIOPressureThresholdUSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultIOPressureThresholdUSec= |
+| `DefaultIOPressureWatch` | `CGroupPressureWatch` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultIOPressureWatch= |
+| `RuntimeWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#RuntimeWatchdogSec= |
+| `RebootWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#RebootWatchdogSec= |
+| `KExecWatchdogUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#KExecWatchdogSec= |
+| `RuntimeWatchdogPreUSec` | `?int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#RuntimeWatchdogPreSec= |
+| `RuntimeWatchdogPreGovernor` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#RuntimeWatchdogPreGovernor= |
+| `WatchdogDevice` | `?string` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#WatchdogDevice= |
+| `TimerSlackNSec` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#TimerSlackNSec= |
+| `DefaultOOMPolicy` | `OOMPolicy` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultOOMPolicy= |
+| `DefaultOOMScoreAdjust` | `int` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultOOMScoreAdjust= |
+| `DefaultRestrictSUIDSGID` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultRestrictSUIDSGID= |
+| `CtrlAltDelBurstAction` | `EmergencyAction` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#CtrlAltDelBurstAction= |
 | `ConfirmSpawn` | `?string` | The console on which systemd asks for confirmation when spawning processes |
 | `ControlGroup` | `?string` | Root of the control group hierarchy that the manager is running in |
+| `DefaultMemoryZSwapWriteback` | `bool` | https://www.freedesktop.org/software/systemd/man/262/systemd-system.conf.html#DefaultMemoryZSwapWriteback= |
 
 ### ManagerRuntime
 
@@ -123,6 +253,12 @@ func (c *Client) EnqueueMarkedJobsMore(ctx context.Context) iter.Seq2[*EnqueueMa
 | `InitRDTimestamp` | `?Timestamp` | Timestamp when the initrd first began execution |
 | `UserspaceTimestamp` | `?Timestamp` | Timestamp when the initrd first began execution |
 | `FinishTimestamp` | `?Timestamp` | Timestamp when the system finished booting up |
+| `ShutdownStartTimestamp` | `?Timestamp` | Timestamp when shutdown began, i.e. when units started to be stopped |
+| `ShutdownFinishTimestamp` | `?Timestamp` | Timestamp when all units finished stopping during shutdown |
+| `PreviousShutdownStartTimestamp` | `?Timestamp` | Timestamp when the previous boot began stopping units, restored across a kexec-based live update |
+| `PreviousShutdownFinishTimestamp` | `?Timestamp` | Timestamp when the previous boot finished stopping units, restored across a kexec-based live update |
+| `PreviousShutdownLateStartTimestamp` | `?Timestamp` | Timestamp when systemd-shutdown began execution during the previous boot, restored across a kexec-based live update |
+| `PreviousShutdownLateFinishTimestamp` | `?Timestamp` | Timestamp when systemd-shutdown was about to kexec into the current kernel, restored across a kexec-based live update |
 | `SecurityStartTimestamp` | `?Timestamp` | Timestamp when the manager started uploading security policies to the kernel |
 | `SecurityFinishTimestamp` | `?Timestamp` | Timestamp when the manager finished uploading security policies to the kernel |
 | `GeneratorsStartTimestamp` | `?Timestamp` | Timestamp when the manager started executing generators |
@@ -147,6 +283,8 @@ func (c *Client) EnqueueMarkedJobsMore(ctx context.Context) iter.Seq2[*EnqueueMa
 | `SystemState` | `string` | Current state of the system |
 | `ExitCode` | `int` | Exit code of the manager |
 | `SoftRebootsCount` | `int` | Encodes how many soft-reboots were successfully completed |
+| `KExecCount` | `int` | Encodes how many consecutive kexec reboots were successfully completed since the last full boot. Zero if the Live Update Orchestrator is not available. |
+| `ReloadCount` | `int` | Number of successfully completed configuration reloads |
 
 ### Timestamp
 

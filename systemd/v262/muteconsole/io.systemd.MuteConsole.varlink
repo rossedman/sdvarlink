@@ -1,0 +1,11 @@
+# API for temporarily muting noisy output to the main kernel console
+interface io.systemd.MuteConsole
+
+# Mute kernel and PID 1 output to the main kernel console
+# [Requires 'more' flag]
+method Mute(
+	# Whether to mute the kernel's output to the console (defaults to true).
+	kernel: ?bool,
+	# Whether to mute PID1's output to the console (defaults to true).
+	pid1: ?bool
+) -> ()

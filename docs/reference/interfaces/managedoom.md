@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/managedoom`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/managedoom) |
 | Socket | `/run/systemd/io.systemd.ManagedOOM` |
 | Available since | systemd v257 |
-| Methods · types · errors | 1 · 1 · 1 |
+| Methods · types · errors | 1 · 2 · 1 |
 
 ## Methods
 
@@ -28,15 +28,23 @@ func (c *Client) SubscribeManagedOOMCGroupsMore(ctx context.Context) iter.Seq2[*
 
 ## Types
 
+### ManagedOOMMode
+
+| Value | Description |
+| --- | --- |
+| `auto` |  |
+| `kill` |  |
+
 ### ControlGroup
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `mode` | `string` |  |
+| `mode` | `ManagedOOMMode` |  |
 | `path` | `string` |  |
 | `property` | `string` |  |
 | `limit` | `?int` |  |
 | `duration` | `?int` |  |
+| `rules` | `?[]string` |  |
 
 ## Errors
 
