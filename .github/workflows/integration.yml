@@ -50,7 +50,7 @@ jobs:
             sleep 1
           done
           docker exec sd systemctl --version
-          docker exec sd systemctl start systemd-resolved systemd-hostnamed systemd-userdbd.socket || true
+          docker exec sd systemctl start systemd-resolved systemd-hostnamed systemd-logind systemd-userdbd.socket || true
       - name: Run integration tests
         run: docker exec -w /src sd ./integration.test -test.v -test.count=1
       - name: Capture IDL from the running systemd
