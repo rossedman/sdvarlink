@@ -44,7 +44,7 @@ jobs:
           docker build --build-arg IMAGE=${{ matrix.image }} -t sdv-systemd integration/images
           docker run -d --name sd --privileged --cgroupns=host \
             -v /sys/fs/cgroup:/sys/fs/cgroup:rw -v "$PWD:/src:ro" sdv-systemd
-          for i in $(seq 1 60); do
+          for _ in $(seq 1 60); do
             state=$(docker exec sd systemctl is-system-running 2>/dev/null || true)
             case "$state" in running|degraded) break;; esac
             sleep 1
