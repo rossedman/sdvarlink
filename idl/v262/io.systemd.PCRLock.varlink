@@ -1,0 +1,51 @@
+interface io.systemd.PCRLock
+
+# The category of measurements a .pcrlock file can be generated for or removed, as used by the Lock() method.
+type LockCategory(
+	# Firmware code measurements (PCRs 0, 2, 4).
+	firmwareCode,
+	# Firmware configuration measurements (PCRs 1, 3, 5).
+	firmwareConfig,
+	# SecureBoot policy, i.e. the SecureBoot, PK, KEK, db and dbx EFI variables (PCR 7).
+	secureBootPolicy,
+	# SecureBoot authority measurements, i.e. the certificates used to validate the boot components (PCR 7).
+	secureBootAuthority
+)
+
+# A single variant of a .pcrlock component, i.e. one alternative the component may take, backed by a specific .pcrlock file.
+type ComponentVariant(
+	# The identifier of this component variant.
+	id: string,
+	# The path of the .pcrlock file that defines this variant.
+	path: string
+)
+
+# [Requires 'more' flag]
+method ReadEventLog() -> (
+	record: object
+)
+
+# Lists the defined .pcrlock components, streamed one component per reply. Must be called with the 'more' flag.
+# [Requires 'more' flag]
+method ListComponents() -> (
+	# The identifier of the component.
+	id: string,
+	# The variants defined for this component, each backed by a .pcrlock file.
+	variants: []ComponentVariant
+)
+
+method MakePolicy(
+	force: ?bool
+) -> ()
+
+method RemovePolicy() -> ()
+
+# Generates or removes the .pcrlock file(s) for the selected category of measurements. Generates (locks) them by default, or removes (unlocks) them if 'lock' is false.
+method Lock(
+	# The category of measurements to generate or remove a .pcrlock file for.
+	category: LockCategory,
+	# If true (the default), generate the .pcrlock file(s) for the selected category; if false, remove them again.
+	lock: ?bool
+) -> ()
+
+error NoChange()

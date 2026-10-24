@@ -1,0 +1,32 @@
+# Frontend API for generating system reports. This interface is implemented by systemd-report, which aggregates the metrics exposed by the io.systemd.Metrics services linked into /run/systemd/report/.
+interface io.systemd.Report
+
+# Policy for how multiple signers are aggregated.
+type SignMode(
+	# Emit whatever signatures are available, never fail on signing.
+	bestEffort,
+	# Require at least one signature; tolerate individual signer failures. (Default.)
+	requireOne,
+	# Require every signing mechanism to succeed with a signature.
+	requireAll
+)
+
+# Generate a report and return it as a JSON object.
+method Generate(
+	# Selects which metrics to include in the report, as an array of metric family names or prefixes thereof. If unset or empty all available metrics are included. This matches the [MATCH…] arguments of the systemd-report command line tool.
+	matches: ?[]string
+) -> (
+	# The generated report as a JSON object. This mode does not sign the report, hence a precise binary formatting of the JSON data is not relevant.
+	report: object
+)
+
+# Generate a signed report and return it Base64 encoded.
+method GenerateSigned(
+	# Selects which metrics to include in the report, as an array of metric family names or prefixes thereof. If unset or empty all available metrics are included. This matches the [MATCH…] arguments of the systemd-report command line tool.
+	matches: ?[]string,
+	# How to handle multiple signers. Defaults to requireOne if unset.
+	mode: ?SignMode
+) -> (
+	# The generated, signed report in Base64. A precise binary formatting of the JSON data is important to authenticate the signature. This data contains a JSON-SEQ compliant stream of objects, the first being the report, the following ones signature objects.
+	reportData: string
+)

@@ -59,7 +59,7 @@ func (c *Client) PullMore(ctx context.Context, in PullIn) iter.Seq2[*PullOut, er
 | `class` | `ImageClass` | The image class |
 | `verify` | `?ImageVerify` | The whether and how thoroughly to verify the download before installing it locally. Defaults to 'signature'. |
 | `force` | `?bool` | If true, an existing image by the local name is deleted. Defaults to false. |
-| `readOnly` | `?bool` | Whether to make the image read-only after downloading. Defaults ot false. |
+| `readOnly` | `?bool` | Whether to make the image read-only after downloading. Defaults to false. |
 | `keepDownload` | `?bool` | Whether to keep a pristine copy of the download separate from the locally installed image. Defaults to false. |
 | `imageRoot` | `?string` | Root directory for images. If not specified derived from the image class, and located below /var/lib/. |
 | `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |

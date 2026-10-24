@@ -183,14 +183,18 @@ nav:
           - io.systemd.AskPassword: reference/interfaces/askpassword.md
           - io.systemd.BootControl: reference/interfaces/bootcontrol.md
           - io.systemd.Credentials: reference/interfaces/credentials.md
+          - io.systemd.CryptEnroll: reference/interfaces/cryptenroll.md
           - io.systemd.FactoryReset: reference/interfaces/factoryreset.md
           - io.systemd.Hostname: reference/interfaces/hostname.md
           - io.systemd.Import: reference/interfaces/importd.md
+          - io.systemd.InstanceMetadata: reference/interfaces/instancemetadata.md
+          - io.systemd.Job: reference/interfaces/job.md
           - io.systemd.Journal: reference/interfaces/journal.md
           - io.systemd.JournalAccess: reference/interfaces/journalaccess.md
           - io.systemd.Login: reference/interfaces/login.md
           - io.systemd.Machine: reference/interfaces/machine.md
           - io.systemd.MachineImage: reference/interfaces/machineimage.md
+          - io.systemd.MachineInstance: reference/interfaces/machineinstance.md
           - io.systemd.ManagedOOM: reference/interfaces/managedoom.md
           - io.systemd.Manager: reference/interfaces/manager.md
           - io.systemd.Metrics: reference/interfaces/metrics.md
@@ -202,12 +206,21 @@ nav:
           - io.systemd.PCRExtend: reference/interfaces/pcrextend.md
           - io.systemd.PCRLock: reference/interfaces/pcrlock.md
           - io.systemd.Repart: reference/interfaces/repart.md
+          - io.systemd.Report: reference/interfaces/report.md
+          - io.systemd.Report.Signer: reference/interfaces/reportsigner.md
+          - io.systemd.Report.Uploader: reference/interfaces/reportuploader.md
           - io.systemd.Resolve: reference/interfaces/resolve.md
           - io.systemd.Resolve.Hook: reference/interfaces/resolvehook.md
           - io.systemd.Resolve.Monitor: reference/interfaces/resolvemonitor.md
+          - io.systemd.Shutdown: reference/interfaces/shutdown.md
+          - io.systemd.StorageProvider: reference/interfaces/storageprovider.md
+          - io.systemd.SysInstall: reference/interfaces/sysinstall.md
+          - io.systemd.SysUpdate: reference/interfaces/sysupdate.md
+          - io.systemd.SysUpdate.Notify: reference/interfaces/sysupdatenotify.md
           - io.systemd.Udev: reference/interfaces/udev.md
           - io.systemd.Unit: reference/interfaces/unit.md
           - io.systemd.UserDatabase: reference/interfaces/userdatabase.md
+          - io.systemd.VirtualMachineInstance: reference/interfaces/virtualmachineinstance.md
           - io.systemd.oom: reference/interfaces/oom.md
           - io.systemd.oom.Prekill: reference/interfaces/oomprekill.md
           - io.systemd.service: reference/interfaces/service.md

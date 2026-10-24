@@ -1,0 +1,13 @@
+# Backend API for signing reports. This interface shall be implemented by services linked into /run/systemd/report.sign/.
+interface io.systemd.Report.Signer
+
+# Sign a report, identified by a digest. This may return zero, one or more signatures, as appropriate. For example some backend might have multiple keys or algorithms available, that are appropriate, in which case it can generate multiple signatures.
+method Sign(
+	# The digest of the data to sign.
+	digest: string,
+	# The digest algorithm used for the digest field above. For now this is always SHA256, but this might be changed eventually.
+	algorithm: string
+) -> (
+	# An array of signature objects
+	data: []object
+)

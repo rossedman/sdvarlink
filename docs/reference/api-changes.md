@@ -4,6 +4,228 @@
 
 Every sdvarlink release publishes what changed in systemd's Varlink API between the releases it generates bindings for. Use it to decide which versioned package to import, and which methods to guard with `Supports()`.
 
+## systemd v260 → v262
+
+185 added · 30 changed · 0 removed
+
+| Interface | Kind | Name | Change | Detail |
+| --- | --- | --- | --- | --- |
+| `io.systemd.BootControl` | method | `Install` | :material-pencil-circle:{ .changed } changed | + espPath: ?string, makeEntryDirectory: ?bool, xbootldrPath: ?string |
+| `io.systemd.BootControl` | method | `Link` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.BootControl` | method | `LinkAuto` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.BootControl` | method | `Unlink` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.BootControl` | type | `BootEntry` | :material-pencil-circle:{ .changed } changed | + extras: ?[]string, uname: ?string |
+| `io.systemd.BootControl` | type | `BootEntryAddon` | :material-pencil-circle:{ .changed } changed | + options: ?string; − options: string |
+| `io.systemd.BootControl` | type | `BootEntryExtraFile` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.BootControl` | error | `InvalidKernelImage` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.BootControl` | error | `NoDollarBootFound` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Credentials` | error | `NVIndexUnusable` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.CryptEnroll` | interface | `io.systemd.CryptEnroll` | :material-plus-circle:{ .added } added | 2 methods |
+| `io.systemd.Hostname` | method | `Describe` | :material-pencil-circle:{ .changed } changed | + → MachineTags: ?[]string |
+| `io.systemd.Hostname` | method | `SetChassis` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetDeployment` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetHostname` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetIconName` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetLocation` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetPrettyHostname` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetStaticHostname` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Hostname` | method | `SetTags` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.InstanceMetadata` | interface | `io.systemd.InstanceMetadata` | :material-plus-circle:{ .added } added | 2 methods |
+| `io.systemd.Job` | interface | `io.systemd.Job` | :material-plus-circle:{ .added } added | 3 methods |
+| `io.systemd.JournalAccess` | method | `GetEntries` | :material-pencil-circle:{ .changed } changed | + follow: ?bool |
+| `io.systemd.Login` | method | `CreateSession` | :material-pencil-circle:{ .changed } changed | streaming or nested type changed |
+| `io.systemd.Login` | method | `ListInhibitors` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | method | `ListSeats` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | method | `ListSessions` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | method | `ListUsers` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `InhibitMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `InhibitWhat` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `InhibitorContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `InhibitorRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `SeatContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `SeatRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `SessionContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `SessionRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `Timestamp` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `UserContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | type | `UserRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | error | `NoSuchInhibitor` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Login` | error | `NoSuchUser` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Machine` | method | `Kill` | :material-pencil-circle:{ .changed } changed | + whom: ?KillWhom; − whom: ?string |
+| `io.systemd.Machine` | method | `List` | :material-pencil-circle:{ .changed } changed | + → class: MachineClass, → controlAddress: ?string; − → class: string |
+| `io.systemd.Machine` | method | `Register` | :material-pencil-circle:{ .changed } changed | + class: MachineClass, controlAddress: ?string; − class: string |
+| `io.systemd.Machine` | type | `KillWhom` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Machine` | type | `MachineClass` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.MachineInstance` | interface | `io.systemd.MachineInstance` | :material-plus-circle:{ .added } added | 10 methods |
+| `io.systemd.ManagedOOM` | type | `ControlGroup` | :material-pencil-circle:{ .changed } changed | + mode: ManagedOOMMode, rules: ?[]string; − mode: string |
+| `io.systemd.ManagedOOM` | type | `ManagedOOMMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | method | `Halt` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | method | `KExec` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | method | `PowerOff` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | method | `Reboot` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | method | `SoftReboot` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | type | `CGroupPressureWatch` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | type | `EmergencyAction` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | type | `ExecOutputType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | type | `LogTarget` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Manager` | type | `ManagerContext` | :material-pencil-circle:{ .changed } changed | + CtrlAltDelBurstAction: EmergencyAction, DefaultCPUPressureThresholdUSec: int, DefaultCPUPressureWatch: CGroupPressureWatch, DefaultIOPressureThresholdUSec: int, DefaultIOPressureWatch: CGroupPressureWatch, DefaultMemoryPressureWatch: CGroupPressureWatch, DefaultMemoryZSwapWriteback: bool, DefaultOOMPolicy: OOMPolicy, DefaultStandardError: ExecOutputType, DefaultStandardOutput: ExecOutputType, LogTarget: LogTarget; − CtrlAltDelBurstAction: string, DefaultMemoryPressureWatch: string, DefaultOOMPolicy: string, DefaultStandardError: string, DefaultStandardOutput: string, LogTarget: string |
+| `io.systemd.Manager` | type | `ManagerRuntime` | :material-pencil-circle:{ .changed } changed | + KExecCount: int, PreviousShutdownFinishTimestamp: ?Timestamp, PreviousShutdownLateFinishTimestamp: ?Timestamp, PreviousShutdownLateStartTimestamp: ?Timestamp, PreviousShutdownStartTimestamp: ?Timestamp, ReloadCount: int, ShutdownFinishTimestamp: ?Timestamp, ShutdownStartTimestamp: ?Timestamp |
+| `io.systemd.Manager` | type | `OOMPolicy` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Metrics` | type | `MetricFamilyType` | :material-pencil-circle:{ .changed } changed | + object |
+| `io.systemd.Network` | method | `Reload` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network` | type | `BitRates` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network` | type | `Interface` | :material-pencil-circle:{ .changed } changed | + BitRates: ?BitRates |
+| `io.systemd.Network` | error | `AlreadyReloading` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | method | `Describe` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | method | `ForceRenew` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | method | `Reconfigure` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | method | `Renew` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Address` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `BitRates` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPLease` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPServer` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPServerLease` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPv6Client` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPv6ClientPD` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DHCPv6ClientVendorOption` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DNS` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DNSSECNegativeTrustAnchor` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `DNSSetting` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Domain` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Interface` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `LLDPNeighbor` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `LinkAddressState` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `LinkOnlineState` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `LinkRequiredAddressFamily` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `LinkState` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `NDisc` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `NTP` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Neighbor` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `NextHop` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `NextHopGroup` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Pref64` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `PrivateOption` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `Route` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | type | `SIP` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Network.Link` | error | `InterfaceUnmanaged` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.PCRExtend` | method | `Extend` | :material-pencil-circle:{ .changed } changed | + secret: ?string |
+| `io.systemd.PCRExtend` | type | `EventType` | :material-pencil-circle:{ .changed } changed | + imds_userdata |
+| `io.systemd.PCRExtend` | error | `NvPCRSpaceExhausted` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.PCRLock` | method | `ListComponents` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.PCRLock` | method | `Lock` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.PCRLock` | type | `ComponentVariant` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.PCRLock` | type | `LockCategory` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Repart` | method | `ListCandidateDevices` | :material-pencil-circle:{ .changed } changed | + subscribe: ?bool, → action: ?BlockDeviceAction, → node: ?string; − → node: string |
+| `io.systemd.Repart` | method | `Run` | :material-pencil-circle:{ .changed } changed | + definitions: ?[]string, → partitionCount: ?int; − definitions: []string |
+| `io.systemd.Repart` | type | `BlockDeviceAction` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Report` | interface | `io.systemd.Report` | :material-plus-circle:{ .added } added | 2 methods |
+| `io.systemd.Report.Signer` | interface | `io.systemd.Report.Signer` | :material-plus-circle:{ .added } added | 1 methods |
+| `io.systemd.Report.Uploader` | interface | `io.systemd.Report.Uploader` | :material-plus-circle:{ .added } added | 1 methods |
+| `io.systemd.Resolve` | type | `ResourceRecord` | :material-pencil-circle:{ .changed } changed | + retry: ?int |
+| `io.systemd.Resolve` | error | `DNSError` | :material-pencil-circle:{ .changed } changed | + queryString: string |
+| `io.systemd.Resolve.Hook` | type | `ResourceRecord` | :material-pencil-circle:{ .changed } changed | + retry: ?int |
+| `io.systemd.Resolve.Monitor` | method | `FlushCaches` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Resolve.Monitor` | method | `ResetServerFeatures` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Resolve.Monitor` | type | `ResourceRecord` | :material-pencil-circle:{ .changed } changed | + retry: ?int |
+| `io.systemd.Shutdown` | interface | `io.systemd.Shutdown` | :material-plus-circle:{ .added } added | 5 methods |
+| `io.systemd.StorageProvider` | interface | `io.systemd.StorageProvider` | :material-plus-circle:{ .added } added | 3 methods |
+| `io.systemd.SysInstall` | interface | `io.systemd.SysInstall` | :material-plus-circle:{ .added } added | 2 methods |
+| `io.systemd.SysUpdate` | interface | `io.systemd.SysUpdate` | :material-plus-circle:{ .added } added | 3 methods |
+| `io.systemd.SysUpdate.Notify` | interface | `io.systemd.SysUpdate.Notify` | :material-plus-circle:{ .added } added | 1 methods |
+| `io.systemd.Unit` | method | `StartTransient` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `AutomountContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `AutomountResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `AutomountRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CGroupContext` | :material-pencil-circle:{ .changed } changed | + CPUPressureThresholdUSec: ?int, CPUPressureWatch: CGroupPressureWatch, CPUSetPartition: ?CPUSetPartition, DelegateControllers: ?[]CGroupController, DevicePolicy: CGroupDevicePolicy, DisableControllers: ?[]CGroupController, IOPressureThresholdUSec: ?int, IOPressureWatch: CGroupPressureWatch, ManagedOOMMemoryPressure: ManagedOOMMode, ManagedOOMPreference: ManagedOOMPreference, ManagedOOMSwap: ManagedOOMMode, MemoryPressureWatch: CGroupPressureWatch, OOMRules: ?[]string; − DelegateControllers: ?[]string, DevicePolicy: string, DisableControllers: ?[]string, ManagedOOMMemoryPressure: string, ManagedOOMPreference: string, ManagedOOMSwap: string, MemoryPressureWatch: string |
+| `io.systemd.Unit` | type | `CGroupController` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CGroupDevicePolicy` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CGroupPressureWatch` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CPUSchedulingPolicy` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CPUSetPartition` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `CollectMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `EmergencyAction` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecCommand` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecCommandStatus` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecContext` | :material-pencil-circle:{ .changed } changed | + BindLogSockets: ?bool, CPUSchedulingPolicy: ?CPUSchedulingPolicy, CPUSchedulingPriority: ?int, CPUSchedulingResetOnFork: ?bool, DynamicUser: ?bool, ExtensionImagePolicy: ?string, IOSchedulingClass: ?IOSchedulingClass, IOSchedulingPriority: ?int, IgnoreSIGPIPE: ?bool, KeyringMode: ?ExecKeyringMode, Limits: ?ResourceLimitTable, LockPersonality: ?bool, MemoryDenyWriteExecute: ?bool, MemoryTHP: ?MemoryTHP, MountAPIVFS: ?string, MountFlags: ?MountPropagationFlag, MountImagePolicy: ?string, NUMAPolicy: ?NUMAPolicy, Nice: ?int, NoNewPrivileges: ?bool, PrivateDevices: ?string, PrivateIPC: ?string, PrivateNetwork: ?string, PrivatePBF: ?PrivateBPF, PrivatePIDs: ?PrivatePIDs, PrivateTmp: ?PrivateTmp, PrivateUsers: ?PrivateUsers, ProcSubset: ?ProcSubset, ProtectClock: ?string, ProtectControlGroups: ?ProtectControlGroups, ProtectHome: ?ProtectHome, ProtectHostname: ?ProtectHostname, ProtectKernelLogs: ?string, ProtectKernelModules: ?string, ProtectKernelTunables: ?string, ProtectProc: ?ProtectProc, ProtectSystem: ?ProtectSystem, RemoveIPC: ?bool, RestrictRealtime: ?bool, RestrictSUIDSGID: ?bool, RootEphemeral: ?bool, RootImagePolicy: ?string, RuntimeDirectoryPreserve: ?ExecPreserveMode, StandardError: ?ExecOutputType, StandardInput: ?ExecInputType, StandardOutput: ?ExecOutputType, SyslogLevelPrefix: ?bool, UtmpMode: ?ExecUtmpMode; − BindLogSockets: bool, CPUSchedulingPolicy: string, CPUSchedulingPriority: int, CPUSchedulingResetOnFork: bool, DynamicUser: bool, ExtensionImagePolicy: string, IOSchedulingClass: string, IOSchedulingPriority: int, IgnoreSIGPIPE: bool, KeyringMode: string, Limits: ResourceLimitTable, LockPersonality: bool, MemoryDenyWriteExecute: bool, MemoryTHP: string, MountAPIVFS: string, MountFlags: ?string, MountImagePolicy: string, NUMAPolicy: ?string, Nice: int, NoNewPrivileges: bool, PrivateDevices: string, PrivateIPC: string, PrivateNetwork: string, PrivatePBF: string, PrivatePIDs: string, PrivateTmp: string, PrivateUsers: string, ProcSubset: string, ProtectClock: string, ProtectControlGroups: string, ProtectHome: string, ProtectHostname: string, ProtectKernelLogs: string, ProtectKernelModules: string, ProtectKernelTunables: string, ProtectProc: string, ProtectSystem: string, RemoveIPC: bool, RestrictRealtime: bool, RestrictSUIDSGID: bool, RootEphemeral: bool, RootImagePolicy: string, RuntimeDirectoryPreserve: string, StandardError: string, StandardInput: string, StandardOutput: string, SyslogLevelPrefix: bool, UtmpMode: string |
+| `io.systemd.Unit` | type | `ExecInputType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecKeyringMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecOutputType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecPreserveMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExecUtmpMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ExitStatusSet` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `IOSchedulingClass` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `Job` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `JobMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `JobResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `JobState` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `JobType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `KillContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `KillMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ManagedOOMMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ManagedOOMPreference` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `MemoryTHP` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `MountContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `MountPropagationFlag` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `MountResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `MountRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `NUMAPolicy` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `NotifyAccess` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `OOMPolicy` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `OpenFile` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PathContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PathResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PathRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PathSpec` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PathType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PrivateBPF` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PrivatePIDs` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PrivateTmp` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `PrivateUsers` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProcSubset` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProtectControlGroups` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProtectHome` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProtectHostname` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProtectProc` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ProtectSystem` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ScopeContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ScopeResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ScopeRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceExitType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceRestart` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceRestartMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceTimeoutFailureMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `ServiceType` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketBindIPv6Only` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketDeferTrigger` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketListen` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SocketTimestamping` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SwapContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SwapResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `SwapRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `TimerBase` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `TimerContext` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `TimerResult` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `TimerRuntime` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `TimerSpec` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | type | `UnitContext` | :material-pencil-circle:{ .changed } changed | + AllowIsolate: ?bool, Automount: ?AutomountContext, CollectMode: ?CollectMode, DebugInvocation: ?bool, DefaultDependencies: ?bool, FailureAction: ?EmergencyAction, IgnoreOnIsolate: ?bool, JobTimeoutAction: ?EmergencyAction, Kill: ?KillContext, Mount: ?MountContext, OnFailureJobMode: ?JobMode, OnSuccessJobMode: ?JobMode, Path: ?PathContext, Perpetual: ?bool, RefuseManualStart: ?bool, RefuseManualStop: ?bool, Scope: ?ScopeContext, Service: ?ServiceContext, Socket: ?SocketContext, StartLimitAction: ?EmergencyAction, StopWhenUnneeded: ?bool, SuccessAction: ?EmergencyAction, SurviveFinalKillSignal: ?bool, Swap: ?SwapContext, Timer: ?TimerContext, Transient: ?bool, Type: ?string; − AllowIsolate: bool, CollectMode: string, DebugInvocation: bool, DefaultDependencies: bool, FailureAction: ?string, IgnoreOnIsolate: bool, JobTimeoutAction: ?string, OnFailureJobMode: string, OnSuccessJobMode: string, Perpetual: bool, RefuseManualStart: bool, RefuseManualStop: bool, StartLimitAction: ?string, StopWhenUnneeded: bool, SuccessAction: ?string, SurviveFinalKillSignal: bool, Transient: bool, Type: string |
+| `io.systemd.Unit` | type | `UnitRuntime` | :material-pencil-circle:{ .changed } changed | + Automount: ?AutomountRuntime, Mount: ?MountRuntime, Path: ?PathRuntime, Scope: ?ScopeRuntime, Service: ?ServiceRuntime, Socket: ?SocketRuntime, Swap: ?SwapRuntime, Timer: ?TimerRuntime |
+| `io.systemd.Unit` | type | `WorkingDirectory` | :material-pencil-circle:{ .changed } changed | + home: ?bool, missingOK: ?bool, path: ?string; − missingOK: bool, path: string |
+| `io.systemd.Unit` | error | `BadUnitSetting` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | error | `UnitExists` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.Unit` | error | `UnitTypeNotSupported` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.UserDatabase` | method | `GetGroupRecord` | :material-pencil-circle:{ .changed } changed | + uuid: ?string |
+| `io.systemd.UserDatabase` | method | `GetUserRecord` | :material-pencil-circle:{ .changed } changed | + uuid: ?string |
+| `io.systemd.VirtualMachineInstance` | interface | `io.systemd.VirtualMachineInstance` | :material-plus-circle:{ .added } added | 0 methods |
+| `io.systemd.oom` | type | `ControlGroup` | :material-pencil-circle:{ .changed } changed | + mode: ManagedOOMMode, rules: ?[]string; − mode: string |
+| `io.systemd.oom` | type | `ManagedOOMMode` | :material-plus-circle:{ .added } added |  |
+| `io.systemd.service` | method | `GetLogLevel` | :material-plus-circle:{ .added } added |  |
+
 ## systemd v258 → v260
 
 101 added · 34 changed · 0 removed

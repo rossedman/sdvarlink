@@ -33,6 +33,7 @@ func (c *Client) GetEntries(ctx context.Context, in GetEntriesIn) iter.Seq2[*Get
 | `namespace` | `?string` | If specified, shows the log data of the specified namespace, otherwise the default namespace. |
 | `priority` | `?int` | Filter output by message priorities or priority ranges (i.e. between 0/'emerg' and 7/'debug') |
 | `limit` | `?int` | Maximum number of entries to return. Defaults to 100, capped at 10000. |
+| `follow` | `?bool` | If true, do not complete after sending the newest entries: keep the call open and stream new entries as they are logged, until the client disconnects. The limit parameter then bounds only the initial backlog. |
 
 **Reply**
 

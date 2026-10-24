@@ -9,7 +9,7 @@ API for declaratively re-partitioning disks using systemd-repart.
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/repart`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/repart) |
 | Socket | `/run/systemd/io.systemd.Repart` |
 | Available since | systemd v260 |
-| Methods · types · errors | 2 · 2 · 4 |
+| Methods · types · errors | 2 · 3 · 4 |
 
 ## Methods
 
@@ -32,7 +32,7 @@ func (c *Client) RunMore(ctx context.Context, in RunIn) iter.Seq2[*RunOut, error
 | `empty` | `EmptyMode` | Decides whether to install the OS in addition to what is already on it, or if it shall be erased. |
 | `dryRun` | `bool` | If true this will ponder if the installation would fit, but does not actually write anything to disk. Must be set to false to actually make changes. |
 | `seed` | `?string` | The seed value to derive partition and file system UUIDs from |
-| `definitions` | `[]string` | Path to directory containing definition files. |
+| `definitions` | `?[]string` | Path to directory containing definition files. |
 | `deferPartitionsEmpty` | `?bool` | If true, automatically defer creation of all partitions whose label is "empty". |
 | `deferPartitionsFactoryReset` | `?bool` | If true, automatically defer creation of all partitions which are marked for factory reset. |
 
@@ -42,9 +42,10 @@ func (c *Client) RunMore(ctx context.Context, in RunIn) iter.Seq2[*RunOut, error
 | --- | --- | --- |
 | `minimalSizeBytes` | `?int` | In dry-run mode returns the minimal disk size required. |
 | `currentSizeBytes` | `?int` | In dry-run mode returns the size of the selected block device. |
+| `partitionCount` | `?int` | Returns the number of partitions currently on the selected block device. Omitted if not determined by the workflow, e.g. if the existing partition table was not read because empty mode 'force' or 'require' was selected. |
 | `phase` | `?ProgressPhase` | If used with the 'more' flag, a phase identifier is sent in progress updates. |
 | `object` | `?string` | If used with the 'more' flag, an object identifier string is sent in progress updates. |
-| `progress` | `?int` | If used with the 'more' flag, a progress percentrage (specific to the work done for the specified phase+object is sent in progress updates. |
+| `progress` | `?int` | If used with the 'more' flag, a progress percentage (specific to the work done for the specified phase+object). |
 
 ### ListCandidateDevices
 
@@ -62,12 +63,14 @@ func (c *Client) ListCandidateDevices(ctx context.Context, in ListCandidateDevic
 | --- | --- | --- |
 | `ignoreRoot` | `?bool` | Control whether to include the root disk of the currently booted OS in the list. Defaults to false, i.e. the root disk is included. |
 | `ignoreEmpty` | `?bool` | Control whether to include block devices with zero size in the list, i.e. typically block devices without any inserted medium. Defaults to false, i.e. empty block devices are included. |
+| `subscribe` | `?bool` | If true, keep the call open after the initial enumeration and stream live add/remove notifications as block-subsystem uevents arrive. The end of the initial enumeration is marked by exactly one notification with action='ready' and no other fields. Defaults to false. |
 
 **Reply**
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `node` | `string` | The device node path of the block device. |
+| `action` | `?BlockDeviceAction` | Discriminator field. Only set in subscribe mode. 'add' carries the full device record, 'remove' carries only node, 'ready' carries no other fields and is sent once after the initial enumeration. |
+| `node` | `?string` | The device node path of the block device. Identifies the device on 'remove' too. |
 | `symlinks` | `?[]string` | List of symlinks pointing to the device node, if any. |
 | `diskseq` | `?int` | The Linux kernel disk sequence number identifying the medium. |
 | `sizeBytes` | `?int` | The size of the block device in bytes. |
@@ -107,6 +110,16 @@ Progress phase identifiers. Note that we might add more phases here, and thus id
 | `adjusting_partition` |  |
 | `writing_table` |  |
 | `rereading_table` |  |
+
+### BlockDeviceAction
+
+Discriminator on streamed ListCandidateDevices replies in subscribe mode.
+
+| Value | Description |
+| --- | --- |
+| `add` | The device is currently present and a candidate. Emitted both during the initial enumeration and for live uevents (any action other than 'remove' is propagated as 'add', including the synthesized transitions when a device becomes empty or read-only and a relevant ignore* input is in effect). |
+| `remove` | The device is no longer a candidate, either because the kernel reported a remove event, or because a dynamic filter (ignoreEmpty/ignoreReadOnly) flipped it out of the candidate set. Clients should drop the device identified by 'node'. It is permitted (and harmless) to receive a 'remove' for a device the client never saw an 'add' for; clients should ignore these silently. |
+| `ready` | Sentinel sent exactly once in subscribe mode, after the initial enumeration is complete. Everything that follows reflects live uevents. Carries no other fields. |
 
 ## Errors
 

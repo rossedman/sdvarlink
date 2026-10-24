@@ -9,7 +9,7 @@ APIs for encrypting and decrypting service credentials.
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/credentials`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/credentials) |
 | Socket | `/run/systemd/io.systemd.Credentials` |
 | Available since | systemd v257 |
-| Methods · types · errors | 2 · 2 · 10 |
+| Methods · types · errors | 2 · 2 · 11 |
 
 ## Methods
 
@@ -103,8 +103,9 @@ Selects the key(s) to encrypt the credentials with.
 | `NoSuchUser` | `NoSuchUserError` | The specified user does not exist. |
 | `BadScope` | `BadScopeError` | The credential does not match the selected scope. |
 | `CantFindPCRSignature` | `CantFindPCRSignatureError` | PCR signature required for decryption, but not found. |
-| `NullKeyNotAllowed` | `NullKeyNotAllowedError` | The key was encrypted with a null key, but that's now allowed during decryption. |
+| `NullKeyNotAllowed` | `NullKeyNotAllowedError` | The key was encrypted with a null key, but that's not allowed during decryption. |
 | `KeyBelongsToOtherTPM` | `KeyBelongsToOtherTPMError` | The TPM integrity check for this key failed, key probably belongs to another TPM, or was corrupted. |
 | `TPMInDictionaryLockout` | `TPMInDictionaryLockoutError` | The TPM is in dictionary lockout mode, cannot operate. |
 | `UnexpectedPCRState` | `UnexpectedPCRStateError` | Unexpected TPM PCR state of the system. |
+| `NVIndexUnusable` | `NVIndexUnusableError` | The NV index referenced by the key is missing, unwritten, or unusable, it could be for another system. |
 

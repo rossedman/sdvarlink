@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/resolvemonitor`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/resolvemonitor) |
 | Socket | `/run/systemd/resolve/io.systemd.Resolve.Monitor` |
 | Available since | systemd v257 |
-| Methods · types · errors | 6 · 18 · 0 |
+| Methods · types · errors | 8 · 18 · 0 |
 
 ## Methods
 
@@ -130,6 +130,38 @@ func (c *Client) SubscribeDNSConfiguration(ctx context.Context, in SubscribeDNSC
 | --- | --- | --- |
 | `configuration` | `[]DNSConfiguration` | The current global and per-interface DNS configurations |
 
+### FlushCaches
+
+:material-new-box: since v262
+
+Flushes all DNS resource record caches the service maintains locally.
+
+```go
+func (c *Client) FlushCaches(ctx context.Context, in FlushCachesIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
+### ResetServerFeatures
+
+:material-new-box: since v262
+
+Flushes all feature level information the resolver learnt about specific servers, and ensures that the server feature probing logic is started from the beginning with the next look-up request.
+
+```go
+func (c *Client) ResetServerFeatures(ctx context.Context, in ResetServerFeaturesIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
+
 ## Types
 
 ### DNSProtocol
@@ -191,6 +223,7 @@ func (c *Client) SubscribeDNSConfiguration(ctx context.Context, in SubscribeDNSC
 | `rname` | `?string` |  |
 | `serial` | `?int` |  |
 | `refresh` | `?int` |  |
+| `retry` | `?int` |  |
 | `expire` | `?int` |  |
 | `minimum` | `?int` |  |
 | `exchange` | `?string` |  |

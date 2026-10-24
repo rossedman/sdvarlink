@@ -1,0 +1,83 @@
+# APIs for acquiring cloud IMDS information.
+interface io.systemd.InstanceMetadata
+
+# Well known data fields
+type WellKnown(
+	base,
+	hostname,
+	region,
+	zone,
+	ipv4_public,
+	ipv6_public,
+	ssh_key,
+	userdata,
+	userdata_base,
+	userdata_base64
+)
+
+# Acquire data.
+method Get(
+	# The key to retrieve
+	key: ?string,
+	# Start with a well-known key
+	wellKnown: ?WellKnown,
+	# The network interface to use
+	interface: ?int,
+	# Refresh cached data if older (CLOCK_BOOTTIME, µs)
+	refreshUSec: ?int,
+	# Whether to accept cached data
+	cache: ?bool,
+	# The firewall mark value to use
+	firewallMark: ?int,
+	# Controls whether to wait for connectivity
+	wait: ?bool,
+	# Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false.
+	allowInteractiveAuthentication: ?bool
+) -> (
+	# The data in Base64 encoding.
+	data: string,
+	# The interface the data was found on.
+	interface: ?int
+)
+
+# Get information about cloud vendor and IMDS connectivity.
+method GetVendorInfo() -> (
+	# The detected cloud vendor
+	vendor: ?string,
+	# The URL to acquire the token from
+	tokenUrl: ?string,
+	# The HTTP header to configure the refresh timeout for the token in
+	refreshHeaderName: ?string,
+	# The base URL to acquire the data from
+	dataUrl: ?string,
+	# A suffix to append to the data URL
+	dataUrlSuffix: ?string,
+	# The HTTP header to pass the token in when requesting data
+	tokenHeaderName: ?string,
+	# Additional HTTP headers to pass when acquiring data
+	extraHeader: ?[]string,
+	# IPv4 address of IMDS server
+	addressIPv4: ?[]int,
+	# IPv6 address of IMDS server
+	addressIPv6: ?[]int,
+	# Well-known fields
+	wellKnown: ?object
+)
+
+# The requested key is not found on the IMDS server.
+error KeyNotFound()
+
+# IMDS is disabled or otherwise not available.
+error NotAvailable()
+
+# IMDS is not supported.
+error NotSupported()
+
+# Well-known key is not set.
+error WellKnownKeyUnset()
+
+# Communication with IMDS failed.
+error CommunicationFailure()
+
+# Timeout reached
+error Timeout()

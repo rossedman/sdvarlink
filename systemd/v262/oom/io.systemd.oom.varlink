@@ -1,0 +1,19 @@
+interface io.systemd.oom
+
+type ManagedOOMMode(
+	auto,
+	kill
+)
+
+type ControlGroup(
+	mode: ManagedOOMMode,
+	path: string,
+	property: string,
+	limit: ?int,
+	duration: ?int,
+	rules: ?[]string
+)
+
+method ReportManagedOOMCGroups(
+	cgroups: []ControlGroup
+) -> ()

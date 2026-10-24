@@ -1,0 +1,29 @@
+# APIs to query factory reset status
+interface io.systemd.FactoryReset
+
+# Encodes the current factory reset status
+type FactoryResetMode(
+	# Factory reset is not supported on this OS.
+	unsupported,
+	# Factory reset not requested.
+	unspecified,
+	# Factory reset explicitly turned off.
+	off,
+	# Factory reset is currently being executed.
+	on,
+	# Factory reset has been completed during the current boot.
+	complete,
+	# Factory reset has been requested for the next boot.
+	pending
+)
+
+# Report the current factory reset status
+method GetFactoryResetMode() -> (
+	# The current factory reset mode
+	mode: FactoryResetMode
+)
+
+# Returns whether requesting a factory reset is available (by invoking the factory-reset.target unit).
+method CanRequestFactoryReset() -> (
+	supported: bool
+)

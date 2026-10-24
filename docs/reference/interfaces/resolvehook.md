@@ -43,7 +43,7 @@ func (c *Client) ResolveRecord(ctx context.Context, in ResolveRecordIn) (*Resolv
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `question` | `[]Question` | The question being looked up, i.e. a combination of resource record keys. Note that unlike DNS queries on the wire these lookups can carry multiple key requests, albeit closely related ones. Specifically, lookups for A+AAAA for the the same hostname are submitted as one question, as are lookups for TXT+SRV when doing DNS-SD resolution. Moreover, when looking up resources with non-ASCII characters, they are placed together in a single question, once with labels encoded in UTF-8, and once in IDNA. Hook implementations must be able to deal with these and other similar combinations of resource key requests, and reply with all matching answers at once, or fail them as one. Partial success/failure combinations are not supported. |
+| `question` | `[]Question` | The question being looked up, i.e. a combination of resource record keys. Note that unlike DNS queries on the wire these lookups can carry multiple key requests, albeit closely related ones. Specifically, lookups for A+AAAA for the same hostname are submitted as one question, as are lookups for TXT+SRV when doing DNS-SD resolution. Moreover, when looking up resources with non-ASCII characters, they are placed together in a single question, once with labels encoded in UTF-8, and once in IDNA. Hook implementations must be able to deal with these and other similar combinations of resource key requests, and reply with all matching answers at once, or fail them as one. Partial success/failure combinations are not supported. |
 
 **Reply**
 
@@ -100,6 +100,7 @@ Encapsulates a DNS resource record.
 | `rname` | `?string` |  |
 | `serial` | `?int` |  |
 | `refresh` | `?int` |  |
+| `retry` | `?int` |  |
 | `expire` | `?int` |  |
 | `minimum` | `?int` |  |
 | `exchange` | `?string` |  |

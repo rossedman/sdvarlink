@@ -8,7 +8,7 @@ An interface to control basic properties of systemd services.
 | --- | --- |
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/service`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/service) |
 | Available since | systemd v257 |
-| Methods · types · errors | 4 · 0 · 1 |
+| Methods · types · errors | 5 · 0 · 1 |
 
 ## Methods
 
@@ -47,6 +47,22 @@ func (c *Client) SetLogLevel(ctx context.Context, in SetLogLevelIn) error
 | Field | Type | Description |
 | --- | --- | --- |
 | `level` | `?int` | The maximum log level, using BSD syslog log level integers. |
+
+### GetLogLevel
+
+:material-new-box: since v262
+
+Gets the maximum log level.
+
+```go
+func (c *Client) GetLogLevel(ctx context.Context) (*GetLogLevelOut, error)
+```
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `level` | `int` | The current maximum log level, using BSD syslog level integers. |
 
 ### GetEnvironment
 

@@ -7,7 +7,7 @@
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/network`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/network) |
 | Socket | `/run/systemd/netif/io.systemd.Network` |
 | Available since | systemd v257 |
-| Methods · types · errors | 5 · 28 · 1 |
+| Methods · types · errors | 6 · 29 · 2 |
 
 ## Methods
 
@@ -76,6 +76,21 @@ func (c *Client) GetLLDPNeighbors(ctx context.Context, in GetLLDPNeighborsIn) (*
 | Field | Type | Description |
 | --- | --- | --- |
 | `Neighbors` | `[]LLDPNeighborsByInterface` | LLDP neighbors grouped by interface |
+
+### Reload
+
+:material-new-box: since v262
+
+```go
+func (c *Client) Reload(ctx context.Context, in ReloadIn) error
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `reconfigureLinks` | `?bool` | If true (default), reload config files and reconfigure all matching network interfaces. If false, only reload config files without reconfiguring interfaces; use 'networkctl reconfigure' afterwards to apply changes selectively. |
+| `allowInteractiveAuthentication` | `?bool` | Controls whether interactive authentication (via polkit) shall be allowed. If unspecified defaults to false. |
 
 ### SetPersistentStorage
 
@@ -153,6 +168,13 @@ func (c *Client) SetPersistentStorage(ctx context.Context, in SetPersistentStora
 | `ValidLifetimeUSec` | `?int` | Valid lifetime in microseconds |
 | `ValidLifetimeUsec` | `?int` | Valid lifetime in microseconds (deprecated, for backward compatibility) |
 | `ConfigState` | `?string` | Configuration state of this address |
+
+### BitRates
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `TxBitRate` | `int` | Transmit bitrate in bits per second |
+| `RxBitRate` | `int` | Receive bitrate in bits per second |
 
 ### DHCPLease
 
@@ -318,6 +340,7 @@ func (c *Client) SetPersistentStorage(ctx context.Context, in SetPersistentStora
 | `DHCPv4Client` | `?object` | DHCPv4 client configuration and lease information |
 | `DHCPv6Client` | `?DHCPv6Client` | DHCPv6 client configuration and lease information |
 | `LLDP` | `?LLDPNeighbor` | LLDP transmit configuration for this interface |
+| `BitRates` | `?BitRates` | Current transmit/receive bitrates from speed meter |
 
 ### LLDPNeighbor
 
@@ -505,5 +528,6 @@ func (c *Client) SetPersistentStorage(ctx context.Context, in SetPersistentStora
 
 | Error | Go type | Description |
 | --- | --- | --- |
+| `AlreadyReloading` | `AlreadyReloadingError` |  |
 | `StorageReadOnly` | `StorageReadOnlyError` |  |
 

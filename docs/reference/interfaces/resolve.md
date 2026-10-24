@@ -278,6 +278,7 @@ A full DNS resource record..
 | `rname` | `?string` |  |
 | `serial` | `?int` |  |
 | `refresh` | `?int` |  |
+| `retry` | `?int` |  |
 | `expire` | `?int` |  |
 | `minimum` | `?int` |  |
 | `exchange` | `?string` |  |

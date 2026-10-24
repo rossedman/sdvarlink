@@ -9,7 +9,7 @@ APIs for managing login sessions.
 | Go package | [`github.com/rossedman/sdvarlink/systemd/latest/login`](https://pkg.go.dev/github.com/rossedman/sdvarlink/systemd/latest/login) |
 | Socket | `/run/systemd/io.systemd.Login` |
 | Available since | systemd v258 |
-| Methods · types · errors | 2 · 3 · 7 |
+| Methods · types · errors | 6 · 14 · 9 |
 
 ## Methods
 
@@ -25,20 +25,20 @@ func (c *Client) CreateSession(ctx context.Context, in CreateSessionIn) (*Create
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `UID` | `int` | Numeric UNIX UID of the user this session shall be owned by |
-| `PID` | `?ProcessId` | Process that shall become the leader of the session. If null defaults to the IPC client. |
-| `Service` | `?string` | PAM service name of the program requesting the session |
+| `UID` | `int` | Numeric UNIX UID of the user owning this session |
+| `PID` | `?ProcessId` | PID of the session leader |
 | `Type` | `SessionType` | The type of the session |
 | `Class` | `SessionClass` | The class of the session |
-| `Desktop` | `?string` | An identifier for the chosen desktop |
-| `Seat` | `?string` | The name of the seat to assign this session to |
-| `VTNr` | `?int` | The virtual terminal number to assign this session to |
-| `TTY` | `?string` | The TTY device to assign this session to, if applicable |
-| `Display` | `?string` | The X11 display for this session |
-| `Remote` | `?bool` | If true this is a remote session |
-| `RemoteUser` | `?string` | User name on the remote site, if known |
-| `RemoteHost` | `?string` | Host name of the remote host |
-| `ExtraDeviceAccess` | `?[]string` | List of additional hardware devices that this session is granted access to.For every $ID in the list, this adds access for all devices tagged with "xaccess-$ID" in udev. |
+| `Service` | `?string` | PAM service name |
+| `Desktop` | `?string` | Desktop identifier |
+| `Seat` | `?string` | Seat this session is assigned to |
+| `VTNr` | `?int` | Virtual terminal number of the session, if applicable |
+| `TTY` | `?string` | TTY device of the session |
+| `Display` | `?string` | X11 display of the session |
+| `Remote` | `?bool` | Whether this is a remote session |
+| `RemoteHost` | `?string` | Remote host, if this is a remote session |
+| `RemoteUser` | `?string` | Remote user, if this is a remote session |
+| `ExtraDeviceAccess` | `?[]string` | Device paths this session has special access to |
 
 **Reply**
 
@@ -54,7 +54,7 @@ func (c *Client) CreateSession(ctx context.Context, in CreateSessionIn) (*Create
 
 ### ReleaseSession
 
-Releases an existing session. Currently, will be refuses unless originating from the session to release itself.
+Releases an existing session. Currently, will be refused unless originating from the session to release itself.
 
 ```go
 func (c *Client) ReleaseSession(ctx context.Context, in ReleaseSessionIn) error
@@ -65,6 +65,97 @@ func (c *Client) ReleaseSession(ctx context.Context, in ReleaseSessionIn) error
 | Field | Type | Description |
 | --- | --- | --- |
 | `Id` | `?string` | The identifier string of the session to release. If unspecified or 'self', will return the callers session. |
+
+### ListSessions
+
+:material-waves: streaming optional · :material-new-box: since v262
+
+Lists current sessions. If an Id or PID filter is provided, returns the single matching session; otherwise streams all current sessions (requires the 'more' flag).
+
+```go
+func (c *Client) ListSessions(ctx context.Context, in ListSessionsIn) (*ListSessionsOut, error)
+func (c *Client) ListSessionsMore(ctx context.Context, in ListSessionsIn) iter.Seq2[*ListSessionsOut, error]
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `?string` | If non-null, the identifier string of a session to look up. Supports the special names 'self' and 'auto' which resolve to the caller's session. |
+| `PID` | `?ProcessId` | If non-null, return the session containing the process with this PID. If both Id and PID are specified they must reference the same session, otherwise NoSuchSession is returned. |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `SessionContext` | Configuration of the session |
+| `runtime` | `SessionRuntime` | Runtime information of the session |
+
+### ListUsers
+
+:material-waves: streaming optional · :material-new-box: since v262
+
+Lists current users. If a UID or PID filter is provided, returns the single matching user; otherwise streams all current users (requires the 'more' flag).
+
+```go
+func (c *Client) ListUsers(ctx context.Context, in ListUsersIn) (*ListUsersOut, error)
+func (c *Client) ListUsersMore(ctx context.Context, in ListUsersIn) iter.Seq2[*ListUsersOut, error]
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `UID` | `?int` | If non-null, the UNIX UID of a user to look up. |
+| `PID` | `?ProcessId` | If non-null, return the user owning the cgroup containing the process with this PID. If both UID and PID are specified they must reference the same user, otherwise NoSuchUser is returned. |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `UserContext` | Configuration of the user |
+| `runtime` | `UserRuntime` | Runtime information of the user |
+
+### ListSeats
+
+:material-waves: streaming optional · :material-new-box: since v262
+
+Lists current seats. If an Id filter is provided, returns the single matching seat; otherwise streams all current seats (requires the 'more' flag).
+
+```go
+func (c *Client) ListSeats(ctx context.Context, in ListSeatsIn) (*ListSeatsOut, error)
+func (c *Client) ListSeatsMore(ctx context.Context, in ListSeatsIn) iter.Seq2[*ListSeatsOut, error]
+```
+
+**Parameters**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `?string` | If non-null, the identifier string of a seat to look up. |
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `SeatContext` | Configuration of the seat |
+| `runtime` | `SeatRuntime` | Runtime information of the seat |
+
+### ListInhibitors
+
+:material-waves: streaming (requires `more`) · :material-new-box: since v262
+
+Lists all current inhibitors.
+
+```go
+func (c *Client) ListInhibitors(ctx context.Context) iter.Seq2[*ListInhibitorsOut, error]
+```
+
+**Reply**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `context` | `InhibitorContext` | Configuration of the inhibitor |
+| `runtime` | `InhibitorRuntime` | Runtime information of the inhibitor |
 
 ## Types
 
@@ -93,11 +184,36 @@ Various classes of sessions
 | `user_light` | A user session that doesn't pull in the per-user service manager |
 | `user_early_light` | The combination of user_early and user_light |
 | `greeter` | Display manager greeter screen used for login |
-| `lock_screen` | Similar, but a a lock screen |
+| `lock_screen` | Similar, but a lock screen |
 | `background` | Background session (that has no TTY, VT, Seat) |
 | `background_light` | Similar, but for which no service manager is invoked |
 | `manager` | The special session of the service manager |
 | `manager_early` | The special session of the service manager for the root user |
+
+### InhibitMode
+
+Inhibition mode
+
+| Value | Description |
+| --- | --- |
+| `block` | Hard inhibition; blocks the operation entirely |
+| `block_weak` | Weak hard inhibition; like block, but the user who set it can override it without polkit authorization |
+| `delay` | Soft inhibition; delays the operation but ultimately permits it |
+
+### InhibitWhat
+
+Operations that can be inhibited
+
+| Value | Description |
+| --- | --- |
+| `shutdown` |  |
+| `sleep` |  |
+| `idle` |  |
+| `handle_power_key` |  |
+| `handle_suspend_key` |  |
+| `handle_hibernate_key` |  |
+| `handle_lid_switch` |  |
+| `handle_reboot_key` |  |
 
 ### ProcessId
 
@@ -109,12 +225,132 @@ Process identifier
 | `pidfdId` | `?int` | 64bit inode number of pidfd if known |
 | `bootId` | `?string` | Boot ID of the system the inode number belongs to |
 
+### Timestamp
+
+Dual timestamp
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `realtime` | `?int` | Timestamp in µs in the CLOCK_REALTIME clock (wallclock) |
+| `monotonic` | `?int` | Timestamp in µs in the CLOCK_MONOTONIC clock |
+
+### SessionContext
+
+Configuration aspects of a session (suitable for reuse as creation input)
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `UID` | `int` | Numeric UNIX UID of the user owning this session |
+| `PID` | `?ProcessId` | PID of the session leader |
+| `Type` | `SessionType` | The type of the session |
+| `Class` | `SessionClass` | The class of the session |
+| `Service` | `?string` | PAM service name |
+| `Desktop` | `?string` | Desktop identifier |
+| `Seat` | `?string` | Seat this session is assigned to |
+| `VTNr` | `?int` | Virtual terminal number of the session, if applicable |
+| `TTY` | `?string` | TTY device of the session |
+| `Display` | `?string` | X11 display of the session |
+| `Remote` | `?bool` | Whether this is a remote session |
+| `RemoteHost` | `?string` | Remote host, if this is a remote session |
+| `RemoteUser` | `?string` | Remote user, if this is a remote session |
+| `ExtraDeviceAccess` | `?[]string` | Device paths this session has special access to |
+
+### SessionRuntime
+
+Runtime state and dynamic information of a session
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `string` | The session identifier |
+| `Scope` | `?string` | systemd scope unit name |
+| `Audit` | `?int` | Audit session ID |
+| `Timestamp` | `?Timestamp` | The session timestamps |
+| `State` | `string` | Current state of the session |
+| `Active` | `bool` | Whether the session is active (i.e. in the foreground) |
+| `IdleHint` | `bool` | Whether the session is idle |
+| `IdleSinceHint` | `?Timestamp` | Timestamp when the session went idle, only present when IdleHint is true |
+| `LockedHint` | `bool` | Whether the session is currently locked |
+| `CanIdle` | `bool` | Whether this session class supports idle tracking |
+| `CanLock` | `bool` | Whether this session class supports locking |
+
+### UserContext
+
+Configuration aspects of a user
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `UID` | `int` | Numeric UNIX UID |
+| `GID` | `int` | Numeric UNIX GID |
+| `Name` | `string` | User name |
+| `Linger` | `bool` | Whether lingering is enabled for this user |
+| `Service` | `?string` | Service manager unit name |
+| `Slice` | `?string` | User slice unit name |
+| `RuntimePath` | `?string` | Path to the user's runtime directory |
+
+### UserRuntime
+
+Runtime state and dynamic information of a user
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Display` | `?string` | Display session identifier |
+| `State` | `?string` | Current state of the user |
+| `Sessions` | `?[]string` | Identifiers of sessions belonging to this user |
+| `Timestamp` | `?Timestamp` | Timestamp when the user was 'started' for the first time |
+| `IdleHint` | `bool` | Whether the user is idle |
+| `IdleSinceHint` | `?Timestamp` | Timestamp when the user went idle, only present when IdleHint is true |
+
+### SeatContext
+
+Configuration aspects of a seat
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `string` | The seat identifier |
+
+### SeatRuntime
+
+Runtime state and dynamic information of a seat
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ActiveSession` | `?string` | The currently active session on this seat, if any |
+| `Sessions` | `?[]string` | Identifiers of sessions assigned to this seat |
+| `CanTTY` | `bool` | Whether this seat supports text terminal sessions |
+| `CanGraphical` | `bool` | Whether this seat supports graphical sessions |
+| `IdleHint` | `bool` | Whether the seat is idle |
+| `IdleSinceHint` | `?Timestamp` | Timestamp when the seat went idle, only present when IdleHint is true |
+
+### InhibitorContext
+
+Configuration aspects of an inhibitor
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `Id` | `string` | The inhibitor identifier |
+| `What` | `[]InhibitWhat` | What is being inhibited |
+| `Who` | `?string` | A human-readable descriptive string of who is taking the inhibition |
+| `Why` | `?string` | A human-readable descriptive string of why the inhibition is taken |
+| `Mode` | `InhibitMode` | The inhibition mode |
+| `UID` | `int` | The UID of the user taking the inhibition |
+
+### InhibitorRuntime
+
+Runtime state and dynamic information of an inhibitor
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `PID` | `?ProcessId` | The PID of the process taking the inhibition |
+| `Since` | `?Timestamp` | The inhibitor timestamps |
+
 ## Errors
 
 | Error | Go type | Description |
 | --- | --- | --- |
 | `NoSuchSession` | `NoSuchSessionError` | No session by this name found |
 | `NoSuchSeat` | `NoSuchSeatError` | No seat by this name found |
+| `NoSuchUser` | `NoSuchUserError` | No user by this UID found |
+| `NoSuchInhibitor` | `NoSuchInhibitorError` | No inhibitor found |
 | `AlreadySessionMember` | `AlreadySessionMemberError` | Process already member of a session |
 | `VirtualTerminalAlreadyTaken` | `VirtualTerminalAlreadyTakenError` | The specified virtual terminal (VT) is already taken by another session |
 | `TooManySessions` | `TooManySessionsError` | Maximum number of sessions reached |

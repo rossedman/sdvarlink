@@ -34,6 +34,7 @@ func (c *Client) GetUserRecordMore(ctx context.Context, in GetUserRecordIn) iter
 | `dispositionMask` | `?[]string` | User dispositions to limit search by. |
 | `uidMin` | `?int` | Minimum UID to restrict search too. |
 | `uidMax` | `?int` | Maximum UID to restrict search too. |
+| `uuid` | `?string` | The UUID to restrict search to. |
 | `service` | `string` | The userdb provider to search on. Must be set to the name of the userdb entrypoint socket. This is necessary in order to support services that implement multiple userdb services on the same socket. |
 
 **Reply**
@@ -64,6 +65,7 @@ func (c *Client) GetGroupRecordMore(ctx context.Context, in GetGroupRecordIn) it
 | `dispositionMask` | `?[]string` | Group dispositions to limit search by. |
 | `gidMin` | `?int` | Minimum GID to restrict search too. |
 | `gidMax` | `?int` | Maximum GID to restrict search too. |
+| `uuid` | `?string` | The UUID to restrict search to. |
 | `service` | `string` | The userdb provider to search on. Must be set to the name of the userdb entrypoint socket. This is necessary in order to support services that implement multiple userdb services on the same socket. |
 
 **Reply**
