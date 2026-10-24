@@ -1,6 +1,7 @@
 package varlink
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -81,6 +82,20 @@ type Reply struct {
 	Files []*os.File
 	// Continues is true if more replies follow.
 	Continues bool
+}
+
+// carriesNothing reports whether the reply has no parameters (absent, null
+// or {}) and no file descriptors.
+func (r *Reply) carriesNothing() bool {
+	if len(r.Files) > 0 {
+		return false
+	}
+	p := bytes.TrimSpace(r.Parameters)
+	if len(p) == 0 || bytes.Equal(p, []byte("null")) {
+		return true
+	}
+	var m map[string]json.RawMessage
+	return json.Unmarshal(p, &m) == nil && len(m) == 0
 }
 
 // Decode unmarshals the reply into v and attaches received files to its fd
@@ -407,8 +422,10 @@ func (c *Conn) Oneway(ctx context.Context, method string, in any, opts ...CallOp
 
 // Stream invokes method with the "more" flag and yields each reply as it
 // arrives. The sequence ends after the reply that does not continue, or
-// with an error. Breaking out of the loop early, or cancelling ctx, closes
-// the connection.
+// with an error. A final reply with no parameters and no file descriptors
+// is not yielded: sd-varlink services send one to end an empty stream, so an
+// empty list yields nothing. Breaking out of the loop early, or cancelling
+// ctx, closes the connection.
 //
 //	for r, err := range conn.Stream(ctx, "io.systemd.UserDatabase.GetUserRecord", in) {
 //		if err != nil {
@@ -445,6 +462,13 @@ func (c *Conn) Stream(ctx context.Context, method string, in any, opts ...CallOp
 				var ve NamedError
 				clean = errors.As(err, &ve)
 				yield(nil, c.ctxErr(ctx, err))
+				return
+			}
+			if done && r.carriesNothing() {
+				// sd-varlink ends an empty stream, or a live stream whose
+				// producer is done, with an empty final reply; it marks the
+				// end and is not a value.
+				clean = true
 				return
 			}
 			if !yield(r, nil) {

@@ -112,7 +112,8 @@ whether the stream is a finite list or an open-ended feed:
 === "Live stream (default)"
 
     Each `send` writes a reply with `"continues": true` immediately. When the
-    handler returns, an empty final reply ends the stream. Use this for
+    handler returns, an empty final reply ends the stream; sdvarlink clients
+    and sd-varlink do not treat it as a value. Use this for
     subscriptions and event feeds, where each event must reach the client as
     soon as it happens.
 

@@ -54,6 +54,12 @@ for what changed in systemd itself.
 
   Enums are string types, so untyped string constants still compile. To
   keep the old types, import `systemd/v260/...` instead of `latest`.
+- `Conn.Stream`, and with it every generated `...More` method and
+  `StreamAs`, no longer yields a final reply that has no parameters and no
+  file descriptors. sd-varlink services send one to end an empty stream
+  (logind's `ListSessions` with no sessions, for example), and
+  `HandleStream` sends one when a live stream ends; both used to show up as
+  one zero-valued item. An empty list now yields nothing.
 
 ### Fixed
 
