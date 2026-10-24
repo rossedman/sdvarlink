@@ -1,0 +1,49 @@
+name: sarifix
+
+# Scans with the scanners in sarifix.yaml (golangci-lint and Semgrep). On pull
+# requests it reports the findings the change introduces. On main, weekly and
+# on demand it uploads every finding to code scanning and keeps one GitHub
+# issue per batch of allowed rules (rules.allow in sarifix.yaml), including
+# the CodeQL alerts that codeql.yml reports, which it imports.
+# Docs: https://rossedman.io/sarifix/action/
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sarifix-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  sarifix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read # code scanning upload
+      security-events: write # code scanning upload
+      issues: write # one issue per batch
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # check mode compares against the base branch
+          persist-credentials: false
+      # golangci-lint needs Go.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - uses: rossedman/sarifix@706469faaa3f32eb199873b93219d195583e8537 # v0.3.1
+        env:
+          GOLANGCI_LINT_VERSION: "2.14.0" # match ci.yml
+        with:
+          queue: ${{ vars.SARIFIX_QUEUE }}
+          # First run only: lists the issues it would open without writing.
+          # Set to "false" once the job summary looks right.
+          dry-run: "true"

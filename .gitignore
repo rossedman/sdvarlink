@@ -37,3 +37,19 @@ dist/
 
 # MkDocs build output
 site/
+
+# Benchmark results (`make bench`, compared with `make benchstat`)
+bench.txt
+bench.old.txt
+
+# Share Guardrails rules and permission denies (overrides a global .claude ignore).
+!/.claude/
+/.claude/settings.local.json
+
+# Share the gopls settings (overrides a global .vscode ignore).
+!/.vscode/
+/.vscode/*
+!/.vscode/settings.json
+
+# Linter caches
+.ruff_cache/

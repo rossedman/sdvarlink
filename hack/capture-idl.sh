@@ -19,7 +19,7 @@ mkdir -p "$out"
 
 sockets=()
 for dir in /run/systemd /run/systemd/userdb /run/systemd/report /run/systemd/machine \
-           /run/systemd/netif /run/systemd/resolve /run/systemd/journal /run/systemd/oom /run/udev; do
+	/run/systemd/netif /run/systemd/resolve /run/systemd/journal /run/systemd/oom /run/udev; do
 	[[ -d $dir ]] || continue
 	for s in "$dir"/io.systemd.*; do
 		[[ -S $s ]] && sockets+=("$s")

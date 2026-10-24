@@ -90,7 +90,7 @@ class Interface:
         self.items = list(items)
 
 
-DEFINE = re.compile(r"^#\s*define\s+(\w+)(?:\\\n|.)*?(?<!\\)$", re.M)
+DEFINE = re.compile(r"^#\s*define\s+(\w+)(?:\\\n|.)*?(?<!\\)$", re.MULTILINE)
 
 
 def header_macros(root):
@@ -111,7 +111,7 @@ def preprocess(path, version, macros):
     """Run cpp over one source file with includes stripped."""
     with open(path, encoding="utf-8") as f:
         src = f.read()
-    src = macros + re.sub(r"^\s*#\s*include.*$", "", src, flags=re.M)
+    src = macros + re.sub(r"^\s*#\s*include.*$", "", src, flags=re.MULTILINE)
     out = subprocess.run(
         [
             "cpp", "-P", "-w",
@@ -271,7 +271,7 @@ def main():
             while stmts:
                 kind, var, expr = stmts[0]
                 try:
-                    val = eval(expr, builtins, Scope(local, shared))  # noqa: S307
+                    val = eval(expr, builtins, Scope(local, shared))
                 except NameError:
                     break
                 stmts.pop(0)

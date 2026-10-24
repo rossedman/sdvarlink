@@ -1,9 +1,15 @@
 # sdvarlink developer tasks. Run `make help` for a list.
+# Run `make check` before opening a pull request; CI runs the same checks.
+# Shorten the fuzz runs locally with `make check FUZZTIME=5s`.
 
 GO        ?= go
 PKGS      := ./...
 SYSTEMD_VERSION ?=
 FUZZTIME  ?= 30s
+COVERAGE  ?= 90
+GOVULNCHECK := golang.org/x/vuln/cmd/govulncheck@v1.9.0
+BENCHSTAT   := golang.org/x/perf/cmd/benchstat@v0.0.0-20261009192801-be2c69fb417e
+MKDOCS      := uv run --no-project --with-requirements docs/requirements.txt mkdocs
 
 .DEFAULT_GOAL := help
 
@@ -20,29 +26,50 @@ race: ## Run unit tests with the race detector
 	$(GO) test -race -count=1 $(PKGS)
 
 .PHONY: cover
-cover: ## Write a coverage report to coverage.html
-	$(GO) test -coverprofile=coverage.out ./varlink/... ./idl/... ./varlinktest/... ./internal/...
-	$(GO) tool cover -html=coverage.out -o coverage.html
+cover: ## Fail if coverage of hand-written code is below COVERAGE%; writes coverage.html
+	$(GO) test -coverprofile=coverage.out $(PKGS)
+	@# Generated bindings (systemd/), the generator's main package, examples and
+	@# integration tests (which need a real systemd) are not counted.
+	@{ head -1 coverage.out; grep -v '^mode:' coverage.out | grep -v -e '/systemd/' -e '/cmd/' -e '/examples/' -e '/integration/'; } > coverage.hand.out
+	$(GO) tool cover -html=coverage.hand.out -o coverage.html
+	@$(GO) tool cover -func=coverage.hand.out | awk -v min=$(COVERAGE) '/^total:/ { sub("%", "", $$3); print "coverage " $$3 "% (minimum " min "%)"; if ($$3 + 0 < min) exit 1 }'
 
 .PHONY: integration
 integration: ## Run integration tests against the host's systemd
 	$(GO) test -tags integration -count=1 -v ./integration/
 
 .PHONY: fuzz
-fuzz: ## Fuzz the frame reader, codec and IDL parser for FUZZTIME each
-	$(GO) test ./internal/wire/ -run '^$$' -fuzz FuzzReadMessage -fuzztime $(FUZZTIME)
-	$(GO) test ./varlink/ -run '^$$' -fuzz FuzzUnmarshal -fuzztime $(FUZZTIME)
-	$(GO) test ./idl/ -run '^$$' -fuzz FuzzParse -fuzztime $(FUZZTIME)
+fuzz: ## Fuzz the frame reader, codec, parameter validation and IDL parser for FUZZTIME each
+	$(GO) test ./internal/wire/ -run '^$$' -fuzz '^FuzzReadMessage$$' -fuzztime $(FUZZTIME)
+	$(GO) test ./varlink/ -run '^$$' -fuzz '^FuzzUnmarshal$$' -fuzztime $(FUZZTIME)
+	$(GO) test ./varlink/ -run '^$$' -fuzz '^FuzzValidateParams$$' -fuzztime $(FUZZTIME)
+	$(GO) test ./idl/ -run '^$$' -fuzz '^FuzzParse$$' -fuzztime $(FUZZTIME)
 
 .PHONY: bench
-bench: ## Run benchmarks against the fake server
-	$(GO) test -run '^$$' -bench . -benchmem ./varlink/
+bench: ## Run benchmarks and save them to bench.txt (compare with `make benchstat`)
+	$(GO) test -run '^$$' -bench . -benchmem -count=6 ./varlink/ ./internal/wire/ ./idl/ | tee bench.txt
+
+.PHONY: bench-smoke
+bench-smoke: ## Run every benchmark once
+	$(GO) test -run '^$$' -bench . -benchtime=1x $(PKGS)
+
+.PHONY: benchstat
+benchstat: ## Compare bench.old.txt with bench.txt
+	$(GO) run $(BENCHSTAT) bench.old.txt bench.txt
 
 .PHONY: lint
 lint: ## Run golangci-lint and gofmt checks
 	@test -z "$$(gofmt -l . | grep -v '^site/')" || (gofmt -l .; exit 1)
 	$(GO) vet $(PKGS)
 	golangci-lint run
+
+.PHONY: doccheck
+doccheck: ## Fail if a function, method or package has no doc comment
+	$(GO) run ./tools/doccheck ./...
+
+.PHONY: vuln
+vuln: ## Check dependencies for known vulnerabilities
+	$(GO) run $(GOVULNCHECK) $(PKGS)
 
 .PHONY: generate
 generate: ## Regenerate systemd/ packages from idl/ snapshots
@@ -70,17 +97,13 @@ api-diff: ## Print API changes between two releases: make api-diff FROM=257 TO=2
 docs-reference: ## Regenerate the interface reference pages
 	$(GO) run ./cmd/sdvarlink-gen docs
 
-.PHONY: docs-deps
-docs-deps: ## Install MkDocs and plugins
-	pip install -r docs/requirements.txt
-
 .PHONY: docs-serve
-docs-serve: docs-reference ## Serve the docs at http://127.0.0.1:8000
-	mkdocs serve
+docs-serve: docs-reference ## Serve the docs at http://127.0.0.1:8000 (needs uv)
+	$(MKDOCS) serve
 
 .PHONY: docs
-docs: docs-reference ## Build the docs site into site/
-	mkdocs build --strict
+docs: docs-reference ## Build the docs site into site/; strict, so broken links fail (needs uv)
+	$(MKDOCS) build --strict
 
 .PHONY: release-check
 release-check: ## Validate the GoReleaser config
@@ -88,4 +111,9 @@ release-check: ## Validate the GoReleaser config
 
 .PHONY: snapshot
 snapshot: ## Build a local GoReleaser snapshot into dist/
-	goreleaser release --snapshot --clean
+	goreleaser release --snapshot --clean --skip=sign
+
+.PHONY: check
+check: ## Run everything CI runs, except integration tests
+	$(GO) build $(PKGS)
+	$(MAKE) lint race cover doccheck vuln bench-smoke fuzz check-generated docs

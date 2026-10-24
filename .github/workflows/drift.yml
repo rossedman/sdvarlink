@@ -16,9 +16,10 @@ permissions:
 jobs:
   drift:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - name: Find the newest systemd release
@@ -36,7 +37,7 @@ jobs:
           go build ./... && go test ./...
           prev=$(ls -d idl/v* | sed 's#idl/v##' | sort -n | tail -2 | head -1)
           go run ./cmd/sdvarlink-gen diff "$prev" ${{ steps.latest.outputs.version }} > /tmp/api-diff.md
-      - uses: peter-evans/create-pull-request@v8
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         if: steps.latest.outputs.new == 'true'
         with:
           branch: idl/systemd-v${{ steps.latest.outputs.version }}

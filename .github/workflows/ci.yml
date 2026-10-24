@@ -9,41 +9,53 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
-    name: Test (Go ${{ matrix.go }}, ${{ matrix.os }})
+    name: test (Go ${{ matrix.go }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
+      # Keep going when one version fails, so the others still report.
       fail-fast: false
       matrix:
-        go: [stable, oldstable]
+        # From the minimum in go.mod through the latest release.
+        go: ["1.26", "1.27"]
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
       - name: Unit tests (race)
-        run: go test -race -count=1 -coverprofile=coverage.out ./...
+        run: make race
       - name: Fuzz seeds
         run: go test -run 'Fuzz' ./internal/wire/ ./varlink/ ./idl/
-      - name: Benchmarks (smoke)
-        run: go test -run '^$' -bench . -benchtime 200x ./varlink/
-      - uses: actions/upload-artifact@v7
-        if: matrix.go == 'stable' && matrix.os == 'ubuntu-24.04'
+      # Measured on hand-written code: generated bindings, examples and the
+      # generator's main package are excluded.
+      - name: Coverage (must stay at or above 90%)
+        run: make cover
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.go == '1.27' && matrix.os == 'ubuntu-24.04'
         with:
           name: coverage
-          path: coverage.out
+          path: |
+            coverage.hand.out
+            coverage.html
 
   macos:
-    name: Test (macOS, fake only)
+    name: test (macOS, fake only)
     runs-on: macos-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       # Dial to systemd returns ErrUnsupported off Linux; the core and the
@@ -51,11 +63,14 @@ jobs:
       - run: go test -count=1 ./idl/... ./varlink/... ./varlinktest/... ./internal/... ./systemd/...
 
   cross:
-    name: Cross-compile
+    name: cross-compile
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - run: |
@@ -65,25 +80,46 @@ jobs:
           done
 
   lint:
-    name: Lint
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # golangci-lint must be built with a Go at least as new as the one
-          # it type-checks; lint at the module's minimum Go version.
-          go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v9
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          version: v2.10.1
+          go-version: stable
+      - name: gofmt
+        run: test -z "$(gofmt -l . | grep -v '^site/')"
+      - run: go vet ./...
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.14.0
+
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: doc comments
+        run: make doccheck
+      - name: govulncheck
+        run: make vuln
 
   generated:
-    name: Generated code is fresh
+    name: generated code is fresh
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - run: make check-generated
@@ -94,3 +130,89 @@ jobs:
             hack/extract-idl.sh "$v"
           done
           git diff --exit-code -- idl/
+
+  fuzz:
+    name: fuzz (${{ matrix.target.name }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { name: FuzzReadMessage, pkg: ./internal/wire/ }
+          - { name: FuzzUnmarshal, pkg: ./varlink/ }
+          - { name: FuzzValidateParams, pkg: ./varlink/ }
+          - { name: FuzzParse, pkg: ./idl/ }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      - name: fuzz ${{ matrix.target.name }} for 30s
+        env:
+          TARGET: ${{ matrix.target.name }}
+          PKG: ${{ matrix.target.pkg }}
+        run: go test "$PKG" -run '^$' -fuzz "^${TARGET}\$" -fuzztime 30s
+      # A failing input is written under testdata/fuzz/; keep it so it can be
+      # committed as a regression test.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: fuzz-${{ matrix.target.name }}
+          path: "**/testdata/fuzz/"
+
+  bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+
+      # Required: fails the job if any benchmark fails or panics.
+      - name: run benchmarks
+        run: go test -run '^$' -bench . -benchmem -benchtime=200ms -count=6 ./varlink/ ./internal/wire/ ./idl/ | tee bench-new.txt
+
+      # On pull requests, benchmark the base branch the same way for
+      # comparison. Timings on shared runners are too noisy to gate on, so the
+      # comparison is reported in the job summary rather than failing the job.
+      - name: benchmark base branch
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git worktree add ../base "origin/${BASE_REF}"
+          cd ../base
+          go test -run '^$' -bench . -benchmem -benchtime=200ms -count=6 ./varlink/ ./internal/wire/ ./idl/ > "$GITHUB_WORKSPACE/bench-base.txt" || true
+
+      - name: summarize
+        if: always()
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BENCHSTAT: golang.org/x/perf/cmd/benchstat@v0.0.0-20261009192801-be2c69fb417e
+        run: |
+          {
+            echo '## Benchmarks'
+            echo
+            echo '```'
+            if [ -s bench-base.txt ]; then
+              echo "base: ${BASE_REF}   new: this PR"
+              go run "$BENCHSTAT" base=bench-base.txt new=bench-new.txt
+            else
+              go run "$BENCHSTAT" new=bench-new.txt
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: benchmarks
+          path: bench-*.txt

@@ -1,8 +1,10 @@
 # GoReleaser configuration. The Go packages are consumed with `go get`;
-# releases ship the sdvarlink-gen code generator as prebuilt binaries.
+# releases ship the sdvarlink-gen code generator as prebuilt binaries, and a
+# checksums file signed keylessly with cosign (see SECURITY.md for how to
+# verify it).
 #
-#   goreleaser check                          # validate this file
-#   goreleaser release --snapshot --clean     # local snapshot build into dist/
+#   goreleaser check                                   # validate this file
+#   goreleaser release --snapshot --clean --skip=sign  # local snapshot build into dist/
 #
 # CI builds a snapshot on every branch push and publishes a GitHub release
 # for every v* tag (.github/workflows/release.yml).
@@ -50,6 +52,14 @@ archives:
 checksum:
   name_template: checksums.txt
   algorithm: sha256
+
+# Keyless signing with the release workflow's GitHub OIDC identity. The
+# checksums file covers every archive.
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args: ["sign-blob", "--bundle=${signature}", "${artifact}", "--yes"]
 
 snapshot:
   # e.g. 0.1.1-snapshot.claude-sdvarlink-v0.a1b2c3d

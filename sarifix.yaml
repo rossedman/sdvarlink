@@ -1,0 +1,41 @@
+# sarifix: scanner feedback before Claude finishes, and in CI.
+# The sarifix plugin's Stop hook runs `sarifix check --hook`, which scans the
+# working tree and HEAD with golangci-lint and Semgrep and reports only the
+# findings the uncommitted changes introduced. .github/workflows/sarifix.yml
+# runs the same scanners on pull requests and the default branch, and imports
+# CodeQL's alerts from code scanning (.github/workflows/codeql.yml).
+# Docs: https://rossedman.io/sarifix/configuration/
+version: 1
+
+scanners:
+  # The same linters and .golangci.yml that CI and `make lint` use.
+  - name: golangci-lint
+    command: ["golangci-lint", "run", "--output.sarif.path={out}", "./..."]
+    workdir: "{dir}"
+  - name: semgrep
+    match: ["Semgrep OSS", "Semgrep"]
+    command: ["semgrep", "scan", "--quiet", "--metrics=off", "--config", "p/default", "--sarif-output={out}", "{dir}"]
+    timeout: 10m
+  # CodeQL runs in .github/workflows/codeql.yml and reports to code scanning.
+  # With no command, sarifix never runs it: the action imports its open alerts
+  # so they become issues too. The local check and Stop hook skip it.
+  - name: codeql
+    match: ["CodeQL"]
+
+rules:
+  min_level: warning
+  # Which rules become GitHub issues in the action's issues mode. The Stop
+  # hook ignores this list and reports every new finding not denied below.
+  allow:
+    - "golangci-lint/*"
+    - "codeql/*"
+  deny:
+    # hack/idl-from-source/extract.py evaluates C constant expressions from
+    # systemd's own sources, with builtins restricted; it never sees input
+    # from anywhere else.
+    - "semgrep/python.lang.security.audit.eval-detected.*"
+
+paths:
+  # Generated bindings and docs are rewritten by `make generate docs-reference`;
+  # fix the generator instead. Fuzz corpora and build output aren't code.
+  deny: ["systemd/**", "docs/reference/**", "**/testdata/**", "site/**", "dist/**"]
