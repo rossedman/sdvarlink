@@ -1,6 +1,7 @@
 package varlink
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/rossedman/sdvarlink/idl"
@@ -48,7 +49,22 @@ func FuzzValidateParams(f *testing.F) {
 			return
 		}
 		if field == "" {
-			t.Fatalf("error %v without a field name", err)
+			// The only nameless field is an unknown key spelled "", which
+			// the strict check rejects by its (empty) name.
+			var top map[string]json.RawMessage
+			var hasEmptyKey bool
+			if json.Unmarshal(params, &top) == nil {
+				_, hasEmptyKey = top[""]
+			}
+			if allowUnknown || !hasEmptyKey {
+				t.Fatalf("error %v without a field name", err)
+			}
+		}
+		// Whatever validateParams returns, the client is told which
+		// parameter was wrong.
+		var reply map[string]string
+		if json.Unmarshal(invalidParameter(field).Parameters, &reply) != nil || reply["parameter"] == "" {
+			t.Fatalf("InvalidParameter for field %q names no parameter", field)
 		}
 		// The field is "parameters", a declared top-level field, or (only
 		// when unknown fields are rejected) an undefined key.
