@@ -69,3 +69,52 @@ func BenchmarkStream(b *testing.B) {
 	}
 	b.ReportMetric(float64(b.N*per)/b.Elapsed().Seconds(), "replies/s")
 }
+
+type benchAddress struct {
+	Ifindex *int  `json:"ifindex,omitempty"`
+	Family  int   `json:"family"`
+	Address []int `json:"address"`
+}
+
+type benchResolveReply struct {
+	Addresses []benchAddress `json:"addresses"`
+	Name      string         `json:"name,omitempty"`
+	Flags     int            `json:"flags"`
+}
+
+func benchReply() benchResolveReply {
+	idx := 2
+	return benchResolveReply{
+		Addresses: []benchAddress{
+			{Ifindex: &idx, Family: 2, Address: []int{192, 0, 2, 1}},
+			{Ifindex: &idx, Family: 10, Address: []int{32, 1, 13, 184, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+		},
+		Name:  "example.org",
+		Flags: 786945,
+	}
+}
+
+func BenchmarkMarshal(b *testing.B) {
+	v := benchReply()
+	b.ReportAllocs()
+	for b.Loop() {
+		if _, _, err := varlink.Marshal(v); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkUnmarshal(b *testing.B) {
+	data, _, err := varlink.Marshal(benchReply())
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.SetBytes(int64(len(data)))
+	for b.Loop() {
+		var out benchResolveReply
+		if err := varlink.Unmarshal(data, nil, &out); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

@@ -14,6 +14,7 @@ import (
 	"github.com/rossedman/sdvarlink/systemd/v257/journal"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	if len(os.Args) != 2 {
 		log.Fatal("usage: journal-control sync|rotate|flush|relinquish")

@@ -244,6 +244,8 @@ var (
 	errType = reflect.TypeOf((*error)(nil)).Elem()
 )
 
+// adapt wraps a function of one of the shapes accepted by Handle in a
+// RawHandler. It panics if fn has another shape.
 func adapt(fn any) RawHandler {
 	v := reflect.ValueOf(fn)
 	t := v.Type()
@@ -299,10 +301,13 @@ func adapt(fn any) RawHandler {
 	}
 }
 
+// invalidParameter returns the org.varlink.service.InvalidParameter error
+// for a call whose parameters could not be decoded.
 func invalidParameter(err error) error {
 	return &varlink.Error{Name: varlink.ErrInvalidParameter.Name, Parameters: mustJSON(map[string]string{"parameter": err.Error()})}
 }
 
+// mustJSON marshals v and panics on failure.
 func mustJSON(v any) json.RawMessage {
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -311,6 +316,7 @@ func mustJSON(v any) json.RawMessage {
 	return b
 }
 
+// accept serves incoming connections until the listener closes.
 func (s *Server) accept() {
 	defer s.wg.Done()
 	for {
@@ -346,6 +352,8 @@ type reply struct {
 	Error      string          `json:"error,omitempty"`
 }
 
+// serve reads calls from t, records them and dispatches each, until the
+// connection fails or sends something that is not a call.
 func (s *Server) serve(t *wire.Transport) {
 	for {
 		data, files, err := t.ReadMessage()
@@ -455,6 +463,9 @@ func errorReply(err error) (string, json.RawMessage) {
 	return HandlerError, mustJSON(map[string]string{"message": err.Error()})
 }
 
+// handler returns the handler for method: a registered one, else the
+// fallback, else a built-in org.varlink.service method, else one that fails
+// with InterfaceNotFound or MethodNotFound.
 func (s *Server) handler(method string) RawHandler {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -477,6 +488,8 @@ func (s *Server) handler(method string) RawHandler {
 	return fail(&varlink.Error{Name: varlink.ErrMethodNotFound.Name, Parameters: mustJSON(map[string]string{"method": method})})
 }
 
+// knowsInterfaceLocked reports whether iface was registered through
+// AddInterface or has a handler. The caller must hold s.mu.
 func (s *Server) knowsInterfaceLocked(iface string) bool {
 	if _, ok := s.ifaces[iface]; ok {
 		return true
@@ -497,12 +510,14 @@ func (s *Server) setFallback(h RawHandler) {
 	s.mu.Unlock()
 }
 
+// fail returns a handler that always replies with err.
 func fail(err error) RawHandler {
 	return func(context.Context, *Call) iter.Seq2[*Response, error] {
 		return func(yield func(*Response, error) bool) { yield(nil, err) }
 	}
 }
 
+// getInfo answers org.varlink.service.GetInfo, listing the known interfaces.
 func (s *Server) getInfo(context.Context, *Call) iter.Seq2[*Response, error] {
 	s.mu.Lock()
 	set := map[string]bool{"org.varlink.service": true}
@@ -524,6 +539,8 @@ func (s *Server) getInfo(context.Context, *Call) iter.Seq2[*Response, error] {
 	return single(info)
 }
 
+// getInterfaceDescription answers org.varlink.service.GetInterfaceDescription
+// from the interfaces registered with AddInterface.
 func (s *Server) getInterfaceDescription(_ context.Context, call *Call) iter.Seq2[*Response, error] {
 	var in struct {
 		Interface string `json:"interface"`
@@ -540,6 +557,7 @@ func (s *Server) getInterfaceDescription(_ context.Context, call *Call) iter.Seq
 	return single(map[string]string{"description": desc})
 }
 
+// single returns a sequence that yields v as the only reply.
 func single(v any) iter.Seq2[*Response, error] {
 	return func(yield func(*Response, error) bool) { yield(&Response{Parameters: v}, nil) }
 }

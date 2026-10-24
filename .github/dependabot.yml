@@ -1,14 +1,44 @@
 version: 2
 updates:
+  # golang.org/x/sys is the only dependency; grouped so any added later
+  # arrive in the same weekly pull request.
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: weekly
+    # Wait a week before proposing a newly published version, so a
+    # compromised or broken release is likely caught before it lands here.
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: deps
+    groups:
+      go-modules:
+        patterns: ["*"]
+
+  # Actions used by .github/workflows, pinned by SHA and grouped into one
+  # weekly pull request.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # The MkDocs toolchain in docs/requirements.txt.
   - package-ecosystem: pip
     directory: /docs
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: docs
+    groups:
+      docs:
+        patterns: ["*"]

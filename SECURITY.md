@@ -12,6 +12,23 @@ Please report vulnerabilities privately through
 not in public issues. Include a description, affected versions and, if you
 can, a reproducer. You can expect an acknowledgement within a week.
 
+## Verifying releases
+
+The library is installed with `go get`, which checks every module against the
+Go checksum database, so most users need nothing more. The `sdvarlink-gen`
+archives on each GitHub release come with a `checksums.txt` signed keylessly
+with [cosign](https://docs.sigstore.dev/) by the release workflow, and a build
+provenance attestation. To verify a downloaded archive:
+
+```sh
+cosign verify-blob checksums.txt \
+  --bundle checksums.txt.sigstore.json \
+  --certificate-identity-regexp '^https://github.com/rossedman/sdvarlink/.github/workflows/release.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+sha256sum --ignore-missing -c checksums.txt
+gh attestation verify sdvarlink-gen_*_linux_amd64.tar.gz --repo rossedman/sdvarlink
+```
+
 ## Security model
 
 sdvarlink is a client library. It adds no privileges of its own:

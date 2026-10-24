@@ -1,0 +1,41 @@
+name: Guardrails
+
+# The same quality gate Claude Code faces at the end of every turn, with the
+# same .guardrails.yaml: tests with -race, coverage, patch coverage, lint,
+# govulncheck, actionlint and shell checks.
+# Docs: https://rossedman.github.io/guardrails/ci/
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guardrails-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # --base needs the base branch's history
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+      # On pull requests this gates only the changed files against the base
+      # branch; on pushes it gates every package.
+      - uses: rossedman/guardrails@5a8819d6b43c3fdb96e6dd280a52936e52d0e56e # v0.7.0
+        with:
+          version: 0.7.0 # match the action; the default "latest" can lack binaries
+      # The action runs guardrails under `bash -e`, which exits before it
+      # prints the report when the gate fails; print it here instead.
+      - name: Show the gate report
+        if: failure()
+        run: cat "$RUNNER_TEMP/guardrails-report.txt"

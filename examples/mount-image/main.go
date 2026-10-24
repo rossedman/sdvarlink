@@ -17,6 +17,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	if len(os.Args) != 2 {
 		log.Fatal("usage: mount-image IMAGE")

@@ -37,6 +37,8 @@ var (
 	date    = "unknown"
 )
 
+// main dispatches to the subcommand named by the first argument and exits
+// non-zero if it fails.
 func main() {
 	if len(os.Args) < 2 {
 		usage()
@@ -64,6 +66,8 @@ func main() {
 	}
 }
 
+// usage prints the subcommands and their flags to stderr and exits with
+// status 2.
 func usage() {
 	fmt.Fprint(os.Stderr, `usage:
   sdvarlink-gen generate [-idl dir] [-out dir] [-config file]
@@ -112,6 +116,8 @@ func loadReleases(root string) ([]*release, error) {
 	return out, nil
 }
 
+// loadRelease parses every .varlink file in dir into a release for the given
+// systemd version.
 func loadRelease(dir, version string) (*release, error) {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.varlink"))
 	if err != nil {
@@ -133,6 +139,8 @@ func loadRelease(dir, version string) (*release, error) {
 	return r, nil
 }
 
+// generate implements `sdvarlink-gen generate`: it writes a Go package per
+// interface and release from the IDL snapshots.
 func generate(args []string) error {
 	fs := flag.NewFlagSet("generate", flag.ExitOnError)
 	idlDir := fs.String("idl", "idl", "directory of IDL snapshots")
@@ -209,6 +217,8 @@ func generate(args []string) error {
 	return nil
 }
 
+// diff implements `sdvarlink-gen diff`: it prints the API changes between two
+// systemd releases' IDL snapshots.
 func diff(args []string) error {
 	fs := flag.NewFlagSet("diff", flag.ExitOnError)
 	idlDir := fs.String("idl", "idl", "directory of IDL snapshots")
@@ -229,6 +239,8 @@ func diff(args []string) error {
 	return nil
 }
 
+// docs implements `sdvarlink-gen docs`: it writes the interface reference
+// pages and updates the generated nav block in mkdocs.yml.
 func docs(args []string) error {
 	fs := flag.NewFlagSet("docs", flag.ExitOnError)
 	idlDir := fs.String("idl", "idl", "directory of IDL snapshots")
@@ -278,6 +290,8 @@ const (
 	endMarker   = "# END generated interface nav"
 )
 
+// replaceBlock replaces the lines between beginMarker and endMarker in the
+// file at path with body.
 func replaceBlock(path, body string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {

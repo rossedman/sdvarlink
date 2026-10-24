@@ -71,10 +71,17 @@ tar xzf sdvarlink-gen_0.4.0_linux_amd64.tar.gz
 ./sdvarlink-gen diff 258 260 > api-changes.md
 ```
 
-Verify downloads against `checksums.txt`:
+Verify downloads against `checksums.txt`, which the release workflow signs
+keylessly with [cosign](https://docs.sigstore.dev/), and check the build
+provenance attestation:
 
 ```sh
-sha256sum --check --ignore-missing checksums.txt
+cosign verify-blob checksums.txt \
+  --bundle checksums.txt.sigstore.json \
+  --certificate-identity-regexp '^https://github.com/rossedman/sdvarlink/.github/workflows/release.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+sha256sum --ignore-missing -c checksums.txt
+gh attestation verify sdvarlink-gen_*_linux_amd64.tar.gz --repo rossedman/sdvarlink
 ```
 
 ## Cutting a release (maintainers)

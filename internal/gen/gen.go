@@ -118,10 +118,7 @@ func Package(cfg *Config, iface *idl.Interface, idlFile, version string) ([]File
 		version: version,
 		taken:   map[string]bool{},
 	}
-	src, err := g.generate(idlFile)
-	if err != nil {
-		return nil, err
-	}
+	src := g.generate(idlFile)
 	formatted, err := format.Source(src)
 	if err != nil {
 		return nil, fmt.Errorf("%s: gofmt: %w\n%s", iface.Name, err, numbered(src))
@@ -129,6 +126,7 @@ func Package(cfg *Config, iface *idl.Interface, idlFile, version string) ([]File
 	return []File{{Name: g.pkg + ".go", Content: formatted}}, nil
 }
 
+// numbered prefixes each line of src with its line number, for error messages.
 func numbered(src []byte) string {
 	var b strings.Builder
 	for i, l := range strings.Split(string(src), "\n") {
@@ -159,6 +157,7 @@ var reserved = []string{
 // clientMethods are methods of Client that systemd method names must not shadow.
 var clientMethods = map[string]bool{"Close": true, "Caller": true, "Supports": true}
 
+// claim reserves name as a Go identifier, appending underscores until it is unused, and returns it.
 func (g *pkgGen) claim(name string) string {
 	for g.taken[name] {
 		name += "_"
@@ -167,9 +166,11 @@ func (g *pkgGen) claim(name string) string {
 	return name
 }
 
+// p appends formatted text to the generated declarations.
 func (g *pkgGen) p(format string, args ...any) { fmt.Fprintf(&g.decls, format, args...) }
 
-func (g *pkgGen) generate(idlFile string) ([]byte, error) {
+// generate renders the complete, unformatted Go source for the interface read from idlFile.
+func (g *pkgGen) generate(idlFile string) []byte {
 	for _, r := range reserved {
 		g.taken[r] = true
 	}
@@ -372,9 +373,10 @@ func (g *pkgGen) generate(idlFile string) ([]byte, error) {
 	out.Write(tail)
 	out.Write(body.Bytes())
 	out.Write(g.decls.Bytes())
-	return out.Bytes(), nil
+	return out.Bytes()
 }
 
+// mustAtoi converts s to an int and panics if it is not a number.
 func mustAtoi(s string) int {
 	n, err := strconv.Atoi(s)
 	if err != nil {
@@ -383,6 +385,7 @@ func mustAtoi(s string) int {
 	return n
 }
 
+// clientCode returns the source of the Client type and its constructors; hasSocket adds the Dial helpers for the default socket.
 func clientCode(hasSocket bool) string {
 	var b strings.Builder
 	b.WriteString(`// Client calls the interface's methods. It is safe for concurrent use.
@@ -462,6 +465,7 @@ func (g *pkgGen) fdField(f *idl.Field) bool {
 		f.Name == strings.ToLower(g.cfg.FDFieldSuffix[:1])+g.cfg.FDFieldSuffix[1:])
 }
 
+// namedType emits the Go declaration for the named IDL type td.
 func (g *pkgGen) namedType(td *idl.TypeDef) {
 	name := g.typeNames[td.Name]
 	qual := g.iface.Name + "." + td.Name
@@ -472,6 +476,7 @@ func (g *pkgGen) namedType(td *idl.TypeDef) {
 	g.structType(name, fmt.Sprintf("%s is the Varlink type %s.", name, qual), td.Doc, td.Type)
 }
 
+// enumType emits a Go string type with one constant per value of the enum t.
 func (g *pkgGen) enumType(name, summary, doc string, t *idl.Type) {
 	g.p("// %s\n", summary)
 	if doc != "" {
@@ -572,6 +577,7 @@ func (g *pkgGen) structType(name, summary, doc string, t *idl.Type) {
 	}
 }
 
+// goType returns the Go type for t, queuing inline structs and enums in nested under names derived from inlineName.
 func (g *pkgGen) goType(t *idl.Type, inlineName string, nested *[]pendingType) string {
 	switch t.Kind {
 	case idl.Bool:
@@ -618,6 +624,7 @@ func (g *pkgGen) goType(t *idl.Type, inlineName string, nested *[]pendingType) s
 	panic(fmt.Sprintf("unhandled kind %v", t.Kind))
 }
 
+// errorType emits the Go error type typ and its sentinel for the Varlink error e.
 func (g *pkgGen) errorType(typ, sentinel string, e *idl.Error) {
 	qual := g.iface.Name + "." + e.Name
 	g.p("// %s is the Varlink error %s. Match it with errors.As, or with\n// errors.Is(err, %s).\n", typ, qual, sentinel)
@@ -662,6 +669,7 @@ func (g *pkgGen) errorType(typ, sentinel string, e *idl.Error) {
 	}
 }
 
+// writeDoc writes doc to b as Go comment lines with the given indent.
 func writeDoc(b *bytes.Buffer, indent, doc string) {
 	for _, line := range strings.Split(doc, "\n") {
 		line = strings.TrimRight(line, " \t")

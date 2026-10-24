@@ -16,6 +16,7 @@ import (
 	"github.com/rossedman/sdvarlink/varlink"
 )
 
+// main runs the example; see the package comment for usage.
 func main() {
 	// Cancelling the context ends the stream and closes the connection.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)

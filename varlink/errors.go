@@ -50,6 +50,7 @@ type Error struct {
 	Parameters json.RawMessage
 }
 
+// Error returns the error name, followed by its parameters when there are any.
 func (e *Error) Error() string {
 	if len(e.Parameters) == 0 || string(e.Parameters) == "{}" || string(e.Parameters) == "null" {
 		return "varlink: " + e.Name
@@ -103,6 +104,7 @@ type SystemError struct {
 	Errno     int    `json:"errno,omitempty"`
 }
 
+// Error describes the errno, using its name when one was sent.
 func (e *SystemError) Error() string {
 	name := e.ErrnoName
 	if name == "" {
@@ -143,6 +145,8 @@ type ProtocolError struct {
 	Err error
 }
 
+// Error returns the message, followed by the underlying error when there is
+// one.
 func (e *ProtocolError) Error() string {
 	if e.Err != nil {
 		return "varlink: protocol error: " + e.Msg + ": " + e.Err.Error()
@@ -150,4 +154,5 @@ func (e *ProtocolError) Error() string {
 	return "varlink: protocol error: " + e.Msg
 }
 
+// Unwrap returns the underlying error, or nil.
 func (e *ProtocolError) Unwrap() error { return e.Err }

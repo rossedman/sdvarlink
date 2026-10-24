@@ -1,14 +1,24 @@
+# golangci-lint v2 configuration, based on the config Guardrails bundles.
 version: "2"
 
+run:
+  timeout: 5m
+
 linters:
-  default: standard
+  default: standard # errcheck, govet, ineffassign, staticcheck, unused
   enable:
-    - errorlint
-    - misspell
-    - unconvert
-    - nolintlint
+    - bodyclose
     - copyloopvar
+    - errorlint
     - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - nolintlint
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
   settings:
     errcheck:
       exclude-functions:
@@ -28,6 +38,22 @@ linters:
       disabled-checks:
         - ifElseChain
         - singleCaseSwitch
+    gosec:
+      excludes:
+        - G104 # unchecked errors: errcheck reports them, with the exclusions above
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: indent-error-flow
+        - name: errorf
+        - name: error-return
+        - name: error-strings
+        - name: receiver-naming
   exclusions:
     generated: lax
     presets:
@@ -35,9 +61,32 @@ linters:
       - std-error-handling
     rules:
       - path: _test\.go
-        linters: [errcheck, gocritic]
+        linters: [errcheck, gocritic, gosec, unparam]
       - path: examples/
         linters: [errcheck, gocritic]
+      # Examples print what services return and open the paths they are
+      # given on the command line; that is their job.
+      - path: examples/
+        linters: [gosec]
+        text: "G104|G115|G703|G706"
+      # The generator reads the IDL and config paths it is given and writes
+      # Go sources and docs with ordinary repository permissions.
+      - path: ^(cmd/sdvarlink-gen|internal/gen)/
+        linters: [gosec]
+        text: "G301|G304|G306|G703"
+      # Golden files live at the path the test names, in the repository.
+      - path: ^varlinktest/golden\.go$
+        linters: [gosec]
+        text: "G304|G306"
+      # Listen creates the socket's parent directory world-readable, like
+      # systemd's /run/systemd/*; the socket itself carries the access mode.
+      - path: ^varlink/listen_unix\.go$
+        linters: [gosec]
+        text: "G301|G304"
+      # File descriptors always fit in an int32 (unix.PollFd.Fd).
+      - path: ^varlink/hangup_unix\.go$
+        linters: [gosec]
+        text: G115
 
 formatters:
   enable:

@@ -6,6 +6,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// peerCredentials reads the credentials of the process at the other end of c
+// with SO_PEERCRED.
 func peerCredentials(c *net.UnixConn) (Peer, error) {
 	rc, err := c.SyscallConn()
 	if err != nil {

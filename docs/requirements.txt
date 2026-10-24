@@ -1,5 +1,5 @@
-# Documentation toolchain. Install with `make docs-deps`
-# (pip install -r docs/requirements.txt), then `make docs-serve`.
+# Documentation toolchain, run through uv by the Makefile:
+# `make docs-serve` (live preview) or `make docs` (strict build, as CI runs it).
 mkdocs==1.6.1
 mkdocs-material==9.7.7
 pymdown-extensions==12.3

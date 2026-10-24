@@ -16,9 +16,14 @@ type Transport struct{}
 // New returns a Transport whose methods fail with ErrUnsupported.
 func New(*net.UnixConn, int, int) *Transport { return &Transport{} }
 
+// ReadMessage fails with ErrUnsupported.
 func (*Transport) ReadMessage() ([]byte, []*os.File, error) { return nil, nil, ErrUnsupported }
-func (*Transport) WriteMessage([]byte, []*os.File) error    { return ErrUnsupported }
-func (*Transport) Close() error                             { return nil }
+
+// WriteMessage fails with ErrUnsupported.
+func (*Transport) WriteMessage([]byte, []*os.File) error { return ErrUnsupported }
+
+// Close does nothing and returns nil.
+func (*Transport) Close() error { return nil }
 
 // CloseFiles closes every non-nil file.
 func CloseFiles(files []*os.File) {

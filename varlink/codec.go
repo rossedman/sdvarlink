@@ -115,6 +115,8 @@ func Unmarshal(data []byte, files []*os.File, v any) error {
 	return nil
 }
 
+// decodeTree decodes JSON into a generic tree, keeping numbers as json.Number
+// so indexes and large integers survive.
 func decodeTree(data []byte) (any, error) {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.UseNumber()
@@ -135,6 +137,8 @@ type fieldInfo struct {
 
 var structCache sync.Map // reflect.Type -> []fieldInfo
 
+// structFields returns the fields of struct type t that carry or contain fd
+// fields, with their JSON names. Results are cached per type.
 func structFields(t reflect.Type) []fieldInfo {
 	if v, ok := structCache.Load(t); ok {
 		return v.([]fieldInfo)
@@ -188,6 +192,8 @@ func hasFiles(t reflect.Type) bool {
 	return res
 }
 
+// computeHasFiles reports whether t can carry fd fields. visiting guards
+// against recursive types.
 func computeHasFiles(t reflect.Type, visiting map[reflect.Type]bool) bool {
 	if v, ok := filesCache.Load(t); ok {
 		return v.(bool)
@@ -216,6 +222,9 @@ func computeHasFiles(t reflect.Type, visiting map[reflect.Type]bool) bool {
 	return false
 }
 
+// injectFiles walks v alongside its JSON tree node, appends each fd field's
+// file to files and writes the file's index into the tree. It returns the
+// updated node.
 func injectFiles(v reflect.Value, node any, files *[]*os.File) any {
 	for v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface {
 		if v.IsNil() {
@@ -272,6 +281,9 @@ func injectFiles(v reflect.Value, node any, files *[]*os.File) any {
 	return node
 }
 
+// extractFiles walks v alongside its JSON tree node and sets each fd field to
+// the received file its index names. It marks used files in claimed and
+// records the fields it sets in set. A file referenced twice is duplicated.
 func extractFiles(v reflect.Value, node any, files []*os.File, claimed []bool, set *[]reflect.Value) error {
 	for v.Kind() == reflect.Pointer {
 		if v.IsNil() {

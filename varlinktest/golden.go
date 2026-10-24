@@ -87,6 +87,10 @@ func Record(tb testing.TB, upstream, golden string) *Server {
 		}
 	})
 	tb.Cleanup(func() {
+		// A handler appends its exchange after the client has its reply, so
+		// stop the server and wait for every handler before writing; else the
+		// last call can be missing from the golden file.
+		s.Close()
 		up.Close()
 		mu.Lock()
 		defer mu.Unlock()
@@ -151,6 +155,9 @@ func Replay(tb testing.TB, golden string) *Server {
 	return s
 }
 
+// jsonEqual reports whether a and b hold the same JSON value, ignoring
+// formatting and key order. Empty input equals {}; input that is not valid
+// JSON is compared as raw text.
 func jsonEqual(a, b json.RawMessage) bool {
 	norm := func(m json.RawMessage) any {
 		if len(bytes.TrimSpace(m)) == 0 {

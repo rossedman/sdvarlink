@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/rossedman/guardrails/main/internal/config/schema.json
+#
+# Guardrails configuration. Keys override ~/.config/guardrails/config.yaml,
+# which overrides the built-in defaults. Unknown keys are an error.
+# Docs: https://rossedman.github.io/guardrails/configuration/
+#
+# This repo is a Go library and code generator, plus GitHub Actions YAML and
+# a few helper scripts under hack/.
+version: 1
+preset: strict
+mode: enforce            # enforce | warn (warn = never block, report only)
+
+go:
+  coverage:
+    total: 90
+    per_package_floor: 80
+    ratchet: true          # never below the SessionStart baseline
+    # Generated files (systemd/**) are skipped automatically by their
+    # "Code generated ... DO NOT EDIT." header. Examples are demos, and the
+    # integration tests need a real systemd. Both match `make cover`.
+    exclude: ["**/mocks/**", "**/*_mock.go", "**/*.pb.go", "cmd/**/main.go", "examples/**", "integration/**"]
+  patch_coverage: 90       # lines changed this session
+  lint:
+    config: .golangci.yml  # falls back to the bundled config
+    on_edit: fast          # fast | full | off
+  race: true
+  vuln: true
+  bench:
+    packages: ["varlink/...", "internal/wire/...", "idl/..."]
+
+# hack/idl-from-source/extract.py is the only Python: an IDL extractor whose
+# output CI checks against the committed snapshots (ci.yml, "generated" job).
+# That comparison is its test, so the Python gate (pytest coverage, mypy) is off.
+python:
+  enabled: false
+
+yaml:
+  actionlint: true
+  kubeconform: { enabled: false, kubernetes_version: "1.31" }
+
+# integration/images/Dockerfile boots systemd as PID 1 in a privileged
+# container across Fedora releases, including rawhide. It has to run as root
+# and track moving tags, so the digest and non-root rules don't apply.
+docker:
+  enabled: false
+
+tools:
+  install: auto          # auto: download pinned, verified tools | never
+  prefer: path           # path: use installed tools first | managed
+
+guards:
+  allow_suppression_tag: "guardrails:allow"
+  protected_branches: ["main"]
+
+gate:
+  max_consecutive_blocks: 3
+  timeout_seconds: 120
